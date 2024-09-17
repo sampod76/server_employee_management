@@ -249,7 +249,7 @@ const deleteAdminFromDB = async (
   //   _id: Schema.Types.ObjectId;
   // };
   const isExist = await Admin.aggregate([
-    { $match: { _id: new Types.ObjectId(id), isDelete: ENUM_YN.NO } },
+    { $match: { _id: new Types.ObjectId(id), isDelete: false } },
   ]);
 
   if (!isExist.length) {

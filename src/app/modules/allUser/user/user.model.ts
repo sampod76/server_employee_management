@@ -10,7 +10,6 @@ import {
   ENUM_YN,
   SOCKET_STATUS_ARRAY,
   STATUS_ARRAY,
-  YN_ARRAY,
 } from '../../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { mongooseLocationSchema } from '../../../../global/schema/global.schema';
@@ -62,11 +61,9 @@ const userSchema = new Schema<IUser, UserModel>(
       otp: Number,
       timeOut: Date,
       jwtToken: String,
-      status: {
-        type: String,
-        enum: STATUS_ARRAY,
-        // default: ENUM_STATUS.ACTIVE,
-      },
+      //
+      passwordChangeOtp: Number,
+      forgetPasswordOtp: Number,
     },
     lastActive: {
       createdAt: Date,
@@ -259,11 +256,10 @@ const tempUserSchema = new Schema(
       enum: USER_ROLE_ARRAY,
       default: ENUM_USER_ROLE.employee,
     },
-    isEmailVerify: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
-    },
+    // isEmailVerify:  {
+    //   type: Boolean,
+    //   default: false,
+    // },
     authentication: {
       type: {
         otp: Number,
@@ -282,9 +278,8 @@ const tempUserSchema = new Schema(
       default: ENUM_STATUS.ACTIVE,
     },
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
   },
   {

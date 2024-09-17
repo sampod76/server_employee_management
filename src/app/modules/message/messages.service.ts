@@ -211,7 +211,7 @@ const deleteChatMessageFromDB = async (
   //   _id: Schema.Types.ObjectId;
   // };
   const isExist = (await ChatMessage.aggregate([
-    { $match: { _id: new Types.ObjectId(id), isDelete: ENUM_YN.NO } },
+    { $match: { _id: new Types.ObjectId(id), isDelete: false } },
   ])) as IChatMessage[];
 
   if (!isExist.length) {

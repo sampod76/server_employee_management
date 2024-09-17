@@ -9,7 +9,7 @@ import config from '../../../config';
 import httpStatus from 'http-status';
 import qrcode from 'qrcode';
 import speakeasy from 'speakeasy';
-import { ENUM_STATUS, ENUM_YN } from '../../../global/enum_constant_type';
+import { ENUM_STATUS } from '../../../global/enum_constant_type';
 import { jwtHelpers } from '../../../helper/jwtHelpers';
 import {
   decryptCryptoData,
@@ -188,7 +188,7 @@ const refreshToken = async (
       userId: new Types.ObjectId(userId),
       // user_agent: user_agent,
       token: token,
-      isDelete: ENUM_YN.NO,
+      isDelete: false,
     }),
   ];
   const resolver = (await Promise.all(promises)) as [
@@ -250,7 +250,7 @@ const changePassword = async (
   //alternative way
   const isUserExist = (await User.findOne({
     _id: user?.userId,
-    isDelete: ENUM_YN.NO,
+    isDelete: false,
   }).select('+password')) as any;
 
   if (!isUserExist) {

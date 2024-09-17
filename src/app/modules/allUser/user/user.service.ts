@@ -48,7 +48,7 @@ const createUser = async (
     throw new ApiError(400, 'Failed to get request user');
   }
   if (verifyTempUser?.authentication?.otp !== Number(authData?.tempUser?.otp)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Otp not matching');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'OTP not matching');
   }
   if (
     verifyTempUser?.authentication?.timeOut &&
@@ -335,9 +335,6 @@ const getSingleUserFromDB = async (
     },
   );
 
-  if (!user) {
-    throw new ApiError(400, 'Failed to get user');
-  }
   return user;
 };
 

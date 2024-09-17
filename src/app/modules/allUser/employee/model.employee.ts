@@ -41,11 +41,16 @@ const EmployeeUserSchema = new Schema<IEmployeeUser, EmployeeUserModel>(
       type: String,
       trim: true,
     },
-    country: {
-      name: { type: String, trim: true },
-      flag: { url: String },
-      isoCode: String,
+    documents: [mongooseFileSchema],
+    nid: {
+      type: String,
+      trim: true,
     },
+    passport: {
+      type: String,
+      trim: true,
+    },
+
     // userName: { type: String, trim: true },
     contactNumber: {
       type: String,

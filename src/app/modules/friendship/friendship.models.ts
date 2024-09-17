@@ -19,9 +19,8 @@ const FriendShipSchema = new Schema<IFriendShip, FriendShipModel>(
     receiver: mongooseIUserRef,
     block: {
       isBlock: {
-        type: String,
-        enum: YN_ARRAY,
-        default: ENUM_YN.NO,
+        type: Boolean,
+        default: false,
       },
       lastBlockDate: Date,
       reason: {

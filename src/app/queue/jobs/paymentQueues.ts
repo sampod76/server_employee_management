@@ -90,7 +90,7 @@
 //         await PaidHostPaymentHistory.findOneAndUpdate(
 //           {
 //             reserveId: reservedId,
-//             isDelete: ENUM_YN.NO,
+//             isDelete: false,
 //             'queue.jobId': job.id,
 //           },
 //           {
@@ -126,7 +126,7 @@
 //       await PaidHostPaymentHistory.findOneAndUpdate(
 //         {
 //           reserveId: reservedId,
-//           isDelete: ENUM_YN.NO,
+//           isDelete: false,
 //           'queue.jobId': job.id,
 //         },
 //         {

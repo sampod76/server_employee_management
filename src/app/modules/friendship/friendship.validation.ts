@@ -17,12 +17,12 @@ const friendshipUpdateBodyDate = z.object({
   // lastMessage: z.string().or(z.instanceof(Types.ObjectId)),
   requestAccept: z.enum(YN_ARRAY as [I_YN]).optional(),
   status: z.enum(STATUS_ARRAY as [I_STATUS, ...I_STATUS[]]).optional(),
-  isDelete: z.boolean().optional().default(false).default(false),
+  isDelete: z.boolean().optional().default(false),
 });
 
 const friendshipBlockZodData = z.object({
   block: z.object({
-    isBlock: z.enum(YN_ARRAY as [I_YN]),
+    isBlock: z.boolean(),
     reason: z.string().optional(),
     lastBlockDate: z.date().optional(), // only type interface preps. Replace controller
     blocker: zodRefUser, // only type interface preps. Replace controller

@@ -36,7 +36,6 @@ const getAllAllTextFieldFromDb = async (
 ): Promise<IGenericResponse<IAllTextField[]>> => {
   //****************search and filters start************/
   const { searchTerm, ...filtersData } = filters;
-
   filtersData.isDelete = filtersData.isDelete
     ? filtersData.isDelete == 'true'
       ? true

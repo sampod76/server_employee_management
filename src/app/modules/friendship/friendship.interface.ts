@@ -10,9 +10,8 @@ export type IFriendShipFilters = {
   senderRoleBaseId?: string;
   receiverUserId?: string;
   receiverRoleBaseId?: string;
-  isBlock?: I_YN;
+  isBlock?: string | boolean;
   myData?: I_YN;
-
   //
   searchTerm?: string;
   needProperty?: string;

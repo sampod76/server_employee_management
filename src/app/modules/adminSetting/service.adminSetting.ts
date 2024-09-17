@@ -19,7 +19,7 @@ const createAdminSettingByDb = async (
 ): Promise<IAdminSetting | null> => {
   const findAlreadyExists = await AdminSetting.findOne({
     settingType: payload.settingType,
-    isDelete: ENUM_YN.NO,
+    isDelete: false,
   });
   //
   let result;
@@ -46,7 +46,6 @@ const getAllAdminSettingFromDb = async (
 ): Promise<IGenericResponse<IAdminSetting[]>> => {
   //****************search and filters start************/
   const { searchTerm, ...filtersData } = filters;
-  console.log('🚀 ~ filtersData:', filtersData);
 
   filtersData.isDelete = filtersData.isDelete
     ? filtersData.isDelete == 'true'

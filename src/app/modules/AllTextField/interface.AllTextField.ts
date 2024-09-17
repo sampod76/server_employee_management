@@ -28,7 +28,7 @@ export type IAllTextFieldFilters = {
   dataType?: IDataType;
   status?: I_STATUS;
   delete?: I_YN;
-  isDelete?: string;
+  isDelete?: boolean | string;
 };
 
 export type IAllTextField = {

@@ -1,14 +1,11 @@
 import { z } from 'zod';
+import { zodFileAfterUploadSchema } from '../../../../../global/schema/global.schema';
 
 export const employeeZodSchema = z
   .object({
-    country: z
-      .object({
-        name: z.string({ required_error: 'Country is required' }),
-        flag: z.object({ url: z.string().url() }).optional(),
-        isoCode: z.string().optional(),
-      })
-      .optional(),
-    verify: z.boolean().optional(),
+    nid: z.string(),
+    verify: z.boolean(),
+    passport: z.string(),
+    documents: z.array(zodFileAfterUploadSchema),
   })
   .deepPartial();

@@ -14,7 +14,7 @@ import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
 
 import { findAllSocketsIdsFromUserId } from '../../redis/service.redis';
 import { IUserRef } from '../allUser/typesAndConst';
-import { IUser } from '../allUser/user/user.interface';
+import { I_USER_ROLE, IUser } from '../allUser/user/user.interface';
 import { User } from '../allUser/user/user.model';
 import { RequestToRefUserObject } from '../allUser/user/user.utils';
 import { friendshipSearchableFields } from './friendship.constants';
@@ -60,7 +60,7 @@ const createFriendShip = async (
 
   data.receiver = {
     userId: resolved[0]?._id,
-    role: resolved[0]?.role,
+    role: resolved[0]?.role as I_USER_ROLE,
     //@ts-ignore
     roleBaseUserId: resolved[0]?.roleInfo?._id,
   };
@@ -322,7 +322,7 @@ const updateFriendShipBlockFromDb = async (
 
   const { block, ...FriendShipData } = data;
   const updatedFriendShipData: Partial<IFriendShip> = { ...FriendShipData };
-  if (block?.isBlock === ENUM_YN.NO) {
+  if (!block?.isBlock) {
     if (
       isExist?.block?.blocker?.userId?.toString() !== req?.user?.userId &&
       req.user?.role !== ENUM_USER_ROLE.admin &&
@@ -396,7 +396,7 @@ const deleteFriendShipFromDB = async (
   //   _id: Schema.Types.ObjectId;
   // };
   const isExist = (await FriendShip.aggregate([
-    { $match: { _id: new Types.ObjectId(id), isDelete: ENUM_YN.NO } },
+    { $match: { _id: new Types.ObjectId(id), isDelete: false } },
   ])) as IFriendShip[];
 
   if (!isExist.length) {

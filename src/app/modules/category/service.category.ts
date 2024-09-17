@@ -19,7 +19,7 @@ const createCategoryByDb = async (
 ): Promise<ICategory> => {
   const findAlreadyExists = await Category.findOne({
     title: payload.title,
-    isDelete: ENUM_YN.NO,
+    isDelete: false,
   });
   //
 

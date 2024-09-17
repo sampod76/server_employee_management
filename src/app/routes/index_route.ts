@@ -40,7 +40,7 @@ const moduleRoutes = [
     route: HrAdminRoutes,
   },
   {
-    path: '/employees',
+    path: '/employee',
     route: EmployeeUserRoutes,
   },
 

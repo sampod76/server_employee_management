@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 
 import config from '../../../config';
 
-import { ENUM_YN } from '../../../global/enum_constant_type';
 import { getDeviceInfo } from '../../../helper/getDeviceInfo';
 import ApiError from '../../errors/ApiError';
 import catchAsync from '../../share/catchAsync';
@@ -237,7 +236,7 @@ const profile = catchAsync(async (req: Request, res: Response) => {
   const user = await User.isUserFindMethod(
     { id: req?.user?.userId },
     {
-      isDelete: ENUM_YN.NO,
+      isDelete: false,
       populate: true,
       needProperty: ['rating', 'insights'],
     },
