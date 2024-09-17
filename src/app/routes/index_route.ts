@@ -12,16 +12,20 @@ import { NotificationRoute } from '../modules/notification/notification.route';
 import { adminRoutes } from '../modules/allUser/admin/admin.route';
 
 import { AdminSettingRoute } from '../modules/adminSetting/route.adminSetting';
-import { BuyerUserRoutes } from '../modules/allUser/employee/route.employee';
-import { SellerRoutes } from '../modules/allUser/hrAdmin/route.hrAdmin';
 
 import { FriendShipsRoute } from '../modules/friendship/friendship.route';
-import { GigsRoute } from '../modules/gig/route.gig';
+
+import { EmployeeUserRoutes } from '../modules/allUser/employee/route.employee';
+import { HrAdminRoutes } from '../modules/allUser/hrAdmin/route.hrAdmin';
 import { ChatMessageRoute } from '../modules/message/messages.route';
 
 const router = express.Router();
 
 const moduleRoutes = [
+  {
+    path: '/auth',
+    route: AuthRoutes,
+  },
   {
     path: '/users',
     route: userRoutes,
@@ -32,16 +36,12 @@ const moduleRoutes = [
   },
 
   {
-    path: '/buyer-users',
-    route: BuyerUserRoutes,
+    path: '/hr-admin',
+    route: HrAdminRoutes,
   },
   {
-    path: '/seller-users',
-    route: SellerRoutes,
-  },
-  {
-    path: '/auth',
-    route: AuthRoutes,
+    path: '/employees',
+    route: EmployeeUserRoutes,
   },
 
   {
@@ -52,10 +52,6 @@ const moduleRoutes = [
   {
     path: '/category',
     route: CategoryRoute,
-  },
-  {
-    path: '/gig',
-    route: GigsRoute,
   },
 
   {

@@ -18,7 +18,7 @@ export type IFriendShipFilters = {
   needProperty?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: string;
+  isDelete?: string | boolean;
 };
 
 export type IFriendShip = z.infer<

@@ -11,14 +11,14 @@ import ApiError from '../../../errors/ApiError';
 import { IGenericResponse } from '../../../interface/common';
 import { IPaginationOption } from '../../../interface/pagination';
 import { Admin } from '../admin/admin.model';
-import { BuyerUser } from '../employee/model.buyer';
 
 import { LookupAnyRoleDetailsReusable } from '../../../../helper/lookUpResuable';
 
 import { ENUM_QUEUE_NAME } from '../../../queue/consent.queus';
 import { emailQueue } from '../../../queue/jobs/emailQueues';
 
-import { Seller } from '../hrAdmin/model.hrAdmin';
+import { EmployeeUser } from '../employee/model.employee';
+import { HrAdmin } from '../hrAdmin/model.hrAdmin';
 import { userSearchableFields } from './user.constant';
 import { ITempUser, IUser, IUserFilters } from './user.interface';
 import { TempUser, User } from './user.model';
@@ -75,11 +75,11 @@ const createUser = async (
         session,
       });
     } else if (authData?.role === ENUM_USER_ROLE.employee) {
-      roleCreate = await BuyerUser.create([{ ...roleData, ...authData }], {
+      roleCreate = await EmployeeUser.create([{ ...roleData, ...authData }], {
         session,
       });
     } else if (authData?.role === ENUM_USER_ROLE.hrAdmin) {
-      roleCreate = await Seller.create([{ ...roleData, ...authData }], {
+      roleCreate = await HrAdmin.create([{ ...roleData, ...authData }], {
         session,
       });
     }
@@ -286,13 +286,13 @@ const updateUserFromDB = async (
     if (data.status) {
       let roleUser;
       if (isExist.role === ENUM_USER_ROLE.employee) {
-        roleUser = await BuyerUser.findOneAndUpdate(
+        roleUser = await EmployeeUser.findOneAndUpdate(
           { email: isExist.email },
           data,
           { runValidators: true, session },
         );
       } else if (isExist.role === ENUM_USER_ROLE.hrAdmin) {
-        roleUser = await Seller.findOneAndUpdate(
+        roleUser = await HrAdmin.findOneAndUpdate(
           { email: isExist.email },
           data,
           { runValidators: true, session },
@@ -390,13 +390,13 @@ const deleteUserFromDB = async (
     }
     let roleUser;
     if (data?.role === ENUM_USER_ROLE.employee) {
-      roleUser = await BuyerUser.findOneAndUpdate(
+      roleUser = await EmployeeUser.findOneAndUpdate(
         { email: data?.email },
         { isDelete: true },
         { runValidators: true, new: true },
       );
     } else if (data?.role === ENUM_USER_ROLE.hrAdmin) {
-      roleUser = await Seller.findOneAndUpdate(
+      roleUser = await HrAdmin.findOneAndUpdate(
         { email: data?.email },
         { isDelete: true },
         { runValidators: true, new: true },
