@@ -9,14 +9,14 @@ export type IEmployeeUserFilters = {
   searchTerm?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: boolean;
+  isDelete?: string | boolean;
   authorRoleBaseId?: string;
   needProperty?: string;
   verify?: string;
 };
 
 export type IEmployeeUser = ICommonUser &
-  z.infer<typeof UserValidation.employeeZodData>;
+  z.infer<typeof UserValidation.employeeBodyData>;
 export type EmployeeUserModel = {
   isEmployeeUserExistMethod(
     id: string,

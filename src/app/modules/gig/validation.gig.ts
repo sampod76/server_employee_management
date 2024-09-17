@@ -1,12 +1,7 @@
 import { z } from 'zod';
 
 import { Types } from 'mongoose';
-import {
-  I_STATUS,
-  I_YN,
-  STATUS_ARRAY,
-  YN_ARRAY,
-} from '../../../global/enum_constant_type';
+import { I_STATUS, STATUS_ARRAY } from '../../../global/enum_constant_type';
 import { zodFileAfterUploadSchema } from '../../../global/schema/global.schema';
 import { I_VERIFY, VERIFY_ARRAY } from '../allUser/typesAndConst';
 import { ENUM_ORDER_PACKAGE_NAME } from './constants.gig';
@@ -47,7 +42,7 @@ const GigBodyData = z.object({
 });
 
 const GigUpdateBodyDate = z.object({
-  isDelete: z.enum([...YN_ARRAY] as [I_YN]).optional(),
+  isDelete: z.boolean().optional(),
 });
 
 const createGigZodSchema = z.object({

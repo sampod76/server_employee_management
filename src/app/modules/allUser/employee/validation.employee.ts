@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 import { I_STATUS, STATUS_ARRAY } from '../../../../global/enum_constant_type';
 import { UserValidation } from '../user/user.validation';
-// const combinedEmployeeZodData = UserValidation.EmployeeZodData.merge(
+// const combinedemployeeBodyData = UserValidation.employeeBodyData.merge(
 //   UserValidation.authData
 // );
-const combinedEmployeeUserZodData = UserValidation.employeeZodData.merge(
+const combinedEmployeeUserZodData = UserValidation.employeeBodyData.merge(
   UserValidation.authData.pick({ email: true }),
 );
 const otherProperties = z.object({

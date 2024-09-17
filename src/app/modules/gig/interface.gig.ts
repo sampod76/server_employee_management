@@ -15,7 +15,7 @@ export type IGigFilters = {
   searchTerm?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: boolean;
+  isDelete?: string;
   createdAtFrom?: string;
   createdAtTo?: string;
   needProperty?: string;

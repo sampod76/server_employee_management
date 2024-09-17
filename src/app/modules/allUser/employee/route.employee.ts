@@ -6,16 +6,16 @@ import authMiddleware from '../../../middlewares/authMiddleware';
 import parseBodyData from '../../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../../middlewares/validateRequestZod';
 import { uploadAwsS3Bucket } from '../../aws/utls.aws';
-import { BuyerUserController } from './controller.employee';
-import { BuyerUserValidation } from './validation.employee';
+import { EmployeeUserController } from './controller.employee';
+import { EmployeeUserValidation } from './validation.employee';
 
 const router = express.Router();
 
-router.route('/').get(BuyerUserController.getAllBuyerUsers);
+router.route('/').get(EmployeeUserController.getAllEmployeeUsers);
 
 router
   .route('/:id')
-  .get(BuyerUserController.getSingleBuyerUser)
+  .get(EmployeeUserController.getSingleEmployeeUser)
   .patch(
     authMiddleware(
       ENUM_USER_ROLE.superAdmin,
@@ -25,8 +25,8 @@ router
     // uploadAwsS3Bucket.fields([{ name: 'profileImage', maxCount: 1 }]),
     uploadAwsS3Bucket.single('profileImage'),
     parseBodyData({}),
-    validateRequestZod(BuyerUserValidation.updateBuyerUserZodSchema),
-    BuyerUserController.updateBuyerUser,
+    validateRequestZod(EmployeeUserValidation.updateEmployeeUserZodSchema),
+    EmployeeUserController.updateEmployeeUser,
   )
   .delete(
     authMiddleware(
@@ -41,7 +41,7 @@ router
         }),
       }),
     ),
-    BuyerUserController.deleteBuyerUser,
+    EmployeeUserController.deleteEmployeeUser,
   );
 
-export const BuyerUserRoutes = router;
+export const EmployeeUserRoutes = router;

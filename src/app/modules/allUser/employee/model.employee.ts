@@ -115,7 +115,7 @@ EmployeeUserSchema.statics.isEmployeeUserExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option.isDelete || ENUM_YN.NO,
+          isDelete: option.isDelete || false,
         },
       },
     ];

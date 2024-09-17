@@ -15,23 +15,24 @@ import { IPaginationOption } from '../../../interface/pagination';
 import { LookupReusable } from '../../../../helper/lookUpResuable';
 import { ENUM_VERIFY, IUserRef } from '../typesAndConst';
 import { User } from '../user/user.model';
-import { sellerSearchableFields } from './constant.seller';
-import { ISellerUser, ISellerUserFilters } from './interface.seller';
-import { Seller } from './model.seller';
+import { HrAdminSearchableFields } from './constant.hrAdmin';
 
-const createSeller = async (
-  data: ISellerUser,
+import { IHrAdminUser, IHrAdminUserFilters } from './interface.hrAdmin';
+import { HrAdmin } from './model.hrAdmin';
+
+const createHrAdmin = async (
+  data: IHrAdminUser,
   req?: Request,
-): Promise<ISellerUser | null> => {
-  const res = await Seller.create(data);
+): Promise<IHrAdminUser | null> => {
+  const res = await HrAdmin.create(data);
   return res;
 };
 
-const getAllSellersFromDB = async (
-  filters: ISellerUserFilters,
+const getAllHrAdminsFromDB = async (
+  filters: IHrAdminUserFilters,
   paginationOptions: IPaginationOption,
   req: Request,
-): Promise<IGenericResponse<ISellerUser[] | null>> => {
+): Promise<IGenericResponse<IHrAdminUser[] | null>> => {
   const {
     searchTerm,
     createdAtFrom,
@@ -40,7 +41,11 @@ const getAllSellersFromDB = async (
     needProperty,
     ...filtersData
   } = filters;
-  filtersData.isDelete = filtersData.isDelete || false;
+  filtersData.isDelete = filtersData.isDelete
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
   filtersData.verify = filtersData.verify
     ? filtersData.verify
     : ENUM_VERIFY.ACCEPT;
@@ -49,7 +54,7 @@ const getAllSellersFromDB = async (
 
   if (searchTerm) {
     andConditions.push({
-      $or: sellerSearchableFields.map((field: string) => ({
+      $or: HrAdminSearchableFields.map((field: string) => ({
         [field]: {
           $regex: searchTerm,
           $options: 'i',
@@ -162,10 +167,10 @@ const getAllSellersFromDB = async (
     ],
   });
 
-  // const result = await Seller.aggregate(pipeline);
-  // const total = await Seller.countDocuments(whereConditions);
+  // const result = await HrAdmin.aggregate(pipeline);
+  // const total = await HrAdmin.countDocuments(whereConditions);
   //!-- alternatively and faster
-  const pipeLineResult = await Seller.aggregate([
+  const pipeLineResult = await HrAdmin.aggregate([
     {
       $facet: {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -193,17 +198,17 @@ const getAllSellersFromDB = async (
   };
 };
 
-const updateSellerFromDB = async (
+const updateHrAdminFromDB = async (
   id: string,
-  data: ISellerUser,
+  data: IHrAdminUser,
   user?: IUserRef,
   req?: Request,
-): Promise<ISellerUser | null> => {
-  const isExist = (await Seller.findById(id)) as ISellerUser & {
+): Promise<IHrAdminUser | null> => {
+  const isExist = (await HrAdmin.findById(id)) as IHrAdminUser & {
     _id: Schema.Types.ObjectId;
   };
   if (!isExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Seller not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'HrAdmin not found');
   }
   if (
     req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
@@ -213,70 +218,70 @@ const updateSellerFromDB = async (
     throw new ApiError(403, 'forbidden access');
   }
 
-  const { name, address, ...SellerData } = data;
+  const { name, address, ...HrAdminData } = data;
   if (
     req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     req?.user?.role !== ENUM_USER_ROLE.admin
   ) {
-    delete (SellerData as Partial<ISellerUser>)['isDelete']; // remove it because , any user update time to not update this field , when user apply delete route to modify this field
-    delete (SellerData as Partial<ISellerUser>)['email'];
-    delete (SellerData as Partial<ISellerUser>)['userUniqueId'];
-    delete (SellerData as Partial<ISellerUser>)['verify'];
+    delete (HrAdminData as Partial<IHrAdminUser>)['isDelete']; // remove it because , any user update time to not update this field , when user apply delete route to modify this field
+    delete (HrAdminData as Partial<IHrAdminUser>)['email'];
+    delete (HrAdminData as Partial<IHrAdminUser>)['userUniqueId'];
+    delete (HrAdminData as Partial<IHrAdminUser>)['verify'];
   }
-  const updatedSellerData: Partial<ISellerUser> = { ...SellerData };
+  const updatedHrAdminData: Partial<IHrAdminUser> = { ...HrAdminData };
 
   if (address && Object.keys(address).length) {
     Object.keys(address).forEach(key => {
-      const nameKey = `address.${key}` as keyof Partial<ISellerUser>;
-      (updatedSellerData as any)[nameKey] =
+      const nameKey = `address.${key}` as keyof Partial<IHrAdminUser>;
+      (updatedHrAdminData as any)[nameKey] =
         address[key as keyof typeof address];
     });
   }
   if (name && Object.keys(name).length) {
     Object.keys(name).forEach(key => {
-      const nameKey = `name.${key}` as keyof Partial<ISellerUser>;
-      (updatedSellerData as any)[nameKey] = name[key as keyof typeof name];
+      const nameKey = `name.${key}` as keyof Partial<IHrAdminUser>;
+      (updatedHrAdminData as any)[nameKey] = name[key as keyof typeof name];
     });
   }
-  const updatedSeller = await Seller.findOneAndUpdate(
+  const updatedHrAdmin = await HrAdmin.findOneAndUpdate(
     { _id: id },
-    updatedSellerData,
+    updatedHrAdminData,
     {
       new: true,
       runValidators: true,
     },
   );
-  if (!updatedSeller) {
-    throw new ApiError(400, 'Failed to update Seller');
+  if (!updatedHrAdmin) {
+    throw new ApiError(400, 'Failed to update HrAdmin');
   }
-  return updatedSeller;
+  return updatedHrAdmin;
 };
 
-const getSingleSellerFromDB = async (
+const getSingleHrAdminFromDB = async (
   id: string,
   req: Request,
-): Promise<ISellerUser | null> => {
-  const user = await Seller.isSellerUserExistMethod(id, {
+): Promise<IHrAdminUser | null> => {
+  const user = await HrAdmin.isHrAdminUserExistMethod(id, {
     populate: true,
   });
 
   return user;
 };
 
-const deleteSellerFromDB = async (
+const deleteHrAdminFromDB = async (
   id: string,
-  query: ISellerUserFilters,
+  query: IHrAdminUserFilters,
   req: Request,
-): Promise<ISellerUser | null> => {
-  // const isExist = (await Seller.findById(id).select('+password')) as ISellerUser & {
+): Promise<IHrAdminUser | null> => {
+  // const isExist = (await HrAdmin.findById(id).select('+password')) as IHrAdminUser & {
   //   _id: Schema.Types.ObjectId;
   // };
-  const isExist = await Seller.aggregate([
+  const isExist = await HrAdmin.aggregate([
     { $match: { _id: new Types.ObjectId(id), isDelete: ENUM_YN.NO } },
   ]);
 
   if (!isExist.length) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Seller not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'HrAdmin not found');
   }
 
   if (
@@ -308,19 +313,19 @@ const deleteSellerFromDB = async (
       req?.user?.role == ENUM_USER_ROLE.superAdmin)
   ) {
     data = null;
-    // data = await Seller.findOneAndDelete({ _id: id });
+    // data = await HrAdmin.findOneAndDelete({ _id: id });
     /*  const session = await mongoose.startSession();
     try {
       session.startTransaction();
-      data = await Seller.findOneAndDelete({ _id: id });
+      data = await HrAdmin.findOneAndDelete({ _id: id });
       if (!data?.email) {
-        throw new ApiError(400, 'Felid to delete Seller');
+        throw new ApiError(400, 'Felid to delete HrAdmin');
       }
       const deleteUser = (await User.findOneAndDelete({
         email: isExist[0].email,
       })) as IUser;
       if (!deleteUser?.email) {
-        throw new ApiError(400, 'Felid to delete Seller');
+        throw new ApiError(400, 'Felid to delete HrAdmin');
       }
       await session.commitTransaction();
       await session.endSession();
@@ -330,7 +335,7 @@ const deleteSellerFromDB = async (
       throw new ApiError(error?.statusCode || 400, error?.message);
     } */
   } else {
-    // data = await Seller.findOneAndUpdate(
+    // data = await HrAdmin.findOneAndUpdate(
     //   { _id: id },
     //   { isDelete: true },
     //   { new: true, runValidators: true },
@@ -339,13 +344,13 @@ const deleteSellerFromDB = async (
     const session = await mongoose.startSession();
     try {
       session.startTransaction();
-      data = await Seller.findOneAndUpdate(
+      data = await HrAdmin.findOneAndUpdate(
         { _id: id },
         { isDelete: true },
         { new: true, runValidators: true, session },
       );
       if (!data?.email) {
-        throw new ApiError(400, 'Felid to delete Seller');
+        throw new ApiError(400, 'Felid to delete HrAdmin');
       }
       const deleteUser = await User.findOneAndUpdate(
         { email: isExist[0].email },
@@ -353,7 +358,7 @@ const deleteSellerFromDB = async (
         { new: true, runValidators: true, session },
       );
       if (!deleteUser?.email) {
-        throw new ApiError(400, 'Felid to delete Seller');
+        throw new ApiError(400, 'Felid to delete HrAdmin');
       }
       await session.commitTransaction();
       await session.endSession();
@@ -366,10 +371,10 @@ const deleteSellerFromDB = async (
   return data;
 };
 
-export const SellerService = {
-  createSeller,
-  getAllSellersFromDB,
-  updateSellerFromDB,
-  getSingleSellerFromDB,
-  deleteSellerFromDB,
+export const HrAdminService = {
+  createHrAdmin,
+  getAllHrAdminsFromDB,
+  updateHrAdminFromDB,
+  getSingleHrAdminFromDB,
+  deleteHrAdminFromDB,
 };

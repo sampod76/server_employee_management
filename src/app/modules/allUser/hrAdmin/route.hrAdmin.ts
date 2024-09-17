@@ -6,16 +6,16 @@ import authMiddleware from '../../../middlewares/authMiddleware';
 import parseBodyData from '../../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../../middlewares/validateRequestZod';
 import { uploadAwsS3Bucket } from '../../aws/utls.aws';
-import { SellerController } from './controller.seller';
-import { SellerValidation } from './validation.seller';
+import { HrAdminController } from './controller.hrAdmin';
+import { HrAdminValidation } from './validation.hrAdmin';
 
 const router = express.Router();
 
-router.route('/').get(SellerController.getAllSellers);
+router.route('/').get(HrAdminController.getAllHrAdmins);
 
 router
   .route('/:id')
-  .get(SellerController.getSingleSeller)
+  .get(HrAdminController.getSingleHrAdmin)
   .patch(
     authMiddleware(
       ENUM_USER_ROLE.superAdmin,
@@ -26,8 +26,8 @@ router
     // uploadAwsS3Bucket.fields([{ name: 'profileImage', maxCount: 1 }]),
     uploadAwsS3Bucket.single('profileImage'),
     parseBodyData({}),
-    validateRequestZod(SellerValidation.updateSellerZodSchema),
-    SellerController.updateSeller,
+    validateRequestZod(HrAdminValidation.updateHrAdminZodSchema),
+    HrAdminController.updateHrAdmin,
   )
   .delete(
     authMiddleware(
@@ -42,7 +42,7 @@ router
         }),
       }),
     ),
-    SellerController.deleteSeller,
+    HrAdminController.deleteHrAdmin,
   );
 
-export const SellerRoutes = router;
+export const HrAdminRoutes = router;

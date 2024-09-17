@@ -12,7 +12,7 @@ export type INotificationFilters = {
   searchTerm?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: boolean;
+  isDelete?: string;
 };
 
 export type INotification = {

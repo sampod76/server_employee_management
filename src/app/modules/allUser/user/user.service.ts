@@ -18,7 +18,7 @@ import { LookupAnyRoleDetailsReusable } from '../../../../helper/lookUpResuable'
 import { ENUM_QUEUE_NAME } from '../../../queue/consent.queus';
 import { emailQueue } from '../../../queue/jobs/emailQueues';
 
-import { Seller } from '../seller/model.seller';
+import { Seller } from '../hrAdmin/model.hrAdmin';
 import { userSearchableFields } from './user.constant';
 import { ITempUser, IUser, IUserFilters } from './user.interface';
 import { TempUser, User } from './user.model';
@@ -163,7 +163,11 @@ const getAllUsersFromDB = async (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { searchTerm, needProperty, multipleRole, ...filtersData } = filters;
 
-  filtersData.isDelete = filtersData.isDelete || false;
+  filtersData.isDelete = filtersData.isDelete
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
 
   const andConditions = [];
 

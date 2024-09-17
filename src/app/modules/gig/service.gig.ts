@@ -14,7 +14,7 @@ import {
   ILookupCollection,
   LookupReusable,
 } from '../../../helper/lookUpResuable';
-import { ISellerUser } from '../allUser/seller/interface.seller';
+import { ISellerUser } from '../allUser/hrAdmin/interface.seller';
 import { ENUM_VERIFY, IUserRef } from '../allUser/typesAndConst';
 import { ICategory } from '../category/interface.category';
 import { GigSearchableFields } from './constants.gig';
@@ -41,7 +41,11 @@ const getAllGigsFromDB = async (
     selectField,
     ...filtersData
   } = filters;
-  filtersData.isDelete = filtersData.isDelete || false;
+  filtersData.isDelete = filtersData.isDelete
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
   filtersData.verify = filtersData.verify
     ? filtersData.verify
     : ENUM_VERIFY.ACCEPT;

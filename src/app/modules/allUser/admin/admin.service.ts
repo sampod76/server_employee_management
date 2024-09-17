@@ -29,7 +29,11 @@ const getAllAdminsFromDB = async (
   req: Request,
 ): Promise<IGenericResponse<IAdmin[] | null>> => {
   const { searchTerm, ...filtersData } = filters;
-  filtersData.isDelete = filtersData.isDelete || false;
+  filtersData.isDelete = filtersData.isDelete
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
   const andConditions = [];
 
   if (searchTerm) {

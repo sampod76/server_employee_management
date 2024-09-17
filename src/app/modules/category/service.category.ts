@@ -39,7 +39,11 @@ const getAllCategoryFromDb = async (
   //****************search and filters start************/
   const { searchTerm, ...filtersData } = filters;
 
-  filtersData.isDelete = filtersData.isDelete || false;
+  filtersData.isDelete = filtersData.isDelete
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
   const andConditions = [];
   if (searchTerm) {
     andConditions.push({

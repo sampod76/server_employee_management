@@ -1,4 +1,4 @@
-export const sellerSearchableFields = [
+export const HrAdminSearchableFields = [
   'email',
   'name.firstName',
   'name.lastName',
@@ -6,7 +6,7 @@ export const sellerSearchableFields = [
   'contactNumber',
 ];
 
-export const sellerFilterableFields = [
+export const HrAdminFilterableFields = [
   'userUniqueId',
   'userId',
   'gender',

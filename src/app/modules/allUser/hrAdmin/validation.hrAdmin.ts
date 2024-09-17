@@ -10,19 +10,19 @@ import { UserValidation } from '../user/user.validation';
 // const combinedBuyerZodData = UserValidation.BuyerZodData.merge(
 //   UserValidation.authData
 // );
-const combinedSellerZodData = UserValidation.buyerZodData.merge(
+const combinedHrAdminZodData = UserValidation.hradminBodyData.merge(
   UserValidation.authData.pick({ email: true }),
 );
 const otherProperties = z.object({
   status: z.enum(STATUS_ARRAY as [I_STATUS]).optional(),
-  isDelete: z.enum([...YN_ARRAY] as [I_YN]).optional(),
+  isDelete: z.boolean().optional(),
 });
 
-const updateSellerZodSchema = z.object({
-  body: combinedSellerZodData.merge(otherProperties).deepPartial(),
+const updateHrAdminZodSchema = z.object({
+  body: combinedHrAdminZodData.merge(otherProperties).deepPartial(),
 });
 
-export const SellerValidation = {
-  updateSellerZodSchema,
-  combinedSellerZodData,
+export const HrAdminValidation = {
+  updateHrAdminZodSchema,
+  combinedHrAdminZodData,
 };

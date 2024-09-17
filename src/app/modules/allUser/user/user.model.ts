@@ -23,7 +23,7 @@ import { ENUM_REDIS_KEY } from '../../../redis/consent.redis';
 import { redisClient } from '../../../redis/redis';
 
 import { EmployeeUser } from '../employee/model.employee';
-import { Seller } from '../seller/model.seller';
+import { HrAdmin } from '../hrAdmin/model.hrAdmin';
 import { IUser, USER_ROLE_ARRAY, UserModel } from './user.interface';
 
 const userSchema = new Schema<IUser, UserModel>(
@@ -180,7 +180,7 @@ userSchema.pre('save', async function (next) {
     if (user.role === ENUM_USER_ROLE.employee) {
       roleUser = await EmployeeUser.findOne({ email: user.email });
     } else if (user.role === ENUM_USER_ROLE.hrAdmin) {
-      roleUser = await Seller.findOne({ email: user.email });
+      roleUser = await HrAdmin.findOne({ email: user.email });
     } else if (user.role === ENUM_USER_ROLE.admin) {
       roleUser = await Admin.findOne({ email: user.email });
     }

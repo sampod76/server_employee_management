@@ -10,7 +10,7 @@ export type IAdminFilters = {
   role?: I_USER_ROLE;
   multipleRole?: I_USER_ROLE[];
   status?: I_STATUS;
-  isDelete?: boolean;
+  isDelete?: string;
   author?: string;
 };
 

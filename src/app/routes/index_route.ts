@@ -13,7 +13,7 @@ import { adminRoutes } from '../modules/allUser/admin/admin.route';
 
 import { AdminSettingRoute } from '../modules/adminSetting/route.adminSetting';
 import { BuyerUserRoutes } from '../modules/allUser/employee/route.employee';
-import { SellerRoutes } from '../modules/allUser/seller/route.seller';
+import { SellerRoutes } from '../modules/allUser/hrAdmin/route.hrAdmin';
 
 import { FriendShipsRoute } from '../modules/friendship/friendship.route';
 import { GigsRoute } from '../modules/gig/route.gig';

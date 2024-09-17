@@ -33,7 +33,11 @@ const getAllEmployeeUsersFromDB = async (
   req: Request,
 ): Promise<IGenericResponse<IEmployeeUser[] | null>> => {
   const { searchTerm, needProperty, ...filtersData } = filters;
-  filtersData.isDelete = filtersData.isDelete || false;
+  filtersData.isDelete = filtersData.isDelete
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
   filtersData.verify = filtersData.verify
     ? filtersData.verify
     : ENUM_VERIFY.ACCEPT;
@@ -53,24 +57,27 @@ const getAllEmployeeUsersFromDB = async (
 
   if (Object.keys(filtersData).length) {
     andConditions.push({
-      $and: Object.entries(filtersData).map(([field, value]) => {
-        let modifyFiled;
-        /* 
+      $and: Object.entries(filtersData).map(
+        //@ts-ignore
+        ([field, value]: [keyof typeof filtersData, string]) => {
+          let modifyFiled;
+          /* 
         if (field === 'userRoleBaseId' || field === 'referRoleBaseId') {
           modifyFiled = { [field]: new Types.ObjectId(value) };
         } else {
           modifyFiled = { [field]: value };
         } 
         */
-        if (field === 'authorRoleBaseId') {
-          modifyFiled = {
-            ['author.roleBaseUserId']: new Types.ObjectId(value),
-          };
-        } else {
-          modifyFiled = { [field]: value };
-        }
-        return modifyFiled;
-      }),
+          if (field === 'authorRoleBaseId') {
+            modifyFiled = {
+              ['author.roleBaseUserId']: new Types.ObjectId(value),
+            };
+          } else {
+            modifyFiled = { [field]: value };
+          }
+          return modifyFiled;
+        },
+      ),
     });
   }
   const { page, limit, skip, sortBy, sortOrder } =

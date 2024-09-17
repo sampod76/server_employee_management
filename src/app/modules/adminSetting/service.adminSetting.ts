@@ -48,7 +48,11 @@ const getAllAdminSettingFromDb = async (
   const { searchTerm, ...filtersData } = filters;
   console.log('🚀 ~ filtersData:', filtersData);
 
-  filtersData.isDelete = filtersData.isDelete || false;
+  filtersData.isDelete = filtersData.isDelete
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
   const andConditions = [];
   if (searchTerm) {
     andConditions.push({

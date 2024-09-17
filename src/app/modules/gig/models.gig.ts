@@ -14,7 +14,7 @@ import {
   LookupReusable,
 } from '../../../helper/lookUpResuable';
 import ApiError from '../../errors/ApiError';
-import { ISellerUser } from '../allUser/seller/interface.seller';
+import { ISellerUser } from '../allUser/hrAdmin/interface.seller';
 import {
   ENUM_VERIFY,
   mongooseIUserRef,
@@ -102,7 +102,7 @@ GigSchema.statics.isGigExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option.isDelete || ENUM_YN.NO,
+          isDelete: option.isDelete || false,
         },
       },
     ];

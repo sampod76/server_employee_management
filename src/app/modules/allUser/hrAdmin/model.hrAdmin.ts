@@ -11,7 +11,6 @@ import {
   ENUM_YN,
   I_YN,
   STATUS_ARRAY,
-  YN_ARRAY,
 } from '../../../../global/enum_constant_type';
 import { mongooseFileSchema } from '../../../../global/schema/global.schema';
 import { LookupReusable } from '../../../../helper/lookUpResuable';
@@ -21,9 +20,9 @@ import {
   mongooseIUserRef,
   VERIFY_ARRAY,
 } from '../typesAndConst';
-import { ISellerUser, SellerUserModel } from './interface.seller';
+import { HrAdminUserModel, IHrAdminUser } from './interface.hrAdmin';
 
-const SellerSchema = new Schema<ISellerUser, SellerUserModel>(
+const HrAdminSchema = new Schema<IHrAdminUser, HrAdminUserModel>(
   {
     userUniqueId: {
       type: String,
@@ -80,9 +79,8 @@ const SellerSchema = new Schema<ISellerUser, SellerUserModel>(
       default: ENUM_STATUS.ACTIVE,
     },
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -93,17 +91,17 @@ const SellerSchema = new Schema<ISellerUser, SellerUserModel>(
   },
 );
 
-SellerSchema.statics.isSellerExistMethod = async function (
+HrAdminSchema.statics.isHrAdminExistMethod = async function (
   id: string,
   option?: Partial<{
     isDelete: I_YN;
     populate: boolean;
     needProperty?: string[];
   }>,
-): Promise<ISellerUser | null> {
+): Promise<IHrAdminUser | null> {
   let user;
   if (!option?.populate) {
-    const result = await Seller.aggregate([
+    const result = await HrAdmin.aggregate([
       {
         $match: {
           _id: new Types.ObjectId(id),
@@ -120,7 +118,7 @@ SellerSchema.statics.isSellerExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option.isDelete || ENUM_YN.NO,
+          isDelete: option.isDelete || false,
         },
       },
     ];
@@ -134,18 +132,18 @@ SellerSchema.statics.isSellerExistMethod = async function (
         },
       ],
     });
-    const result = await Seller.aggregate(pipeline);
+    const result = await HrAdmin.aggregate(pipeline);
     user = result[0];
   }
   return user;
 };
 
-SellerSchema.pre(
+HrAdminSchema.pre(
   'save',
   async function (next: CallbackWithoutResultAndOptionalError) {
     try {
-      // const seller = this;
-      // const existUser = await Seller.findOne({ userName: seller?.userName });
+      // const HrAdmin = this;
+      // const existUser = await HrAdmin.findOne({ userName: HrAdmin?.userName });
       // if (existUser) {
       //   throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'User Name already exist');
       // }
@@ -157,7 +155,7 @@ SellerSchema.pre(
   },
 );
 
-export const Seller = model<ISellerUser, SellerUserModel>(
-  'Seller',
-  SellerSchema,
+export const HrAdmin = model<IHrAdminUser, HrAdminUserModel>(
+  'HrAdmin',
+  HrAdminSchema,
 );

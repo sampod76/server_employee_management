@@ -53,18 +53,18 @@ export const basicZodData = z.object({
   address: z.object({ area: z.string().optional() }).optional(),
 });
 
-export const adminZodData = basicZodData;
+export const adminBodyData = basicZodData;
 
-export const hrAdminZodData = basicZodData.merge(hrAdminZodSchema);
-export const employeeZodData = basicZodData.merge(employeeZodSchema);
+export const hradminBodyData = basicZodData.merge(hrAdminZodSchema);
+export const employeeBodyData = basicZodData.merge(employeeZodSchema);
 
 const createUserZodSchema = z
   .object({
     body: z.object({
       authData: authData,
-      admin: adminZodData.optional(),
-      hrAdmin: hrAdminZodData.optional(),
-      employee: employeeZodData.optional(),
+      admin: adminBodyData.optional(),
+      hrAdmin: hradminBodyData.optional(),
+      employee: employeeBodyData.optional(),
     }),
   })
   .refine(
@@ -107,7 +107,7 @@ export const UserValidation = {
   updateUserZodSchema,
   tempUser,
   authData,
-  adminZodData,
-  hrAdminZodData,
-  employeeZodData,
+  adminBodyData,
+  hradminBodyData,
+  employeeBodyData,
 };

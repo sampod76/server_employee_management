@@ -20,7 +20,7 @@ export type IUserFilters = {
   role?: I_USER_ROLE;
   multipleRole?: I_USER_ROLE[];
   status?: I_STATUS;
-  isDelete?: boolean;
+  isDelete?: string | boolean;
   contactNumber?: string;
   needProperty?: string;
   socketStatus?: I_YN;
@@ -36,7 +36,7 @@ type TempUserBody = {
     otp: string;
   };
 };
-export type IUser = z.infer<typeof UserValidation.authData> & z.infer<typeof UserValidation.> & {
+export type IUser = z.infer<typeof UserValidation.authData> & {
   _id: string;
   userUniqueId: string;
   //--user give
