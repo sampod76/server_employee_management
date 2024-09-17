@@ -13,18 +13,18 @@ const router = express.Router();
 router
   .route('/')
   .get(
-    authMiddleware(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    authMiddleware(ENUM_USER_ROLE.superAdmin, ENUM_USER_ROLE.admin),
     AdminController.getAllAdmins,
   );
 
 router
   .route('/:id')
   .get(
-    authMiddleware(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    authMiddleware(ENUM_USER_ROLE.superAdmin, ENUM_USER_ROLE.admin),
     AdminController.getSingleAdmin,
   )
   .patch(
-    authMiddleware(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    authMiddleware(ENUM_USER_ROLE.superAdmin, ENUM_USER_ROLE.admin),
     // uploadAwsS3Bucket.fields([{ name: 'profileImage', maxCount: 1 }]),
     uploadAwsS3Bucket.single('profileImage'),
     parseBodyData({}),
@@ -32,7 +32,7 @@ router
     AdminController.updateAdmin,
   )
   .delete(
-    authMiddleware(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    authMiddleware(ENUM_USER_ROLE.superAdmin, ENUM_USER_ROLE.admin),
     validateRequestZod(
       z.object({
         body: z.object({

@@ -25,7 +25,6 @@ import { ENUM_REDIS_KEY } from '../../../redis/consent.redis';
 import { redisClient } from '../../../redis/redis';
 
 import { Seller } from '../seller/model.seller';
-import { mongooseIUserRef } from '../typesAndConst';
 import { IUser, USER_ROLE_ARRAY, UserModel } from './user.interface';
 
 const userSchema = new Schema<IUser, UserModel>(
@@ -38,8 +37,7 @@ const userSchema = new Schema<IUser, UserModel>(
       type: String,
       // required: true,
     },
-    buyer: mongooseIUserRef,
-    seller: mongooseIUserRef,
+
     email: {
       type: String,
       required: true,
@@ -52,7 +50,7 @@ const userSchema = new Schema<IUser, UserModel>(
       type: String,
       required: true,
       enum: USER_ROLE_ARRAY,
-      default: ENUM_USER_ROLE.BUYER,
+      default: ENUM_USER_ROLE.employee,
     },
     password: {
       type: String,
@@ -79,7 +77,7 @@ const userSchema = new Schema<IUser, UserModel>(
       type: String,
       enum: SOCKET_STATUS_ARRAY,
       default: ENUM_SOCKET_STATUS.OFFLINE,
-    },
+    }, // set yourAreOnlineOffline function
     location: mongooseLocationSchema,
     status: {
       type: String,
@@ -181,11 +179,11 @@ userSchema.pre('save', async function (next) {
     }
       */
     let roleUser;
-    if (user.role === ENUM_USER_ROLE.BUYER) {
+    if (user.role === ENUM_USER_ROLE.employee) {
       roleUser = await BuyerUser.findOne({ email: user.email });
-    } else if (user.role === ENUM_USER_ROLE.SELLER) {
+    } else if (user.role === ENUM_USER_ROLE.hrAdmin) {
       roleUser = await Seller.findOne({ email: user.email });
-    } else if (user.role === ENUM_USER_ROLE.ADMIN) {
+    } else if (user.role === ENUM_USER_ROLE.admin) {
       roleUser = await Admin.findOne({ email: user.email });
     }
 
@@ -261,7 +259,7 @@ const tempUserSchema = new Schema(
       type: String,
       required: true,
       enum: USER_ROLE_ARRAY,
-      default: ENUM_USER_ROLE.BUYER,
+      default: ENUM_USER_ROLE.employee,
     },
     isEmailVerify: {
       type: String,

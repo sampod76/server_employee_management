@@ -107,8 +107,8 @@ const getAllChatMessagesFromDB = async (
     if (
       check.receiver.userId.toString() !== requestUser?.userId &&
       check.sender.userId.toString() !== requestUser?.userId &&
-      requestUser.role !== ENUM_USER_ROLE.ADMIN &&
-      requestUser.role !== ENUM_USER_ROLE.SUPER_ADMIN
+      requestUser.role !== ENUM_USER_ROLE.admin &&
+      requestUser.role !== ENUM_USER_ROLE.superAdmin
     ) {
       throw new ApiError(httpStatus.FORBIDDEN, 'forbidden');
     }
@@ -150,8 +150,8 @@ const updateChatMessageFromDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'ChatMessage not found');
   }
   if (
-    user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
-    user?.role !== ENUM_USER_ROLE.ADMIN &&
+    user?.role !== ENUM_USER_ROLE.superAdmin &&
+    user?.role !== ENUM_USER_ROLE.admin &&
     isExist?.sender?.userId?.toString() !== user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
@@ -159,8 +159,8 @@ const updateChatMessageFromDB = async (
 
   const { ...ChatMessageData } = data;
   if (
-    user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
-    user?.role !== ENUM_USER_ROLE.ADMIN
+    user?.role !== ENUM_USER_ROLE.superAdmin &&
+    user?.role !== ENUM_USER_ROLE.admin
   ) {
     delete (ChatMessageData as Partial<IChatMessage>)['isDelete']; // remove it because , any user update time to not update this field , when user apply delete route to modify this field
   }
@@ -191,8 +191,8 @@ const getSingleChatMessageFromDB = async (
     if (
       user.receiver.userId !== requestUser?.userId &&
       user.sender.userId !== requestUser?.userId &&
-      requestUser.role !== ENUM_USER_ROLE.ADMIN &&
-      requestUser.role !== ENUM_USER_ROLE.SUPER_ADMIN
+      requestUser.role !== ENUM_USER_ROLE.admin &&
+      requestUser.role !== ENUM_USER_ROLE.superAdmin
     ) {
       throw new ApiError(httpStatus.FORBIDDEN, 'forbidden');
     }
@@ -217,8 +217,8 @@ const deleteChatMessageFromDB = async (
   }
 
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     isExist[0]?.sender?.userId?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');

@@ -118,8 +118,8 @@ const deleteUserLoginHistory = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'UserLoginHistory not found !');
   }
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     isExist?.userId?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');

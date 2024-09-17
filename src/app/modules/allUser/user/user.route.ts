@@ -19,7 +19,7 @@ router.route('/isOnline/:userid').get(UserController.isOnline);
 router
   .route('/author-to-create') // create user by this ruler
   .post(
-    authMiddleware(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    authMiddleware(ENUM_USER_ROLE.superAdmin, ENUM_USER_ROLE.admin),
     // uploadAwsS3Bucket.single('profileImage'),
     // parseBodyData({}),
     validateRequestZod(UserValidation.createUserZodSchema),
@@ -38,20 +38,20 @@ router
   .get(UserController.getSingleUser)
   .patch(
     authMiddleware(
-      ENUM_USER_ROLE.SUPER_ADMIN,
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.BUYER,
-      ENUM_USER_ROLE.SELLER,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.hrAdmin,
     ),
     validateRequestZod(UserValidation.updateUserZodSchema),
     UserController.updateUser,
   )
   .delete(
     authMiddleware(
-      ENUM_USER_ROLE.SUPER_ADMIN,
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.BUYER,
-      ENUM_USER_ROLE.SELLER,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.hrAdmin,
     ),
     validateRequestZod(
       z.object({

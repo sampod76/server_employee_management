@@ -18,9 +18,9 @@ router
   .get(BuyerUserController.getSingleBuyerUser)
   .patch(
     authMiddleware(
-      ENUM_USER_ROLE.SUPER_ADMIN,
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.BUYER,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.employee,
     ),
     // uploadAwsS3Bucket.fields([{ name: 'profileImage', maxCount: 1 }]),
     uploadAwsS3Bucket.single('profileImage'),
@@ -30,9 +30,9 @@ router
   )
   .delete(
     authMiddleware(
-      ENUM_USER_ROLE.SUPER_ADMIN,
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.BUYER,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.employee,
     ),
     validateRequestZod(
       z.object({

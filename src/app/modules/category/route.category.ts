@@ -15,7 +15,7 @@ router
   // This route is open
   .get(CategoryController.getAllCategory)
   .post(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
     uploadAwsS3Bucket.single('image'),
     parseBodyData({}),
     validateRequestZod(CategoryValidation.createCategoryZodSchema),
@@ -28,7 +28,7 @@ router
   // This route is open
   .get(CategoryController.getSingleCategory)
   .patch(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
 
     uploadAwsS3Bucket.single('image'),
     validateRequestZod(CategoryValidation.updateCategoryZodSchema),
@@ -36,7 +36,7 @@ router
     CategoryController.updateCategory,
   )
   .delete(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
     CategoryController.deleteCategory,
   );
 

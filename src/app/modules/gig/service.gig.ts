@@ -203,7 +203,7 @@ const getAllGigsFromDB = async (
                 $expr: {
                   $and: [
                     { $eq: ['$gigId', '$$id'] },
-                    { $eq: ['$reviewer.role', ENUM_USER_ROLE.BUYER] },
+                    { $eq: ['$reviewer.role', ENUM_USER_ROLE.employee] },
                     { $eq: ['$isDelete', ENUM_YN.NO] },
                     // { $ne: ['$author.roleBaseUserId', '$$hostUserId'] },
                   ],
@@ -296,8 +296,8 @@ const updateGigFromDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Gig not found');
   }
   if (
-    user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
-    user?.role !== ENUM_USER_ROLE.ADMIN &&
+    user?.role !== ENUM_USER_ROLE.superAdmin &&
+    user?.role !== ENUM_USER_ROLE.admin &&
     isExist?.seller?.userId?.toString() !== user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
@@ -305,8 +305,8 @@ const updateGigFromDB = async (
 
   const { packages, ...GigData } = data;
   if (
-    user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
-    user?.role !== ENUM_USER_ROLE.ADMIN
+    user?.role !== ENUM_USER_ROLE.superAdmin &&
+    user?.role !== ENUM_USER_ROLE.admin
   ) {
     delete (GigData as Partial<IGig>)['isDelete']; // remove it because , any user update time to not update this field , when user apply delete route to modify this field
   }
@@ -372,8 +372,8 @@ const deleteGigFromDB = async (
   }
 
   if (
-    user?.role !== ENUM_USER_ROLE.ADMIN &&
-    user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    user?.role !== ENUM_USER_ROLE.admin &&
+    user?.role !== ENUM_USER_ROLE.superAdmin &&
     isExist[0]?.seller?.userId?.toString() !== user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
@@ -383,8 +383,8 @@ const deleteGigFromDB = async (
 
   if (
     query.delete == ENUM_YN.YES && // this is permanently delete but store trash collection
-    (user?.role == ENUM_USER_ROLE.ADMIN ||
-      user?.role == ENUM_USER_ROLE.SUPER_ADMIN)
+    (user?.role == ENUM_USER_ROLE.admin ||
+      user?.role == ENUM_USER_ROLE.superAdmin)
   ) {
     // data = await Gig.findOneAndDelete({ _id: id });
     data = null;

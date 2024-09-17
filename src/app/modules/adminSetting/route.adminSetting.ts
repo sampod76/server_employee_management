@@ -15,7 +15,7 @@ router
   // This route is open
   .get(AdminSettingController.getAllAdminSetting)
   .post(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
 
     uploadAwsS3Bucket.single('image'),
     parseBodyData({}),
@@ -28,7 +28,7 @@ router
   // This route is open
   .get(AdminSettingController.getSingleAdminSetting)
   .patch(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
 
     uploadAwsS3Bucket.single('image'),
     parseBodyData({}),
@@ -36,7 +36,7 @@ router
     AdminSettingController.updateAdminSetting,
   )
   .delete(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
     AdminSettingController.deleteAdminSetting,
   );
 

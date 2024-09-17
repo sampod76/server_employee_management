@@ -172,8 +172,8 @@ const getAllFriendShipsFromDB = async (
     if (
       check[0].receiver.userId.toString() !== req?.user?.userId &&
       check[0].sender.userId.toString() !== req?.user?.userId &&
-      req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-      req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN
+      req?.user?.role !== ENUM_USER_ROLE.admin &&
+      req?.user?.role !== ENUM_USER_ROLE.superAdmin
     ) {
       throw new ApiError(httpStatus.FORBIDDEN, 'forbidden access data');
     }
@@ -263,8 +263,8 @@ const updateFriendShipFromDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'FriendShip not found');
   }
   if (
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
     isExist?.sender?.userId?.toString() !== req?.user?.userId &&
     isExist?.receiver?.userId?.toString() !== req?.user?.userId
   ) {
@@ -273,8 +273,8 @@ const updateFriendShipFromDB = async (
 
   const { block, ...FriendShipData } = data;
   if (
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
+    req?.user?.role !== ENUM_USER_ROLE.admin
   ) {
     delete (FriendShipData as Partial<IFriendShip>)['isDelete']; // remove it because , any user update time to not update this field , when user apply delete route to modify this field
     if (isExist?.sender?.userId?.toString() !== req?.user?.userId) {
@@ -310,8 +310,8 @@ const updateFriendShipBlockFromDb = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'FriendShip not found');
   }
   if (
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
     isExist?.sender?.userId?.toString() !== req?.user?.userId &&
     isExist?.receiver?.userId?.toString() !== req?.user?.userId
   ) {
@@ -323,8 +323,8 @@ const updateFriendShipBlockFromDb = async (
   if (block?.isBlock === ENUM_YN.NO) {
     if (
       isExist?.block?.blocker?.userId?.toString() !== req?.user?.userId &&
-      req.user?.role !== ENUM_USER_ROLE.ADMIN &&
-      req.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN
+      req.user?.role !== ENUM_USER_ROLE.admin &&
+      req.user?.role !== ENUM_USER_ROLE.superAdmin
     ) {
       throw new ApiError(403, 'forbidden access');
     }
@@ -402,8 +402,8 @@ const deleteFriendShipFromDB = async (
   }
 
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     isExist[0]?.sender?.userId?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
@@ -413,8 +413,8 @@ const deleteFriendShipFromDB = async (
 
   if (
     query.delete == ENUM_YN.YES && // this is permanently delete but store trash collection
-    (req?.user?.role == ENUM_USER_ROLE.ADMIN ||
-      req?.user?.role == ENUM_USER_ROLE.SUPER_ADMIN)
+    (req?.user?.role == ENUM_USER_ROLE.admin ||
+      req?.user?.role == ENUM_USER_ROLE.superAdmin)
   ) {
     data = await FriendShip.findOneAndDelete({ _id: id });
   } else {

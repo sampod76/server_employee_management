@@ -1,7 +1,11 @@
 import { z } from 'zod';
 
 import httpStatus from 'http-status';
-import { I_STATUS, STATUS_ARRAY } from '../../../../global/enum_constant_type';
+import {
+  I_STATUS,
+  STATUS_ARRAY,
+  YN_ARRAY,
+} from '../../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { zodFileAfterUploadSchema } from '../../../../global/schema/global.schema';
 import ApiError from '../../../errors/ApiError';
@@ -10,7 +14,7 @@ import { I_USER_ROLE, USER_ROLE_ARRAY } from './user.interface';
 import { buyerZodSchema } from './zod/buyer.zod';
 import { sellerZodSchema } from './zod/seller.zod';
 
-const authData = z.object({
+export const authData = z.object({
   email: z
     .string({
       required_error: 'Email is required',
@@ -22,7 +26,7 @@ const authData = z.object({
   password: z.string({
     required_error: 'Password is required.',
   }),
-  userName: z.string({ required_error: 'User name is required' }),
+  userName: z.string({ required_error: 'User name is required' }).optional(),
   tempUser: z.object({
     tempUserId: z.string({ required_error: 'Temp user id is required' }),
     otp: z.union([
@@ -73,7 +77,7 @@ const createUserZodSchema = z
       const role = bodyData.body.authData.role;
       if (role in bodyData.body) {
         if (
-          role === ENUM_USER_ROLE.SELLER &&
+          role === ENUM_USER_ROLE.hrAdmin &&
           !bodyData.body.authData.userName
         ) {
           throw new ApiError(
@@ -98,6 +102,7 @@ const createUserZodSchema = z
 //
 const updateUserZodSchema = z.object({
   body: z.object({
+    isDelete: z.boolean(),
     status: z.enum(STATUS_ARRAY as [I_STATUS, ...I_STATUS[]]).optional(),
   }),
 });

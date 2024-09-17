@@ -12,20 +12,20 @@ const router = express.Router();
 router.get(
   '/',
   authMiddleware(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.SELLER,
-    ENUM_USER_ROLE.BUYER,
+    ENUM_USER_ROLE.admin,
+    ENUM_USER_ROLE.superAdmin,
+    ENUM_USER_ROLE.hrAdmin,
+    ENUM_USER_ROLE.employee,
   ),
   NotificationController.getAllNotifications,
 );
 router.post(
   '/create-notification',
   authMiddleware(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.SELLER,
-    ENUM_USER_ROLE.BUYER,
+    ENUM_USER_ROLE.admin,
+    ENUM_USER_ROLE.superAdmin,
+    ENUM_USER_ROLE.hrAdmin,
+    ENUM_USER_ROLE.employee,
   ),
 
   uploadAwsS3Bucket.single('image'),
@@ -37,10 +37,10 @@ router
   .get(NotificationController.getSingleNotification)
   .patch(
     authMiddleware(
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SUPER_ADMIN,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.BUYER,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
     ),
 
     uploadAwsS3Bucket.single('image'),
@@ -49,10 +49,10 @@ router
   )
   .delete(
     authMiddleware(
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SUPER_ADMIN,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.BUYER,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
     ),
     NotificationController.deleteNotification,
   );

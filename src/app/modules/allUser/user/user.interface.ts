@@ -1,24 +1,19 @@
 import { Model } from 'mongoose';
+import { z } from 'zod';
 import {
   I_SOCKET_STATUS,
   I_STATUS,
   I_YN,
 } from '../../../../global/enum_constant_type';
-import { ILocation, IUserRef } from '../typesAndConst';
+import { ENUM_USER_ROLE } from '../../../../global/enums/users';
+import { ILocation } from '../typesAndConst';
+import { authData } from './user.validation';
 
 export type IGender = 'male' | 'female' | 'other';
-export type IBloodGroups =
-  | 'A+'
-  | 'A-'
-  | 'B+'
-  | 'B-'
-  | 'AB+'
-  | 'AB-'
-  | 'O+'
-  | 'O-';
-
-export const USER_ROLE_ARRAY = ['superAdmin', 'admin', 'buyer', 'seller'];
-export type I_USER_ROLE = 'admin' | 'superAdmin' | 'buyer' | 'seller';
+//
+export const USER_ROLE_ARRAY = Object.values(ENUM_USER_ROLE);
+export type I_USER_ROLE = keyof typeof ENUM_USER_ROLE;
+//
 export type IUserFilters = {
   searchTerm?: string;
   delete?: I_YN;
@@ -41,18 +36,10 @@ type TempUserBody = {
     otp: string;
   };
 };
-export type IUser = {
+export type IUser = z.infer<typeof authData> & {
   _id: string;
   userUniqueId: string;
-  userName?: string;
   //--user give
-  email: string;
-  role: I_USER_ROLE;
-  password: string;
-  //
-  buyer?: IUserRef;
-  seller?: IUserRef;
-  //
   authentication?: {
     otp: number;
     jwtToken?: string;
@@ -67,7 +54,7 @@ export type IUser = {
   };
   socketStatus: I_SOCKET_STATUS;
   isDelete: I_YN;
-} & TempUserBody;
+};
 
 export type ITempUser = {
   email: string;

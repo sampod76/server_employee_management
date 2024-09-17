@@ -305,7 +305,7 @@ const forgotPass = async (payload: { email: string }, req: Request) => {
   };
 
   // let profile = null;
-  // if (user.role === ENUM_USER_ROLE.ADMIN) {
+  // if (user.role === ENUM_USER_ROLE.admin) {
   //   profile = await Admin.findById(user.id);
   // } else if (user.role === ENUM_USER_ROLE.MODERATOR) {
   //   profile = await Moderator.findById(user.id);

@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-import { Types } from 'mongoose';
 import {
   I_STATUS,
   I_YN,
@@ -18,7 +17,7 @@ const friendshipUpdateBodyDate = z.object({
   // lastMessage: z.string().or(z.instanceof(Types.ObjectId)),
   requestAccept: z.enum(YN_ARRAY as [I_YN]).optional(),
   status: z.enum(STATUS_ARRAY as [I_STATUS, ...I_STATUS[]]).optional(),
-  isDelete: z.enum([...YN_ARRAY] as [I_YN, ...I_YN[]]).optional(),
+  isDelete: z.boolean(),
 });
 
 const friendshipBlockZodData = z.object({

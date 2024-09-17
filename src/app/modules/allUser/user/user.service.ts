@@ -70,15 +70,15 @@ const createUser = async (
     if (Array.isArray(createdUser) && !createdUser?.length) {
       throw new ApiError(400, 'Failed to create user');
     }
-    if (authData?.role === ENUM_USER_ROLE.ADMIN) {
+    if (authData?.role === ENUM_USER_ROLE.admin) {
       roleCreate = await Admin.create([{ ...roleData, ...authData }], {
         session,
       });
-    } else if (authData?.role === ENUM_USER_ROLE.BUYER) {
+    } else if (authData?.role === ENUM_USER_ROLE.employee) {
       roleCreate = await BuyerUser.create([{ ...roleData, ...authData }], {
         session,
       });
-    } else if (authData?.role === ENUM_USER_ROLE.SELLER) {
+    } else if (authData?.role === ENUM_USER_ROLE.hrAdmin) {
       roleCreate = await Seller.create([{ ...roleData, ...authData }], {
         session,
       });
@@ -254,16 +254,16 @@ const updateUserFromDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     isExist?._id?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'Unauthorize user');
   }
 
   if (
-    (data?.role === ENUM_USER_ROLE.SUPER_ADMIN ||
-      data?.role === ENUM_USER_ROLE.ADMIN) &&
+    (data?.role === ENUM_USER_ROLE.superAdmin ||
+      data?.role === ENUM_USER_ROLE.admin) &&
     isExist?._id?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(
@@ -283,19 +283,19 @@ const updateUserFromDB = async (
     });
     if (data.status) {
       let roleUser;
-      if (isExist.role === ENUM_USER_ROLE.BUYER) {
+      if (isExist.role === ENUM_USER_ROLE.employee) {
         roleUser = await BuyerUser.findOneAndUpdate(
           { email: isExist.email },
           data,
           { runValidators: true, session },
         );
-      } else if (isExist.role === ENUM_USER_ROLE.SELLER) {
+      } else if (isExist.role === ENUM_USER_ROLE.hrAdmin) {
         roleUser = await Seller.findOneAndUpdate(
           { email: isExist.email },
           data,
           { runValidators: true, session },
         );
-      } else if (isExist.role === ENUM_USER_ROLE.ADMIN) {
+      } else if (isExist.role === ENUM_USER_ROLE.admin) {
         roleUser = await Admin.findOneAndUpdate(
           { email: isExist.email },
           data,
@@ -353,8 +353,8 @@ const deleteUserFromDB = async (
   }
 
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     isExist?._id?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
@@ -362,8 +362,8 @@ const deleteUserFromDB = async (
 
   //---- if user when delete you account then give his password
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin
   ) {
     if (
       isExist.password &&
@@ -387,21 +387,21 @@ const deleteUserFromDB = async (
       throw new ApiError(400, 'Felid to delete user');
     }
     let roleUser;
-    if (data?.role === ENUM_USER_ROLE.BUYER) {
+    if (data?.role === ENUM_USER_ROLE.employee) {
       roleUser = await BuyerUser.findOneAndUpdate(
         { email: data?.email },
         { isDelete: ENUM_YN.YES },
         { runValidators: true, new: true },
       );
-    } else if (data?.role === ENUM_USER_ROLE.SELLER) {
+    } else if (data?.role === ENUM_USER_ROLE.hrAdmin) {
       roleUser = await Seller.findOneAndUpdate(
         { email: data?.email },
         { isDelete: ENUM_YN.YES },
         { runValidators: true, new: true },
       );
     } else if (
-      req.user.role === ENUM_USER_ROLE.SUPER_ADMIN &&
-      data?.role === ENUM_USER_ROLE.ADMIN
+      req.user.role === ENUM_USER_ROLE.superAdmin &&
+      data?.role === ENUM_USER_ROLE.admin
     ) {
       roleUser = await Admin.findOneAndUpdate(
         { email: data?.email },

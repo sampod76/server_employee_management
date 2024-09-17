@@ -150,8 +150,8 @@ const updateAdminFromDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Admin not found');
   }
   if (
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
     isExist?._id?.toString() !== req?.user?.roleBaseUserId
   ) {
     throw new ApiError(403, 'forbidden access');
@@ -159,8 +159,8 @@ const updateAdminFromDB = async (
 
   const { address, ...AdminData } = data;
   if (
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
+    req?.user?.role !== ENUM_USER_ROLE.admin
   ) {
     delete (AdminData as Partial<IAdmin>)['isDelete']; // remove it because , any user update time to not update this field , when user apply delete route to modify this field
     delete (AdminData as Partial<IAdmin>)['email'];
@@ -255,8 +255,8 @@ const deleteAdminFromDB = async (
   }
 
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     isExist[0]?._id?.toString() !== req?.user?.roleBaseUserId
   ) {
     throw new ApiError(403, 'forbidden access');
@@ -264,8 +264,8 @@ const deleteAdminFromDB = async (
 
   //---- if user when delete you account then give his password
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin
   ) {
     if (
       isExist[0].password &&
@@ -279,8 +279,8 @@ const deleteAdminFromDB = async (
 
   if (
     query.delete == ENUM_YN.YES && // this is permanently delete but store trash collection
-    (req?.user?.role == ENUM_USER_ROLE.ADMIN ||
-      req?.user?.role == ENUM_USER_ROLE.SUPER_ADMIN)
+    (req?.user?.role == ENUM_USER_ROLE.admin ||
+      req?.user?.role == ENUM_USER_ROLE.superAdmin)
   ) {
     data = await Admin.findOneAndDelete({ _id: id });
   } else {

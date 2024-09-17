@@ -26,14 +26,14 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
 
   //! ------ validate admin or super admin -----if create admin or supper admin create then must be send token
   const user = req?.user;
-  if (authData.role === ENUM_USER_ROLE.ADMIN) {
+  if (authData.role === ENUM_USER_ROLE.admin) {
     if (!user) {
       throw new ApiError(403, 'forbidden access');
     }
 
     if (
-      authData.role === ENUM_USER_ROLE.ADMIN &&
-      user?.role !== ENUM_USER_ROLE.SUPER_ADMIN
+      authData.role === ENUM_USER_ROLE.admin &&
+      user?.role !== ENUM_USER_ROLE.superAdmin
     ) {
       throw new ApiError(403, 'forbidden access');
     }
@@ -58,7 +58,7 @@ const createUserTempUser = catchAsync(async (req: Request, res: Response) => {
   const data = req.body;
   let user;
   //! ------ validate admin or super admin -----if create admin or supper admin create then must be send token
-  if (data.role === ENUM_USER_ROLE.ADMIN) {
+  if (data.role === ENUM_USER_ROLE.admin) {
     try {
       user =
         req.headers.authorization &&
@@ -72,8 +72,8 @@ const createUserTempUser = catchAsync(async (req: Request, res: Response) => {
     if (!user) {
       throw new ApiError(403, 'Unauthorized');
     } else if (
-      user?.role !== ENUM_USER_ROLE.ADMIN &&
-      user?.role !== ENUM_USER_ROLE.SUPER_ADMIN
+      user?.role !== ENUM_USER_ROLE.admin &&
+      user?.role !== ENUM_USER_ROLE.superAdmin
     ) {
       throw new ApiError(403, 'Unauthorized');
     }

@@ -143,7 +143,7 @@ GigSchema.statics.isGigExistMethod = async function (
                   $expr: {
                     $and: [
                       { $eq: ['$gigId', '$$id'] },
-                      { $eq: ['$reviewer.role', ENUM_USER_ROLE.BUYER] },
+                      { $eq: ['$reviewer.role', ENUM_USER_ROLE.employee] },
                       { $eq: ['$isDelete', ENUM_YN.NO] },
                       // { $ne: ['$author.roleBaseUserId', '$$hostUserId'] },
                     ],

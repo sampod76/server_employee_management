@@ -1,12 +1,12 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
 import { ENUM_USER_ROLE } from '../../../global/enums/users';
 import authMiddleware from '../../middlewares/authMiddleware';
 
+import parseBodyData from '../../middlewares/utils/parseBodyData';
+import validateRequestZod from '../../middlewares/validateRequestZod';
 import { uploadAwsS3Bucket } from '../aws/utls.aws';
 import { AllTextFieldController } from './constroller.AllTextField';
 import { AllTextFieldValidation } from './validation.AllTextField';
-import parseBodyData from '../../middlewares/utils/parseBodyData';
-import validateRequestZod from '../../middlewares/validateRequestZod';
 
 const router = express.Router();
 
@@ -15,7 +15,7 @@ router
   // This route is open
   .get(AllTextFieldController.getAllAllTextField)
   .post(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
 
     uploadAwsS3Bucket.single('image'),
     parseBodyData({}),
@@ -28,7 +28,7 @@ router
   // This route is open
   .get(AllTextFieldController.getSingleAllTextField)
   .patch(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
 
     uploadAwsS3Bucket.single('image'),
     parseBodyData({}),
@@ -36,7 +36,7 @@ router
     AllTextFieldController.updateAllTextField,
   )
   .delete(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
     AllTextFieldController.deleteAllTextField,
   );
 
