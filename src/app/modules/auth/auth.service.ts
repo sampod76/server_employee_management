@@ -39,6 +39,7 @@ const loginUser = async (
     { email },
     { populate: true, password: true },
   );
+  console.log('🚀 ~ isUserExist:', isUserExist);
   if (!isUserExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist');
   } else if (isUserExist.isDelete) {

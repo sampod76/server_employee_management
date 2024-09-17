@@ -7,7 +7,6 @@ import config from '../../../../config';
 import {
   ENUM_SOCKET_STATUS,
   ENUM_STATUS,
-  ENUM_YN,
   SOCKET_STATUS_ARRAY,
   STATUS_ARRAY,
 } from '../../../../global/enum_constant_type';
@@ -112,7 +111,7 @@ userSchema.statics.isUserFindMethod = async function (
   if (option?.isDelete) {
     match.isDelete = option.isDelete;
   } else {
-    match.isDelete = ENUM_YN.NO;
+    match.isDelete = false;
   }
   const project: any = { __v: 0, password: 0 };
   if (option?.password) {

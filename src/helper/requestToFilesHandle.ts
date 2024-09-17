@@ -37,6 +37,7 @@ import { bytesToKbAndMb } from '../utils/bytesTokbAndMb';
 
 export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
   console.log(req.files, 'req.files');
+  console.log(req.file, 'req.files');
   try {
     const file = req.file as IMulterUploadFile;
     // const d = new makeImage(file);
@@ -61,6 +62,9 @@ export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
         }
         const imgbb = await ImgbbUploader.uploadSingleFileImgbb(file);
         bodyData[file.fieldname] = imgbb;
+        // const cloudinary = await FileUploadHelper.uploadToCloudinary(file);
+        // bodyData[file.fieldname] = cloudinary;
+
         /* // if you are manual handling your response . Remember you are change imgbbUploader response
         bodyData[file.fieldname] = {
           mimetype: file.mimetype,
@@ -129,6 +133,9 @@ export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
         });
         if (images.length) {
           images = await ImgbbUploader.uploadMultipleFileImgbb(images);
+          // images = (await FileUploadHelper.uploadToCloudinaryMultiple(
+          //   images,
+          // )) as any;
         }
         // if(videos.length){
         //   videos = await videoUploder.uploadMultipleFileImgbb(videos);

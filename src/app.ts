@@ -18,6 +18,7 @@ import file_route from './app/routes/file_route';
 import config from './config';
 import helmetConfig from './config/helmetConfig';
 import { TestFile } from './test';
+import { rateLimiterRedisMiddleware } from './utils/DbUtlis/RateLimiterInRedis';
 const app: Application = express();
 
 app.use(helmetConfig);
@@ -65,7 +66,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 //!-- - some time rate limited is problem my docker compose problem don't use this -->
-// app.use(rateLimiterRedisMiddleware);
+app.use(rateLimiterRedisMiddleware);
 // app.use(rateLimiterMiddlewareMongodb);
 // app.use(compression());
 app.use(compression(compressionOptions));
@@ -93,7 +94,8 @@ app.set('view engine', 'ejs');
 
 app.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.render('serverCheck.ejs');
+    // res.render('serverCheck.ejs');
+    res.send({ message: 'server is running....' + process.pid });
   } catch (error) {
     next(error);
   }
