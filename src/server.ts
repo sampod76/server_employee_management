@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 import app from './app';
 
 // import { errorLogger, logger } from './app/share/logger';
-import { createAdapter } from '@socket.io/redis-streams-adapter';
+import { createAdapter } from '@socket.io/redis-adapter';
 import 'colors';
 import { NextFunction } from 'express';
 import http, { Server } from 'http';
-import { Cluster } from 'ioredis';
+import Redis from 'ioredis';
 import { Server as SocketServer } from 'socket.io';
 import { kafkaInit } from './app/kafka/kafka';
 import { RedisRunFunction } from './app/redis/service.redis';
@@ -30,6 +30,9 @@ let server: Server; // এটা তারা বুঝায় সার্ভ
 //
 // const httpServer = http.createServer(app);
 const httpServer = http.createServer(); // ! are you use multiple connections 1. server is run 5000 port -> socket is run 5001 then use
+// Create Redis clients using ioredis
+const pubClient = new Redis(config.redis.url as string);
+const subClient = pubClient.duplicate();
 const io = new SocketServer(httpServer, {
   pingTimeout: 60000,
   cors: {
@@ -45,15 +48,16 @@ const io = new SocketServer(httpServer, {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   },
+  adapter: createAdapter(pubClient, subClient),
 });
-const redisClient = new Cluster([
-  { host: 'localhost', port: 7001 },
-  { host: 'localhost', port: 7002 },
-  { host: 'localhost', port: 7003 },
-  { host: 'localhost', port: 7004 },
-  { host: 'localhost', port: 7005 },
-  { host: 'localhost', port: 7006 },
-]);
+// const redisClient = new Cluster([
+//   { host: 'localhost', port: 7001 },
+//   { host: 'localhost', port: 7002 },
+//   { host: 'localhost', port: 7003 },
+//   { host: 'localhost', port: 7004 },
+//   { host: 'localhost', port: 7005 },
+//   { host: 'localhost', port: 7006 },
+// ]);
 
 io.engine.use((req: Request, res: Response, next: NextFunction) => {
   try {
@@ -65,7 +69,7 @@ io.engine.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 //
-io.adapter(createAdapter(redisClient));
+// io.adapter(createAdapter(redisClient));
 //
 
 async function connection() {
@@ -108,9 +112,9 @@ async function connection() {
     //!-------- socket connection---------
     await socketConnection(io);
     //!-----kafka--init----
-    await kafkaInit();
+    // await kafkaInit();
     //!-------- backup-------
-    RunBackup();
+    // RunBackup();
   } catch (error) {
     config.env === 'production'
       ? errorLogger.error(`Failed to connect database: ${error}`.red.bold)

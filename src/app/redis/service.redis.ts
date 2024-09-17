@@ -6,7 +6,7 @@ export const findAllSocketsIdsFromUserId = async (userId: string) => {
   const getUsers: string[] = [];
 
   do {
-    const [newCursor, keys] = await redisClient.scan(
+    const [newCursor, keys] = await redisClient().scan(
       cursor,
       'MATCH',
       ENUM_REDIS_KEY.socket_user + userId + '*',
@@ -29,7 +29,7 @@ export const findAllKeysScan = async (key: string) => {
   const getData: string[] = [];
 
   do {
-    const [newCursor, keys] = await redisClient.scan(
+    const [newCursor, keys] = await redisClient().scan(
       cursor,
       'MATCH',
       key + '*',
@@ -51,7 +51,7 @@ export const findDataByUserIdAndSocketId = async (
   userId: string,
   socketId: string,
 ) => {
-  const getUsers = await redisClient.get(
+  const getUsers = await redisClient().get(
     ENUM_REDIS_KEY.socket_user + userId + ':' + socketId,
   );
   return getUsers;
@@ -66,7 +66,7 @@ export const RedisRunFunction = async () => {
   //   .catch(err => {
   //     console.error('Error deleting keys:', err);
   //   });
-  const res = await redisClient.flushall('ASYNC');
+  const res = await redisClient().flushall('ASYNC');
   console.log('🚀 ~ RedisRunFunction ~ res:'.red, res);
   //------------------------- delete all keys-----------------------
   const sub = await subRedis.subscribe(...subscribeArray);

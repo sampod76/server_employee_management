@@ -23,7 +23,7 @@ import { LookupAnyRoleDetailsReusable } from '../../../../helper/lookUpResuable'
 
 import { ENUM_REDIS_KEY } from '../../../redis/consent.redis';
 import { redisClient } from '../../../redis/redis';
-import { ENUM_ORDER_STATUS } from '../../order/constants.order';
+
 import { Seller } from '../seller/model.seller';
 import { mongooseIUserRef } from '../typesAndConst';
 import { IUser, USER_ROLE_ARRAY, UserModel } from './user.interface';
@@ -154,329 +154,7 @@ userSchema.statics.isUserFindMethod = async function (
         },
       ],
     });
-    if (option?.needProperty?.includes('rating')) {
-      const pipeLine: PipelineStage[] = [
-        {
-          $lookup: {
-            from: 'reviews',
-            let: { id: '$_id' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$buyer.userId', '$$id'] },
-                      { $eq: ['$isDelete', ENUM_YN.NO] },
-                    ],
-                  },
-                },
-              },
-              {
-                $group: {
-                  _id: null,
-                  mainAverage: { $avg: '$overallRating' },
-                  totalRating: { $sum: '$overallRating' },
-                  totalReview: { $sum: 1 },
-                },
-              },
-              {
-                $addFields: {
-                  average: { $floor: '$mainAverage' },
-                  totalRating: { $floor: '$totalRating' },
-                },
-              },
-            ],
-            as: 'averageRatingDetails', // group to add 4 field automatically and manually addField me
-            //output
-            /* 
-             {
-               "_id": null,
-               "mainAverage": 4.5,
-               "totalRating": 4.5,
-               "totalReview": 1,
-               "average": 4,
-               "total": 4
-             }
-            */
-          },
-        },
-        {
-          $addFields: {
-            averageRating: {
-              $cond: {
-                if: { $eq: [{ $size: '$averageRatingDetails' }, 0] },
-                then: [{ average: 0, total: 0, totalReview: 0 }],
-                else: '$averageRatingDetails',
-              },
-            },
-          },
-        },
-        { $unwind: '$averageRating' },
-        { $project: { averageRatingDetails: 0 } },
-      ];
-      pipeline.push(...pipeLine);
-    }
-    if (option?.needProperty?.includes('insights')) {
-      const pipeLine: PipelineStage[] = [
-        //buyerProfileToTotal
-        {
-          $lookup: {
-            from: 'orders',
-            let: { id: '$_id' },
-            pipeline: [
-              //first of all your all review by buyer Profile
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$buyer.userId', '$$id'] },
-                      // {
-                      //   $or: [
-                      //     { $eq: ['$buyer.userId', '$$id'] },
-                      //     { $eq: ['$seller.userId', '$$id'] },
-                      //   ],
-                      // },
-                      { $eq: ['$isDelete', ENUM_YN.NO] },
-                    ],
-                  },
-                },
-              },
-              //then parallel call matching all order statements -> complete,accepted
-              {
-                $facet: {
-                  completed: [
-                    {
-                      $match: {
-                        $expr: {
-                          $and: [
-                            {
-                              $eq: [
-                                '$orderStatus',
-                                ENUM_ORDER_STATUS.completed,
-                              ],
-                            },
-                            { $eq: ['$isDelete', ENUM_YN.NO] },
-                          ],
-                        },
-                      },
-                    },
-                    {
-                      $group: {
-                        _id: null,
-                        count: { $sum: 1 },
-                      },
-                    },
-                  ],
-                  accepted: [
-                    {
-                      $match: {
-                        $expr: {
-                          $and: [
-                            { $eq: ['$orderStatus', ENUM_ORDER_STATUS.accept] },
-                            { $eq: ['$isDelete', ENUM_YN.NO] },
-                          ],
-                        },
-                      },
-                    },
-                    {
-                      $group: {
-                        _id: null,
-                        count: { $sum: 1 },
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-            as: 'buyerProfileToTotal',
-            /* //? output
-               "buyerProfileToTotal":  [{
-                  "completed": [
-                       {
-                           "_id": null,
-                           "count": 1
-                       }
-                    ],
-                  "accepted": [
-                        {
-                            "_id": null,
-                            "count": 5
-                        }
-                    ]
-          }],
-            */
-          },
-        },
-        {
-          $unwind: '$buyerProfileToTotal',
-        },
-        {
-          $addFields: {
-            buyerProfileToTotal: {
-              completed: {
-                $cond: {
-                  if: {
-                    $eq: [{ $size: '$buyerProfileToTotal.completed.count' }, 0],
-                  },
-                  then: 0,
-                  else: {
-                    $arrayElemAt: ['$buyerProfileToTotal.completed.count', 0],
-                  },
-                },
-              },
-              accepted: {
-                $cond: {
-                  if: {
-                    $eq: [{ $size: '$buyerProfileToTotal.accepted.count' }, 0],
-                  },
-                  then: 0,
-                  else: {
-                    $arrayElemAt: ['$buyerProfileToTotal.accepted.count', 0],
-                  },
-                },
-              },
-            },
-          },
-        },
-        /* //!-- output---modified
-         "buyerProfileToTotal": {
-            "completed": 1,
-            "accepted": 0
-            },
-        
-        */
 
-        //sellerProfileToTotal
-        {
-          $lookup: {
-            from: 'orders',
-            let: { id: '$_id' },
-            pipeline: [
-              //first of all your all review by buyer Profile
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$seller.userId', '$$id'] },
-                      { $eq: ['$isDelete', ENUM_YN.NO] },
-                    ],
-                  },
-                },
-              },
-              //then parallel call matching all order statements -> complete,accepted
-              {
-                $facet: {
-                  completed: [
-                    {
-                      $match: {
-                        $expr: {
-                          $and: [
-                            {
-                              $eq: [
-                                '$orderStatus',
-                                ENUM_ORDER_STATUS.completed,
-                              ],
-                            },
-                            { $eq: ['$isDelete', ENUM_YN.NO] },
-                          ],
-                        },
-                      },
-                    },
-                    {
-                      $group: {
-                        _id: null,
-                        count: { $sum: 1 },
-                      },
-                    },
-                  ],
-                  accepted: [
-                    {
-                      $match: {
-                        $expr: {
-                          $and: [
-                            { $eq: ['$orderStatus', ENUM_ORDER_STATUS.accept] },
-                            { $eq: ['$isDelete', ENUM_YN.NO] },
-                          ],
-                        },
-                      },
-                    },
-                    {
-                      $group: {
-                        _id: null,
-                        count: { $sum: 1 },
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-            as: 'sellerProfileToTotal',
-            /* //? output
-               "sellerProfileToTotal":  [{
-                  "completed": [
-                       {
-                           "_id": null,
-                           "count": 1
-                       }
-                    ],
-                  "accepted": [
-                        {
-                            "_id": null,
-                            "count": 5
-                        }
-                    ]
-          }],
-            */
-          },
-        },
-        {
-          $unwind: '$sellerProfileToTotal',
-        },
-        //--optional --> only modify respond by readable
-        {
-          $addFields: {
-            // optional
-            sellerProfileToTotal: {
-              completed: {
-                $cond: {
-                  if: {
-                    $eq: [
-                      { $size: '$sellerProfileToTotal.completed.count' },
-                      0,
-                    ],
-                  },
-                  then: 0,
-                  else: {
-                    $arrayElemAt: ['$sellerProfileToTotal.completed.count', 0],
-                  },
-                },
-              },
-              accepted: {
-                $cond: {
-                  if: {
-                    $eq: [{ $size: '$sellerProfileToTotal.accepted.count' }, 0],
-                  },
-                  then: 0,
-                  else: {
-                    $arrayElemAt: ['$sellerProfileToTotal.accepted.count', 0],
-                  },
-                },
-              },
-            },
-          },
-        },
-        /* //!-- output---modified
-         "sellerProfileToTotal": {
-            "completed": 1,
-            "accepted": 0
-            },
-        
-        */
-
-        //
-      ];
-      pipeline.push(...pipeLine);
-    }
     //!---Any role add then this role Must be add allGetUsers in --
     const result = (await User.aggregate(pipeline)) as IUser[];
 
@@ -531,7 +209,7 @@ userSchema.pre('save', async function (next) {
 userSchema.post('save', async function (data, next) {
   try {
     data.password = '';
-    await redisClient.set(
+    await redisClient().set(
       ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + data?._id,
       JSON.stringify(data),
       'EX',
@@ -546,7 +224,7 @@ userSchema.post('save', async function (data, next) {
 userSchema.post('findOneAndUpdate', async function (data, next) {
   try {
     data.password = '';
-    await redisClient.set(
+    await redisClient().set(
       ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + data?._id,
       JSON.stringify(data),
       'EX',
@@ -561,7 +239,7 @@ userSchema.post('findOneAndUpdate', async function (data, next) {
 userSchema.post('findOneAndDelete', async function (data, next) {
   try {
     // data.password = '';
-    await redisClient.del(ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + data?._id);
+    await redisClient().del(ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + data?._id);
     next();
   } catch (error: any) {
     next(error);

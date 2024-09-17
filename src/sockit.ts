@@ -4,11 +4,11 @@ import helmet from 'helmet';
 import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
-import { produceMessageByKafka } from './app/kafka/producer.kafka';
 import { IUserRef } from './app/modules/allUser/typesAndConst';
 import { IFriendShip } from './app/modules/friendship/friendship.interface';
 import { FriendShip } from './app/modules/friendship/friendship.models';
 import { IChatMessage } from './app/modules/message/messages.interface';
+import { ChatMessageService } from './app/modules/message/messages.service';
 import { ENUM_REDIS_KEY } from './app/redis/consent.redis';
 import { redisClient } from './app/redis/redis';
 import { findAllSocketsIdsFromUserId } from './app/redis/service.redis';
@@ -78,7 +78,7 @@ use direct connection --> io.on('connection',socket => {
           },
           async (clientResponse: any) => {
             // console.log('🚀 ~ clientResponse:', clientResponse);
-            await redisClient.set(
+            await redisClient().set(
               ENUM_REDIS_KEY.socket_user + user.userId + ':' + socket.id,
               JSON.stringify({
                 ...user,
@@ -101,7 +101,7 @@ use direct connection --> io.on('connection',socket => {
         //!--only use flutter_app --because nodejs server is support callback but flutter is not support callback
         socket.on('connection', async (data: any) => {
           console.log('🚀 ~ socket.on ~ data:', data);
-          await redisClient.set(
+          await redisClient().set(
             ENUM_REDIS_KEY.socket_user + user.userId + ':' + socket.id,
             JSON.stringify({
               ...user,
@@ -138,7 +138,7 @@ use direct connection --> io.on('connection',socket => {
                 userId: user.userId,
                 roleBaseUserId: user.roleBaseUserId,
               };
-              let getFriendShip = (await redisClient.get(
+              let getFriendShip = (await redisClient().get(
                 ENUM_REDIS_KEY.REDIS_IN_SAVE_FRIENDSHIP +
                   messageData?.friendShipId,
               )) as null | IFriendShip;
@@ -151,7 +151,7 @@ use direct connection --> io.on('connection',socket => {
                 )) as IFriendShip;
 
                 if (getFriendShip) {
-                  await redisClient.set(
+                  await redisClient().set(
                     ENUM_REDIS_KEY.REDIS_IN_SAVE_FRIENDSHIP +
                       messageData?.friendShipId,
                     JSON.stringify(getFriendShip),
@@ -279,7 +279,9 @@ use direct connection --> io.on('connection',socket => {
               //   JSON.stringify(messageData),
               // );
 
-              await produceMessageByKafka(JSON.stringify(messageData));
+              // await produceMessageByKafka(JSON.stringify(messageData));
+              const result =
+                await ChatMessageService.createChatMessage(messageData);
             } else {
               socket.emit('error', {
                 success: false,
@@ -294,7 +296,7 @@ use direct connection --> io.on('connection',socket => {
 
         socket.on('disconnect', async () => {
           try {
-            const getUsers = await redisClient.keys(
+            const getUsers = await redisClient().keys(
               ENUM_REDIS_KEY.socket_user + user.userId + '*',
             );
             //console.log('🚀 ~ socket.on ~ getUsers:', getUsers); //� ~ getKeys: ['socket:user:6667fbeb12ad156c0ddb4dd5:yiTdeQVOPKSXRcLqAAAD','socket:user:6667fbeb12ad156c0ddb4dd5:GNqB3qX420mO_qqUAAAC']
@@ -312,7 +314,7 @@ use direct connection --> io.on('connection',socket => {
             if (deleteKeys) {
               console.log('🚀 ~ socket.on ~ deleteKeys:'.bgRed, deleteKeys);
               //which person is multiple device is run but when is all device is offline then show offline
-              await redisClient.del(deleteKeys);
+              await redisClient().del(deleteKeys);
               if (getUsers?.length < 2) {
                 //SOCKET event
                 await yourAreOnlineOffline(deleteKeys.split(':')[2], {

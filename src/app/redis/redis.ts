@@ -27,7 +27,7 @@ export const redisClient = () => {
   } else {
     initialRedisClient = new Redis(config.redis.url as string);
     initialRedisClient.on('error', err => logger.error(err));
-    initialRedisClient.connect();
+    // initialRedisClient.connect();
     return initialRedisClient;
   }
 };
