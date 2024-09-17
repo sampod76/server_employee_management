@@ -282,6 +282,7 @@ use direct connection --> io.on('connection',socket => {
               // await produceMessageByKafka(JSON.stringify(messageData));
               const result =
                 await ChatMessageService.createChatMessage(messageData);
+              // await addMessageToStream(messageData);
             } else {
               socket.emit('error', {
                 success: false,
