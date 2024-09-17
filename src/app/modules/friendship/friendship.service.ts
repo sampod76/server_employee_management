@@ -127,6 +127,10 @@ const getAllFriendShipsFromDB = async (
             modifyFiled = {
               ['block.isBlock']: value,
             };
+          } else if (field === 'requestAccept') {
+            modifyFiled = {
+              [field]: filtersData.requestAccept == 'true' ? true : false,
+            };
           } else if (field === 'myData' && value === ENUM_YN.YES) {
             modifyFiled = {
               $or: [

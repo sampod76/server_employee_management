@@ -16,7 +16,6 @@ import { logger } from './app/share/logger';
 import { yourAreOnlineOffline } from './app/socket/socket.service';
 import { ENUM_SOCKET_EMIT_ON_TYPE } from './app/socket/socketTypes';
 import config from './config';
-import { ENUM_YN } from './global/enum_constant_type';
 import { jwtHelpers } from './helper/jwtHelpers';
 
 const socketConnection = async (socketServer: Server) => {
@@ -184,14 +183,14 @@ use direct connection --> io.on('connection',socket => {
                   message: 'Forbidden',
                 });
                 return;
-              } else if (getFriendShip?.requestAccept !== ENUM_YN.YES) {
+              } else if (!getFriendShip?.requestAccept) {
                 socket.emit('error', {
                   success: false,
                   statusCode: httpStatus.FORBIDDEN,
                   message: 'You are not allowed to send message',
                 });
                 return;
-              } else if (getFriendShip?.block?.isBlock == ENUM_YN.YES) {
+              } else if (getFriendShip?.block?.isBlock) {
                 socket.emit('error', {
                   success: false,
                   statusCode: httpStatus.FORBIDDEN,

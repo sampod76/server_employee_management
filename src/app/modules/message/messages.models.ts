@@ -31,9 +31,8 @@ const ChatMessageSchema = new Schema<IChatMessage, ChatMessageModel>(
       default: ENUM_STATUS.ACTIVE,
     },
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
     //--- for --TrashCategory---
   },

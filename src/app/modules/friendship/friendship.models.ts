@@ -38,9 +38,8 @@ const FriendShipSchema = new Schema<IFriendShip, FriendShipModel>(
       createdAt: Date,
     },
     requestAccept: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.YES,
+      type: Boolean,
+      default: true,
     },
     isDelete: {
       type: Boolean,

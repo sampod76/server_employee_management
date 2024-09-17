@@ -13,9 +13,9 @@ export type IChatMessageFilters = {
   findMyChats?: I_YN;
   //
   searchTerm?: string;
-  isDelete?: string;
+
   status?: I_STATUS;
-  isDelete?: boolean;
+  isDelete?: boolean | string;
   isSeen?: I_YN;
 };
 
