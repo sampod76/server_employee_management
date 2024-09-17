@@ -10,7 +10,7 @@ const combinedadminBodyData = UserValidation.adminBodyData.merge(
 );
 const otherProperties = z.object({
   status: z.enum(STATUS_ARRAY as [I_STATUS, ...I_STATUS[]]).optional(),
-  isDelete: z.boolean().optional(),
+  isDelete: z.boolean().optional().default(false),
 });
 
 const updateAdminZodSchema = z.object({

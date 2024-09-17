@@ -27,7 +27,7 @@ export type HrAdminUserModel = {
   isHrAdminUserExistMethod(
     id: string,
     option: Partial<{
-      isDelete: I_YN;
+      isDelete: boolean;
       populate: boolean;
       needProperty?: string[];
     }>,

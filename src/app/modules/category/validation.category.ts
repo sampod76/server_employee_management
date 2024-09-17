@@ -17,10 +17,10 @@ const createCategoryZodSchema = z.object({
 const updateCategoryZodSchema = createCategoryZodSchema
   .merge(
     z.object({
-      isDelete: z.boolean().optional(),
+      isDelete: z.boolean().optional().default(false),
     }),
   )
-  .partial();
+  .deepPartial();
 
 export const CategoryValidation = {
   createCategoryZodSchema,

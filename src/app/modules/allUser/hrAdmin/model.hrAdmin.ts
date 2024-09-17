@@ -9,7 +9,6 @@ import {
 import {
   ENUM_STATUS,
   ENUM_YN,
-  I_YN,
   STATUS_ARRAY,
 } from '../../../../global/enum_constant_type';
 import { mongooseFileSchema } from '../../../../global/schema/global.schema';
@@ -94,7 +93,7 @@ const HrAdminSchema = new Schema<IHrAdminUser, HrAdminUserModel>(
 HrAdminSchema.statics.isHrAdminExistMethod = async function (
   id: string,
   option?: Partial<{
-    isDelete: I_YN;
+    isDelete: boolean;
     populate: boolean;
     needProperty?: string[];
   }>,

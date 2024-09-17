@@ -44,9 +44,8 @@ const FriendShipSchema = new Schema<IFriendShip, FriendShipModel>(
       default: ENUM_YN.YES,
     },
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
     status: {
       type: String,

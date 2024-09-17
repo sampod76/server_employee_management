@@ -39,7 +39,7 @@ export type IAllTextField = {
   bodyData: Record<string, string>;
   //
   status: I_STATUS;
-  isDelete: I_YN;
+  isDelete: boolean;
   //--- for --Trash---
   oldRecord?: {
     refId: Types.ObjectId;

@@ -88,7 +88,7 @@ const createUserZodSchema = z
 //
 const updateUserZodSchema = z.object({
   body: z.object({
-    isDelete: z.boolean().optional(),
+    isDelete: z.boolean().optional().default(false),
     status: z.enum(STATUS_ARRAY as [I_STATUS, ...I_STATUS[]]).optional(),
   }),
 });
