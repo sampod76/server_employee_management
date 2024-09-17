@@ -7,7 +7,7 @@ import {
 } from '../../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { ILocation } from '../typesAndConst';
-import { authData } from './user.validation';
+import { UserValidation } from './user.validation';
 
 export type IGender = 'male' | 'female' | 'other';
 //
@@ -20,7 +20,7 @@ export type IUserFilters = {
   role?: I_USER_ROLE;
   multipleRole?: I_USER_ROLE[];
   status?: I_STATUS;
-  isDelete?: I_YN;
+  isDelete?: boolean;
   contactNumber?: string;
   needProperty?: string;
   socketStatus?: I_YN;
@@ -36,7 +36,7 @@ type TempUserBody = {
     otp: string;
   };
 };
-export type IUser = z.infer<typeof authData> & {
+export type IUser = z.infer<typeof UserValidation.authData> & z.infer<typeof UserValidation.> & {
   _id: string;
   userUniqueId: string;
   //--user give
@@ -48,12 +48,12 @@ export type IUser = z.infer<typeof authData> & {
   };
   secret: string;
   location?: ILocation;
-  status: I_STATUS;
   lastActive?: {
     createdAt: Date;
   };
   socketStatus: I_SOCKET_STATUS;
-  isDelete: I_YN;
+  isDelete: boolean;
+  status: I_STATUS;
 };
 
 export type ITempUser = {
@@ -64,7 +64,7 @@ export type UserModel = {
   isUserFindMethod(
     query: { id?: string; email?: string },
     option: {
-      isDelete?: I_YN;
+      isDelete?: boolean;
       populate?: boolean;
       password?: boolean;
       needProperty?: string[];

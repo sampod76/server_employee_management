@@ -6,8 +6,8 @@ import authMiddleware from '../../../middlewares/authMiddleware';
 import parseBodyData from '../../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../../middlewares/validateRequestZod';
 import { uploadAwsS3Bucket } from '../../aws/utls.aws';
-import { BuyerUserController } from './controller.buyer';
-import { BuyerUserValidation } from './validation.buyer';
+import { BuyerUserController } from './controller.employee';
+import { BuyerUserValidation } from './validation.employee';
 
 const router = express.Router();
 

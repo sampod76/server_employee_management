@@ -14,7 +14,7 @@ export type ISellerUserFilters = {
   dateOfBirth?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: I_YN;
+  isDelete?: boolean;
   createdAtFrom?: string;
   createdAtTo?: string;
   needProperty?: string;

@@ -1,11 +1,11 @@
-export const buyerSearchableFields = [
+export const EmployeeSearchableFields = [
   'email',
   'name.firstName',
   'name.lastName',
   'address',
 ];
 
-export const buyerFilterableFields = [
+export const EmployeeFilterableFields = [
   'userUniqueId',
   'userId',
   'gender',

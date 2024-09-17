@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { I_VERIFY, VERIFY_ARRAY } from '../../typesAndConst';
 
-export const sellerZodSchema = z.object({
+export const hrAdminZodSchema = z.object({
   // buyer : zodRefUser,
   designation: z
     .string({ required_error: 'Designation is required' })

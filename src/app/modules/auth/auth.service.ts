@@ -41,7 +41,7 @@ const loginUser = async (
   );
   if (!isUserExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist');
-  } else if (isUserExist.isDelete === ENUM_YN.YES) {
+  } else if (isUserExist.isDelete) {
     throw new ApiError(httpStatus.NOT_FOUND, 'The account is deleted');
   } else if (isUserExist.status === ENUM_STATUS.INACTIVE) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Your account is inactive');
@@ -98,7 +98,7 @@ const loginOutFromDb = async (
   if (checkLoginHistory) {
     // result = await UserLoginHistory.findOneAndUpdate(
     //   { _id: id },
-    //   { isDelete: ENUM_YN.YES },
+    //   { isDelete: true },
     // );
     result = await UserLoginHistory.findByIdAndDelete(id);
   } else {
@@ -203,7 +203,7 @@ const refreshToken = async (
   // checking old password
   else if (isUserExist.status === ENUM_STATUS.INACTIVE) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Your account is deactivated');
-  } else if (isUserExist.isDelete === ENUM_YN.YES) {
+  } else if (isUserExist.isDelete) {
     throw new ApiError(httpStatus.NOT_FOUND, `Your account is deleted`);
   } else if (isUserExist.status === ENUM_STATUS.BLOCK) {
     throw new ApiError(httpStatus.NOT_FOUND, `Your account is blocked`);
@@ -263,7 +263,7 @@ const changePassword = async (
   // checking old password
   else if (isUserExist.status === ENUM_STATUS.INACTIVE) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Your account is deactivated');
-  } else if (isUserExist.isDelete === ENUM_YN.YES) {
+  } else if (isUserExist.isDelete) {
     throw new ApiError(httpStatus.NOT_FOUND, `Your account is deleted`);
   }
   //  else if (isUserExist.status === ENUM_STATUS.BLOCK) {
@@ -321,7 +321,7 @@ const forgotPass = async (payload: { email: string }, req: Request) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email not found!');
   } else if (profile.status === ENUM_STATUS.INACTIVE) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Your account is deactivated');
-  } else if (profile.isDelete === ENUM_YN.YES) {
+  } else if (profile.isDelete) {
     throw new ApiError(httpStatus.NOT_FOUND, `Your account is deleted`);
   }
 

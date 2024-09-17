@@ -25,7 +25,7 @@ const createAllTextFieldZodSchema = z.object({
 const updateAllTextFieldZodSchema = createAllTextFieldZodSchema
   .merge(
     z.object({
-      isDelete: z.boolean(),
+      isDelete: z.boolean().optional(),
     }),
   )
   .deepPartial();

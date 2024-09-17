@@ -8,7 +8,6 @@ import {
   ENUM_SOCKET_STATUS,
   ENUM_STATUS,
   ENUM_YN,
-  I_YN,
   SOCKET_STATUS_ARRAY,
   STATUS_ARRAY,
   YN_ARRAY,
@@ -17,13 +16,13 @@ import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { mongooseLocationSchema } from '../../../../global/schema/global.schema';
 import ApiError from '../../../errors/ApiError';
 import { Admin } from '../admin/admin.model';
-import { BuyerUser } from '../buyer/model.buyer';
 
 import { LookupAnyRoleDetailsReusable } from '../../../../helper/lookUpResuable';
 
 import { ENUM_REDIS_KEY } from '../../../redis/consent.redis';
 import { redisClient } from '../../../redis/redis';
 
+import { EmployeeUser } from '../employee/model.employee';
 import { Seller } from '../seller/model.seller';
 import { IUser, USER_ROLE_ARRAY, UserModel } from './user.interface';
 
@@ -73,21 +72,20 @@ const userSchema = new Schema<IUser, UserModel>(
       createdAt: Date,
     },
     secret: String,
+    location: mongooseLocationSchema,
     socketStatus: {
       type: String,
       enum: SOCKET_STATUS_ARRAY,
       default: ENUM_SOCKET_STATUS.OFFLINE,
     }, // set yourAreOnlineOffline function
-    location: mongooseLocationSchema,
     status: {
       type: String,
       enum: STATUS_ARRAY,
       default: ENUM_STATUS.ACTIVE,
     },
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -101,7 +99,7 @@ const userSchema = new Schema<IUser, UserModel>(
 userSchema.statics.isUserFindMethod = async function (
   query: { id?: string; email?: string },
   option?: {
-    isDelete?: I_YN;
+    isDelete?: boolean;
     populate?: boolean;
     password?: boolean;
     needProperty?: string[];
@@ -180,7 +178,7 @@ userSchema.pre('save', async function (next) {
       */
     let roleUser;
     if (user.role === ENUM_USER_ROLE.employee) {
-      roleUser = await BuyerUser.findOne({ email: user.email });
+      roleUser = await EmployeeUser.findOne({ email: user.email });
     } else if (user.role === ENUM_USER_ROLE.hrAdmin) {
       roleUser = await Seller.findOne({ email: user.email });
     } else if (user.role === ENUM_USER_ROLE.admin) {

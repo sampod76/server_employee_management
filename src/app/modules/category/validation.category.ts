@@ -17,7 +17,7 @@ const createCategoryZodSchema = z.object({
 const updateCategoryZodSchema = createCategoryZodSchema
   .merge(
     z.object({
-      isDelete: z.boolean(),
+      isDelete: z.boolean().optional(),
     }),
   )
   .partial();

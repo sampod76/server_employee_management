@@ -41,9 +41,7 @@ const getAllGigsFromDB = async (
     selectField,
     ...filtersData
   } = filters;
-  filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+  filtersData.isDelete = filtersData.isDelete || false;
   filtersData.verify = filtersData.verify
     ? filtersData.verify
     : ENUM_VERIFY.ACCEPT;
@@ -391,7 +389,7 @@ const deleteGigFromDB = async (
   } else {
     data = await Gig.findOneAndUpdate(
       { _id: id },
-      { isDelete: ENUM_YN.YES },
+      { isDelete: true },
       { new: true, runValidators: true },
     );
   }

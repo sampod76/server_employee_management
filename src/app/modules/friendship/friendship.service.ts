@@ -51,7 +51,7 @@ const createFriendShip = async (
     IFriendShip | null,
   ];
 
-  if (!resolved[0] || resolved[0]?.isDelete === ENUM_YN.YES) {
+  if (!resolved[0] || resolved[0]?.isDelete) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Receiver not found');
   }
   if (resolved[1]) {
@@ -76,9 +76,7 @@ const getAllFriendShipsFromDB = async (
   req: Request,
 ): Promise<IGenericResponse<IFriendShip[] | null>> => {
   const { searchTerm, needProperty, ...filtersData } = filters;
-  filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+  filtersData.isDelete = filtersData.isDelete || false;
 
   const andConditions = [];
   if (searchTerm) {
@@ -420,7 +418,7 @@ const deleteFriendShipFromDB = async (
   } else {
     data = await FriendShip.findOneAndUpdate(
       { _id: id },
-      { isDelete: ENUM_YN.YES },
+      { isDelete: true },
       { new: true, runValidators: true },
     );
   }

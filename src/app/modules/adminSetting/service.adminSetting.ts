@@ -48,9 +48,7 @@ const getAllAdminSettingFromDb = async (
   const { searchTerm, ...filtersData } = filters;
   console.log('🚀 ~ filtersData:', filtersData);
 
-  filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+  filtersData.isDelete = filtersData.isDelete || false;
   const andConditions = [];
   if (searchTerm) {
     andConditions.push({
@@ -180,7 +178,7 @@ const deleteAdminSettingByIdFromDb = async (
   } else {
     result = await AdminSetting.findOneAndUpdate(
       { _id: id },
-      { isDelete: ENUM_YN.YES },
+      { isDelete: true },
     );
     if (!result) {
       throw new ApiError(httpStatus.NOT_FOUND, req.t('Failed to delete'));

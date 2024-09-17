@@ -15,7 +15,7 @@ export type IChatMessageFilters = {
   searchTerm?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: I_YN;
+  isDelete?: boolean;
   isSeen?: I_YN;
 };
 
@@ -28,7 +28,7 @@ export type ChatMessageModel = {
   isChatMessageExistMethod(
     id: string,
     option: {
-      isDelete?: I_YN;
+      isDelete?: boolean;
       populate?: boolean;
     },
   ): Promise<IChatMessage>;

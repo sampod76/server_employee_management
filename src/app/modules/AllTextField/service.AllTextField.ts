@@ -37,9 +37,7 @@ const getAllAllTextFieldFromDb = async (
   //****************search and filters start************/
   const { searchTerm, ...filtersData } = filters;
 
-  filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+  filtersData.isDelete = filtersData.isDelete || false;
   const andConditions = [];
   if (searchTerm) {
     andConditions.push({
@@ -152,7 +150,7 @@ const deleteAllTextFieldByIdFromDb = async (
   } else {
     result = await AllTextField.findOneAndUpdate(
       { _id: id },
-      { isDelete: ENUM_YN.YES },
+      { isDelete: true },
     );
     if (!result) {
       throw new ApiError(httpStatus.NOT_FOUND, req.t('Failed to delete'));

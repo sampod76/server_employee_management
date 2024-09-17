@@ -15,27 +15,25 @@ import { LookupReusable } from '../../../../helper/lookUpResuable';
 import { ENUM_VERIFY } from '../typesAndConst';
 import { IUser } from '../user/user.interface';
 import { User } from '../user/user.model';
-import { buyerSearchableFields } from './constant.buyer';
-import { IBuyerUser, IBuyerUserFilters } from './interface.buyer';
-import { BuyerUser } from './model.buyer';
+import { EmployeeSearchableFields } from './constant.employee';
+import { IEmployeeUser, IEmployeeUserFilters } from './interface.employee';
+import { EmployeeUser } from './model.employee';
 
-const createBuyerUser = async (
-  data: IBuyerUser,
+const createEmployeeUser = async (
+  data: IEmployeeUser,
   req?: Request,
-): Promise<IBuyerUser | null> => {
-  const res = await BuyerUser.create(data);
+): Promise<IEmployeeUser | null> => {
+  const res = await EmployeeUser.create(data);
   return res;
 };
 
-const getAllBuyerUsersFromDB = async (
-  filters: IBuyerUserFilters,
+const getAllEmployeeUsersFromDB = async (
+  filters: IEmployeeUserFilters,
   paginationOptions: IPaginationOption,
   req: Request,
-): Promise<IGenericResponse<IBuyerUser[] | null>> => {
+): Promise<IGenericResponse<IEmployeeUser[] | null>> => {
   const { searchTerm, needProperty, ...filtersData } = filters;
-  filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+  filtersData.isDelete = filtersData.isDelete || false;
   filtersData.verify = filtersData.verify
     ? filtersData.verify
     : ENUM_VERIFY.ACCEPT;
@@ -44,7 +42,7 @@ const getAllBuyerUsersFromDB = async (
 
   if (searchTerm) {
     andConditions.push({
-      $or: buyerSearchableFields.map((field: string) => ({
+      $or: EmployeeSearchableFields.map((field: string) => ({
         [field]: {
           $regex: searchTerm,
           $options: 'i',
@@ -105,10 +103,10 @@ const getAllBuyerUsersFromDB = async (
     ],
   });
 
-  // const result = await BuyerUser.aggregate(pipeline);
-  // const total = await BuyerUser.countDocuments(whereConditions);
+  // const result = await EmployeeUser.aggregate(pipeline);
+  // const total = await EmployeeUser.countDocuments(whereConditions);
   //!-- alternatively and faster
-  const pipeLineResult = await BuyerUser.aggregate([
+  const pipeLineResult = await EmployeeUser.aggregate([
     {
       $facet: {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -136,16 +134,16 @@ const getAllBuyerUsersFromDB = async (
   };
 };
 
-const updateBuyerUserFromDB = async (
+const updateEmployeeUserFromDB = async (
   id: string,
-  data: IBuyerUser,
+  data: IEmployeeUser,
   req: Request,
-): Promise<IBuyerUser | null> => {
-  const isExist = (await BuyerUser.findById(id)) as IBuyerUser & {
+): Promise<IEmployeeUser | null> => {
+  const isExist = (await EmployeeUser.findById(id)) as IEmployeeUser & {
     _id: Schema.Types.ObjectId;
   };
   if (!isExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'BuyerUser not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'EmployeeUser not found');
   }
   if (
     req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
@@ -155,70 +153,73 @@ const updateBuyerUserFromDB = async (
     throw new ApiError(403, 'forbidden access');
   }
 
-  const { name, address, ...BuyerUserData } = data;
+  const { name, address, ...EmployeeUserData } = data;
   if (
     req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     req?.user?.role !== ENUM_USER_ROLE.admin
   ) {
-    delete (BuyerUserData as Partial<IBuyerUser>)['isDelete']; // remove it because , any user update time to not update this field , when user apply delete route to modify this field
-    delete (BuyerUserData as Partial<IBuyerUser>)['email'];
-    delete (BuyerUserData as Partial<IBuyerUser>)['userUniqueId'];
-    delete (BuyerUserData as Partial<IBuyerUser>)['verify'];
+    delete (EmployeeUserData as Partial<IEmployeeUser>)['isDelete']; // remove it because , any user update time to not update this field , when user apply delete route to modify this field
+    delete (EmployeeUserData as Partial<IEmployeeUser>)['email'];
+    delete (EmployeeUserData as Partial<IEmployeeUser>)['userUniqueId'];
+    delete (EmployeeUserData as Partial<IEmployeeUser>)['verify'];
   }
-  const updatedBuyerUserData: Partial<IBuyerUser> = { ...BuyerUserData };
+  const updatedEmployeeUserData: Partial<IEmployeeUser> = {
+    ...EmployeeUserData,
+  };
 
   if (address && Object.keys(address).length) {
     Object.keys(address).forEach(key => {
-      const nameKey = `address.${key}` as keyof Partial<IBuyerUser>;
-      (updatedBuyerUserData as any)[nameKey] =
+      const nameKey = `address.${key}` as keyof Partial<IEmployeeUser>;
+      (updatedEmployeeUserData as any)[nameKey] =
         address[key as keyof typeof address];
     });
   }
   if (name && Object.keys(name).length) {
     Object.keys(name).forEach(key => {
-      const nameKey = `name.${key}` as keyof Partial<IBuyerUser>;
-      (updatedBuyerUserData as any)[nameKey] = name[key as keyof typeof name];
+      const nameKey = `name.${key}` as keyof Partial<IEmployeeUser>;
+      (updatedEmployeeUserData as any)[nameKey] =
+        name[key as keyof typeof name];
     });
   }
-  const updatedBuyerUser = await BuyerUser.findOneAndUpdate(
+  const updatedEmployeeUser = await EmployeeUser.findOneAndUpdate(
     { _id: id },
-    updatedBuyerUserData,
+    updatedEmployeeUserData,
     {
       new: true,
       runValidators: true,
     },
   );
-  if (!updatedBuyerUser) {
-    throw new ApiError(400, 'Failed to update BuyerUser');
+  if (!updatedEmployeeUser) {
+    throw new ApiError(400, 'Failed to update EmployeeUser');
   }
-  return updatedBuyerUser;
+  return updatedEmployeeUser;
 };
 
-const getSingleBuyerUserFromDB = async (
+const getSingleEmployeeUserFromDB = async (
   id: string,
   req: Request,
-): Promise<IBuyerUser | null> => {
-  const user = await BuyerUser.isBuyerUserExistMethod(id, {
+): Promise<IEmployeeUser | null> => {
+  const user = await EmployeeUser.isEmployeeUserExistMethod(id, {
     populate: true,
   });
 
   return user;
 };
 
-const deleteBuyerUserFromDB = async (
+const deleteEmployeeUserFromDB = async (
   id: string,
-  query: IBuyerUserFilters,
+  query: IEmployeeUserFilters,
   req: Request,
-): Promise<IBuyerUser | null> => {
-  // const isExist = (await BuyerUser.findById(id).select('+password')) as IBuyerUser & {
+): Promise<IEmployeeUser | null> => {
+  // const isExist = (await EmployeeUser.findById(id).select('+password')) as IEmployeeUser & {
   //   _id: Schema.Types.ObjectId;
   // };
-  const isExist = await BuyerUser.aggregate([
+  const isExist = await EmployeeUser.aggregate([
     { $match: { _id: new Types.ObjectId(id), isDelete: ENUM_YN.NO } },
   ]);
 
   if (!isExist.length) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'BuyerUser not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'EmployeeUser not found');
   }
 
   if (
@@ -249,20 +250,20 @@ const deleteBuyerUserFromDB = async (
     (req?.user?.role == ENUM_USER_ROLE.admin ||
       req?.user?.role == ENUM_USER_ROLE.superAdmin)
   ) {
-    // data = await BuyerUser.findOneAndDelete({ _id: id });
+    // data = await EmployeeUser.findOneAndDelete({ _id: id });
     const session = await mongoose.startSession();
     try {
       session.startTransaction();
-      data = await BuyerUser.findOneAndDelete({ _id: id });
+      data = await EmployeeUser.findOneAndDelete({ _id: id });
       // console.log('🚀 ~ data:', data);
       if (!data?.email) {
-        throw new ApiError(400, 'Felid to delete BuyerUser');
+        throw new ApiError(400, 'Felid to delete EmployeeUser');
       }
       const deleteUser = (await User.findOneAndDelete({
         email: isExist[0].email,
       })) as IUser;
       if (!deleteUser?.email) {
-        throw new ApiError(400, 'Felid to delete BuyerUser');
+        throw new ApiError(400, 'Felid to delete EmployeeUser');
       }
       await session.commitTransaction();
       await session.endSession();
@@ -272,31 +273,31 @@ const deleteBuyerUserFromDB = async (
       throw new ApiError(error?.statusCode || 400, error?.message);
     }
   } else {
-    // data = await BuyerUser.findOneAndUpdate(
+    // data = await EmployeeUser.findOneAndUpdate(
     //   { _id: id },
-    //   { isDelete: ENUM_YN.YES },
+    //   { isDelete: true },
     //   { new: true, runValidators: true },
     // );
 
     const session = await mongoose.startSession();
     try {
       session.startTransaction();
-      data = await BuyerUser.findOneAndUpdate(
+      data = await EmployeeUser.findOneAndUpdate(
         { _id: id },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { new: true, runValidators: true, session },
       );
       // console.log('🚀 ~ data:', data);
       if (!data?.email) {
-        throw new ApiError(400, 'Felid to delete BuyerUser');
+        throw new ApiError(400, 'Felid to delete EmployeeUser');
       }
       const deleteUser = await User.findOneAndUpdate(
         { email: isExist[0].email },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { new: true, runValidators: true, session },
       );
       if (!deleteUser?.email) {
-        throw new ApiError(400, 'Felid to delete BuyerUser');
+        throw new ApiError(400, 'Felid to delete EmployeeUser');
       }
       await session.commitTransaction();
       await session.endSession();
@@ -309,10 +310,10 @@ const deleteBuyerUserFromDB = async (
   return data;
 };
 
-export const BuyerUserService = {
-  createBuyerUser,
-  getAllBuyerUsersFromDB,
-  updateBuyerUserFromDB,
-  getSingleBuyerUserFromDB,
-  deleteBuyerUserFromDB,
+export const EmployeeUserService = {
+  createEmployeeUser,
+  getAllEmployeeUsersFromDB,
+  updateEmployeeUserFromDB,
+  getSingleEmployeeUserFromDB,
+  deleteEmployeeUserFromDB,
 };

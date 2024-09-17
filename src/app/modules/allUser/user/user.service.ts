@@ -4,14 +4,14 @@ import { Request } from 'express';
 import httpStatus from 'http-status';
 import mongoose, { PipelineStage, Schema } from 'mongoose';
 import { z } from 'zod';
-import { ENUM_STATUS, ENUM_YN } from '../../../../global/enum_constant_type';
+import { ENUM_STATUS } from '../../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { paginationHelper } from '../../../../helper/paginationHelper';
 import ApiError from '../../../errors/ApiError';
 import { IGenericResponse } from '../../../interface/common';
 import { IPaginationOption } from '../../../interface/pagination';
 import { Admin } from '../admin/admin.model';
-import { BuyerUser } from '../buyer/model.buyer';
+import { BuyerUser } from '../employee/model.buyer';
 
 import { LookupAnyRoleDetailsReusable } from '../../../../helper/lookUpResuable';
 
@@ -112,7 +112,7 @@ const createTempUserFromDb = async (
   req: Request,
 ): Promise<IUser | null> => {
   const previousUser = await User.findOne({ email: user.email?.toLowerCase() });
-  if (previousUser?.isDelete === ENUM_YN.YES) {
+  if (previousUser?.isDelete) {
     throw new ApiError(
       400,
       'The account associated with this email is deleted. Please choose another email.',
@@ -163,9 +163,7 @@ const getAllUsersFromDB = async (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { searchTerm, needProperty, multipleRole, ...filtersData } = filters;
 
-  filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+  filtersData.isDelete = filtersData.isDelete || false;
 
   const andConditions = [];
 
@@ -380,7 +378,7 @@ const deleteUserFromDB = async (
     session.startTransaction();
     data = await User.findOneAndUpdate(
       { _id: id },
-      { isDelete: ENUM_YN.YES },
+      { isDelete: true },
       { new: true, runValidators: true, session },
     );
     if (!data?._id) {
@@ -390,13 +388,13 @@ const deleteUserFromDB = async (
     if (data?.role === ENUM_USER_ROLE.employee) {
       roleUser = await BuyerUser.findOneAndUpdate(
         { email: data?.email },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { runValidators: true, new: true },
       );
     } else if (data?.role === ENUM_USER_ROLE.hrAdmin) {
       roleUser = await Seller.findOneAndUpdate(
         { email: data?.email },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { runValidators: true, new: true },
       );
     } else if (
@@ -405,7 +403,7 @@ const deleteUserFromDB = async (
     ) {
       roleUser = await Admin.findOneAndUpdate(
         { email: data?.email },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { runValidators: true, new: true },
       );
     }

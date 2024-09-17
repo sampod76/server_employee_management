@@ -56,9 +56,7 @@ const getAllNotificationsFromDB = async (
 ): Promise<IGenericResponse<INotification[] | null>> => {
   const { searchTerm, ...filtersData } = filters;
 
-  filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+  filtersData.isDelete = filtersData.isDelete || false;
   const andConditions = [];
 
   if (searchTerm) {

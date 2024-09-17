@@ -15,7 +15,7 @@ export type IGigFilters = {
   searchTerm?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: I_YN;
+  isDelete?: boolean;
   createdAtFrom?: string;
   createdAtTo?: string;
   needProperty?: string;
@@ -29,7 +29,7 @@ export type GigModel = {
   isGigExistMethod(
     id: string,
     option: {
-      isDelete?: I_YN;
+      isDelete?: boolean;
       populate?: boolean;
       needProperty?: string[];
     },

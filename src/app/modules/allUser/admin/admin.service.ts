@@ -29,9 +29,7 @@ const getAllAdminsFromDB = async (
   req: Request,
 ): Promise<IGenericResponse<IAdmin[] | null>> => {
   const { searchTerm, ...filtersData } = filters;
-  filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+  filtersData.isDelete = filtersData.isDelete || false;
   const andConditions = [];
 
   if (searchTerm) {
@@ -286,7 +284,7 @@ const deleteAdminFromDB = async (
   } else {
     // data = await Admin.findOneAndUpdate(
     //   { _id: id },
-    //   { isDelete: ENUM_YN.YES },
+    //   { isDelete: true },
     //   { new: true, runValidators: true },
     // );
 
@@ -295,7 +293,7 @@ const deleteAdminFromDB = async (
       session.startTransaction();
       data = await Admin.findOneAndUpdate(
         { _id: id },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { new: true, runValidators: true, session },
       );
       // console.log('🚀 ~ data:', data);
@@ -304,7 +302,7 @@ const deleteAdminFromDB = async (
       }
       const deleteUser = await User.findOneAndUpdate(
         { email: isExist[0].email },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { new: true, runValidators: true, session },
       );
       if (!deleteUser?.email) {

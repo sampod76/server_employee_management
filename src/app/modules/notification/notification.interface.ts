@@ -2,8 +2,8 @@ import { Model, Types } from 'mongoose';
 
 import { IUser, I_USER_ROLE } from '../allUser/user/user.interface';
 
-import { IFileAfterUpload } from '../../interface/fileUpload';
 import { I_STATUS, I_YN } from '../../../global/enum_constant_type';
+import { IFileAfterUpload } from '../../interface/fileUpload';
 
 export type INotificationFilters = {
   userId?: string;
@@ -12,7 +12,7 @@ export type INotificationFilters = {
   searchTerm?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: I_YN;
+  isDelete?: boolean;
 };
 
 export type INotification = {
@@ -24,7 +24,7 @@ export type INotification = {
   bodyText: string;
   isSeen?: I_YN;
   status?: I_STATUS;
-  isDelete?: I_YN;
+  isDelete?: boolean;
 };
 
 export type NotificationModel = Model<INotification, Record<string, unknown>>;

@@ -18,7 +18,7 @@ export type IFriendShipFilters = {
   needProperty?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: I_YN;
+  isDelete?: boolean;
 };
 
 export type IFriendShip = z.infer<
@@ -38,7 +38,7 @@ export type FriendShipModel = {
   isFriendShipExistMethod(
     id: string,
     option: {
-      isDelete?: I_YN;
+      isDelete?: boolean;
       populate?: boolean;
     },
   ): Promise<IFriendShip>;

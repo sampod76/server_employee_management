@@ -5,19 +5,18 @@ import {
   ENUM_YN,
   I_YN,
   STATUS_ARRAY,
-  YN_ARRAY,
 } from '../../../../global/enum_constant_type';
 import { mongooseFileSchema } from '../../../../global/schema/global.schema';
+import { LookupReusable } from '../../../../helper/lookUpResuable';
 import {
   ENUM_VERIFY,
   GENDER_ARRAY,
   mongooseIUserRef,
   VERIFY_ARRAY,
 } from '../typesAndConst';
-import { BuyerUserModel, IBuyerUser } from './interface.buyer';
-import { LookupReusable } from '../../../../helper/lookUpResuable';
+import { EmployeeUserModel, IEmployeeUser } from './interface.employee';
 
-const BuyerUserSchema = new Schema<IBuyerUser, BuyerUserModel>(
+const EmployeeUserSchema = new Schema<IEmployeeUser, EmployeeUserModel>(
   {
     userUniqueId: {
       type: String,
@@ -77,9 +76,8 @@ const BuyerUserSchema = new Schema<IBuyerUser, BuyerUserModel>(
       default: ENUM_STATUS.ACTIVE,
     },
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -90,17 +88,17 @@ const BuyerUserSchema = new Schema<IBuyerUser, BuyerUserModel>(
   },
 );
 
-BuyerUserSchema.statics.isBuyerUserExistMethod = async function (
+EmployeeUserSchema.statics.isEmployeeUserExistMethod = async function (
   id: string,
   option?: Partial<{
     isDelete: I_YN;
     populate: boolean;
     needProperty?: string[];
   }>,
-): Promise<IBuyerUser | null> {
+): Promise<IEmployeeUser | null> {
   let user;
   if (!option?.populate) {
-    const result = await BuyerUser.aggregate([
+    const result = await EmployeeUser.aggregate([
       {
         $match: {
           _id: new Types.ObjectId(id),
@@ -131,13 +129,13 @@ BuyerUserSchema.statics.isBuyerUserExistMethod = async function (
         },
       ],
     });
-    const result = await BuyerUser.aggregate(pipeline);
+    const result = await EmployeeUser.aggregate(pipeline);
     user = result[0];
   }
   return user;
 };
 
-export const BuyerUser = model<IBuyerUser, BuyerUserModel>(
-  'Buyer',
-  BuyerUserSchema,
+export const EmployeeUser = model<IEmployeeUser, EmployeeUserModel>(
+  'Employee',
+  EmployeeUserSchema,
 );

@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 import { I_STATUS, STATUS_ARRAY } from '../../../../global/enum_constant_type';
 import { UserValidation } from '../user/user.validation';
-// const combinedAdminZodData = UserValidation.adminZodData.merge(
+// const combinedEmployeeZodData = UserValidation.EmployeeZodData.merge(
 //   UserValidation.authData
 // );
-const combinedAdminZodData = UserValidation.adminZodData.merge(
+const combinedEmployeeUserZodData = UserValidation.employeeZodData.merge(
   UserValidation.authData.pick({ email: true }),
 );
 const otherProperties = z.object({
@@ -13,11 +13,11 @@ const otherProperties = z.object({
   isDelete: z.boolean().optional(),
 });
 
-const updateAdminZodSchema = z.object({
-  body: combinedAdminZodData.merge(otherProperties).deepPartial(),
+const updateEmployeeUserZodSchema = z.object({
+  body: combinedEmployeeUserZodData.merge(otherProperties).deepPartial(),
 });
 
-export const AdminValidation = {
-  updateAdminZodSchema,
-  combinedAdminZodData,
+export const EmployeeUserValidation = {
+  updateEmployeeUserZodSchema,
+  combinedEmployeeUserZodData,
 };

@@ -3,7 +3,6 @@ import { model, PipelineStage, Schema, Types } from 'mongoose';
 import {
   ENUM_STATUS,
   ENUM_YN,
-  I_YN,
   STATUS_ARRAY,
   YN_ARRAY,
 } from '../../../global/enum_constant_type';
@@ -45,7 +44,7 @@ const ChatMessageSchema = new Schema<IChatMessage, ChatMessageModel>(
 ChatMessageSchema.statics.isChatMessageExistMethod = async function (
   id: string,
   option?: {
-    isDelete?: I_YN;
+    isDelete?: boolean;
     populate?: boolean;
   },
 ): Promise<IChatMessage | null> {

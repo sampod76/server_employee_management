@@ -39,9 +39,7 @@ const getAllCategoryFromDb = async (
   //****************search and filters start************/
   const { searchTerm, ...filtersData } = filters;
 
-  filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+  filtersData.isDelete = filtersData.isDelete || false;
   const andConditions = [];
   if (searchTerm) {
     andConditions.push({
@@ -169,10 +167,7 @@ const deleteCategoryByIdFromDb = async (
     }
     return result;
   } else {
-    result = await Category.findOneAndUpdate(
-      { _id: id },
-      { isDelete: ENUM_YN.YES },
-    );
+    result = await Category.findOneAndUpdate({ _id: id }, { isDelete: true });
     if (!result) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Failed to delete');
     }

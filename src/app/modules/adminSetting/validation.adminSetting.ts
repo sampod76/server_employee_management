@@ -30,7 +30,7 @@ const createAdminSettingBodyData = z.object({
 
 const updateAdminSettingBodyData = createAdminSettingBodyData.merge(
   z.object({
-    isDelete: z.boolean(),
+    isDelete: z.boolean().optional(),
   }),
 );
 

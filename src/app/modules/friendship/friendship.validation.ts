@@ -17,7 +17,7 @@ const friendshipUpdateBodyDate = z.object({
   // lastMessage: z.string().or(z.instanceof(Types.ObjectId)),
   requestAccept: z.enum(YN_ARRAY as [I_YN]).optional(),
   status: z.enum(STATUS_ARRAY as [I_STATUS, ...I_STATUS[]]).optional(),
-  isDelete: z.boolean(),
+  isDelete: z.boolean().optional(),
 });
 
 const friendshipBlockZodData = z.object({

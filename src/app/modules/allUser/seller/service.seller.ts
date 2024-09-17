@@ -40,9 +40,7 @@ const getAllSellersFromDB = async (
     needProperty,
     ...filtersData
   } = filters;
-  filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+  filtersData.isDelete = filtersData.isDelete || false;
   filtersData.verify = filtersData.verify
     ? filtersData.verify
     : ENUM_VERIFY.ACCEPT;
@@ -334,7 +332,7 @@ const deleteSellerFromDB = async (
   } else {
     // data = await Seller.findOneAndUpdate(
     //   { _id: id },
-    //   { isDelete: ENUM_YN.YES },
+    //   { isDelete: true },
     //   { new: true, runValidators: true },
     // );
 
@@ -343,7 +341,7 @@ const deleteSellerFromDB = async (
       session.startTransaction();
       data = await Seller.findOneAndUpdate(
         { _id: id },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { new: true, runValidators: true, session },
       );
       if (!data?.email) {
@@ -351,7 +349,7 @@ const deleteSellerFromDB = async (
       }
       const deleteUser = await User.findOneAndUpdate(
         { email: isExist[0].email },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { new: true, runValidators: true, session },
       );
       if (!deleteUser?.email) {
