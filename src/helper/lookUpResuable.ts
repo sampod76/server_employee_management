@@ -329,7 +329,7 @@ export const LookupAnyRoleDetailsReusable = <T>(
             },
           ],
 
-          buyerInfo: [
+          employeeInfo: [
             {
               $match: {
                 [roleMatchFiledName]: ENUM_USER_ROLE.employee,
@@ -338,7 +338,7 @@ export const LookupAnyRoleDetailsReusable = <T>(
             //!--------------generalUser-------start----------
             {
               $lookup: {
-                from: 'buyers',
+                from: 'employees',
                 let: {
                   id: idFiledName.includes('$')
                     ? idFiledName
@@ -363,7 +363,7 @@ export const LookupAnyRoleDetailsReusable = <T>(
                   // Additional stages for collection2
                   { $project: modifyProject },
                 ],
-                as: 'buyerDetails',
+                as: 'employeeDetails',
               },
             },
 
@@ -372,21 +372,21 @@ export const LookupAnyRoleDetailsReusable = <T>(
               $addFields: {
                 [outPutFieldName]: {
                   $cond: {
-                    if: { $eq: [{ $size: '$buyerDetails' }, 0] },
+                    if: { $eq: [{ $size: '$employeeDetails' }, 0] },
                     then: [{}],
-                    else: '$buyerDetails',
+                    else: '$employeeDetails',
                   },
                 },
               },
             },
             {
-              $project: { buyerDetails: 0 },
+              $project: { employeeDetails: 0 },
             },
             {
               $unwind: `$${outPutFieldName}`,
             },
           ],
-          sellerInfo: [
+          hradminInfo: [
             {
               $match: {
                 [roleMatchFiledName]: ENUM_USER_ROLE.hrAdmin,
@@ -395,7 +395,7 @@ export const LookupAnyRoleDetailsReusable = <T>(
             //!--------------hostUser-------start----------
             {
               $lookup: {
-                from: 'sellers',
+                from: 'hradmins',
                 let: {
                   id: idFiledName.includes('$')
                     ? idFiledName
@@ -420,7 +420,7 @@ export const LookupAnyRoleDetailsReusable = <T>(
                   // Additional stages for collection2
                   { $project: modifyProject },
                 ],
-                as: 'sellersDetails',
+                as: 'hradminsDetails',
               },
             },
 
@@ -429,15 +429,15 @@ export const LookupAnyRoleDetailsReusable = <T>(
               $addFields: {
                 [outPutFieldName]: {
                   $cond: {
-                    if: { $eq: [{ $size: '$sellersDetails' }, 0] },
+                    if: { $eq: [{ $size: '$hradminsDetails' }, 0] },
                     then: [{}],
-                    else: '$sellersDetails',
+                    else: '$hradminsDetails',
                   },
                 },
               },
             },
             {
-              $project: { sellersDetails: 0 },
+              $project: { hradminsDetails: 0 },
             },
             {
               $unwind: `$${outPutFieldName}`,
@@ -451,8 +451,8 @@ export const LookupAnyRoleDetailsReusable = <T>(
             $concatArrays: [
               '$superAdminInfo',
               '$adminInfo',
-              '$sellerInfo',
-              '$buyerInfo',
+              '$hradminInfo',
+              '$employeeInfo',
             ], // Concatenate arrays into a single array
           },
         },
