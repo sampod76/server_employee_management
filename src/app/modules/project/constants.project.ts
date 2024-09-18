@@ -1,18 +1,17 @@
-export const ProjectSearchableFields = ['title'];
+export const ProjectSearchableFields = ['title', 'description', 'clientName'];
 
 export const ProjectFilterableFields = [
-  'senderRoleBaseId',
-  'senderUserId',
-  'receiverRoleBaseId',
-  'receiverUserId',
+  'authorRoleBaseId',
+  'authorUserId',
+  'clientEmail',
 
-  'isBlock', //yes no
-  'requestAccept', //yes no
   'myData', //yes no
   // always required filter
-  'searchTerm',
   'delete', // for permanent delete
+  'searchTerm',
   'status',
   'isDelete',
+  'createdAtFrom',
+  'createdAtTo',
   'needProperty',
 ];

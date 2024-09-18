@@ -14,10 +14,12 @@ export type IFriendShipFilters = {
   isBlock?: string | boolean;
   myData?: I_YN;
   //
+  delete?: I_YN;
   searchTerm?: string;
   needProperty?: string;
-  delete?: I_YN;
   status?: I_STATUS;
+  createdAtFrom?: string;
+  createdAtTo?: string;
   isDelete?: string | boolean;
 };
 

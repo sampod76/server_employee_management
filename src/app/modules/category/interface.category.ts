@@ -11,6 +11,9 @@ export type ICategoryFilters = {
   delete?: I_YN;
   children?: string;
   isDelete?: string | boolean;
+  createdAtFrom?: string;
+  createdAtTo?: string;
+  needProperty?: string;
 };
 
 export type ICategory = z.infer<

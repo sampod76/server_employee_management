@@ -13,9 +13,9 @@ import { IPaginationOption } from '../../interface/pagination';
 import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
 
 import { IUserRef } from '../allUser/typesAndConst';
-import { ProjectSearchableFields } from './constants.project';
-import { IProject, IProjectFilters } from './interface.interface';
-import { Project } from './models.project';
+import { ProjectSearchableFields } from './constants.taskManagement';
+import { IProject, IProjectFilters } from './interface.taskManagement';
+import { Project } from './models.taskManagement';
 
 const createProject = async (
   data: IProject,
@@ -34,13 +34,7 @@ const getAllProjectsFromDB = async (
   paginationOptions: IPaginationOption,
   req: Request,
 ): Promise<IGenericResponse<IProject[] | null>> => {
-  const {
-    searchTerm,
-    createdAtFrom,
-    createdAtTo,
-    needProperty,
-    ...filtersData
-  } = filters;
+  const { searchTerm, needProperty, ...filtersData } = filters;
   filtersData.isDelete = filtersData.isDelete
     ? filtersData.isDelete == 'true'
       ? true
@@ -60,66 +54,42 @@ const getAllProjectsFromDB = async (
   }
 
   if (Object.keys(filtersData).length) {
-    const condition = Object.entries(filtersData).map(
-      //@ts-ignore
-      ([field, value]: [keyof typeof filtersData, string]) => {
-        let modifyFiled;
-        /* 
-      if (field === 'userRoleBaseId' || field === 'referRoleBaseId') {
-        modifyFiled = { [field]: new Types.ObjectId(value) };
-      } else {
-        modifyFiled = { [field]: value };
-      } 
-      */
-        if (field === 'authorUserId') {
-          modifyFiled = {
-            ['author.userId']: new Types.ObjectId(value),
-          };
-        } else if (field === 'authorRoleBaseId') {
-          modifyFiled = {
-            ['author.roleBaseUserId']: new Types.ObjectId(value),
-          };
-        } else if (field === 'myData' && value === ENUM_YN.YES) {
-          modifyFiled = {
-            $or: [
-              {
-                'author.userId': new Types.ObjectId(
-                  req?.user?.userId as string,
-                ),
-              },
-            ],
-          };
+    andConditions.push({
+      $and: Object.entries(filtersData).map(
+        //@ts-ignore
+        ([field, value]: [keyof typeof filtersData, string]) => {
+          let modifyFiled;
+          /* 
+        if (field === 'userRoleBaseId' || field === 'referRoleBaseId') {
+          modifyFiled = { [field]: new Types.ObjectId(value) };
         } else {
           modifyFiled = { [field]: value };
-        }
-        return modifyFiled;
-      },
-    );
-    //
-    if (createdAtFrom && !createdAtTo) {
-      //only single data in register all data -> 2022-02-25_12:00 am to 2022-02-25_11:59 pm minutes
-      const timeTo = new Date(createdAtFrom);
-      const createdAtToModify = new Date(timeTo.setHours(23, 59, 59, 999));
-      condition.push({
-        //@ts-ignore
-        createdAt: {
-          $gte: new Date(createdAtFrom),
-          $lte: new Date(createdAtToModify),
+        } 
+        */
+          if (field === 'authorUserId') {
+            modifyFiled = {
+              ['author.userId']: new Types.ObjectId(value),
+            };
+          } else if (field === 'authorRoleBaseId') {
+            modifyFiled = {
+              ['author.roleBaseUserId']: new Types.ObjectId(value),
+            };
+          } else if (field === 'myData' && value === ENUM_YN.YES) {
+            modifyFiled = {
+              $or: [
+                {
+                  'author.userId': new Types.ObjectId(
+                    req?.user?.userId as string,
+                  ),
+                },
+              ],
+            };
+          } else {
+            modifyFiled = { [field]: value };
+          }
+          return modifyFiled;
         },
-      });
-    } else if (createdAtFrom && createdAtTo) {
-      condition.push({
-        //@ts-ignore
-        createdAt: {
-          $gte: new Date(createdAtFrom),
-          $lte: new Date(createdAtTo),
-        },
-      });
-    }
-
-    //
-    andConditions.push({
-      $and: condition,
+      ),
     });
   }
   const { page, limit, skip, sortBy, sortOrder } =

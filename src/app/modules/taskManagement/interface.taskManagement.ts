@@ -3,12 +3,11 @@ import { z } from 'zod';
 import { I_STATUS, I_YN } from '../../../global/enum_constant_type';
 
 import { IUserRef } from '../allUser/typesAndConst';
-import { ProjectValidation } from './validation.project';
+import { ProjectValidation } from './validation.taskManagement';
 
 export type IProjectFilters = {
   authorUserId?: string;
   authorRoleBaseId?: string;
-  clientEmail?: string;
   myData?: I_YN;
   //
   searchTerm?: string;

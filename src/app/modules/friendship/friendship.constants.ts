@@ -10,9 +10,11 @@ export const friendshipFilterableFields = [
   'requestAccept', //yes no
   'myData', //yes no
   // always required filter
-  'searchTerm',
   'delete', // for permanent delete
+  'searchTerm',
   'status',
   'isDelete',
+  'createdAtFrom',
+  'createdAtTo',
   'needProperty',
 ];
