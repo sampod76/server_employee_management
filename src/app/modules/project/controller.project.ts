@@ -88,7 +88,7 @@ const deleteProject = catchAsync(async (req: Request, res: Response) => {
   sendResponse(req, res, {
     statusCode: 200,
     success: true,
-    message: 'review deleted successfully',
+    message: 'Project deleted successfully',
     data: result,
   });
 });

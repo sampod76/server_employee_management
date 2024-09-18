@@ -18,6 +18,7 @@ import { FriendShipsRoute } from '../modules/friendship/friendship.route';
 import { EmployeeUserRoutes } from '../modules/allUser/employee/route.employee';
 import { HrAdminRoutes } from '../modules/allUser/hrAdmin/route.hrAdmin';
 import { ChatMessageRoute } from '../modules/message/messages.route';
+import { ProjectRoute } from '../modules/project/route.project';
 
 const router = express.Router();
 
@@ -42,6 +43,10 @@ const moduleRoutes = [
   {
     path: '/employee',
     route: EmployeeUserRoutes,
+  },
+  {
+    path: '/projects',
+    route: ProjectRoute,
   },
 
   {

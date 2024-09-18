@@ -17,6 +17,7 @@ export const redisConnectionString: ConnectionOptions = {
  *
  * @returns {type} Description of the return value.
  */
+
 // export const redisClient = new Redis(config.redis.url as string);
 export const pubRedis = new Redis(config.redis.url as string);
 export const subRedis = new Redis(config.redis.url as string);
