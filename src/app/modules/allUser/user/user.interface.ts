@@ -44,7 +44,9 @@ export type IUser = z.infer<typeof UserValidation.authData> & {
     otp: number;
     jwtToken?: string;
     timeOut: string;
-    status: I_STATUS;
+    //
+    passwordChangeOtp: number;
+    passwordChangeOtpTimeOut: Date;
   };
   secret: string;
   location?: ILocation;

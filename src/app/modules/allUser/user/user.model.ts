@@ -54,7 +54,7 @@ const userSchema = new Schema<IUser, UserModel>(
       required: true,
       select: 0,
     },
-    //
+
     //
     authentication: {
       otp: Number,
@@ -62,7 +62,7 @@ const userSchema = new Schema<IUser, UserModel>(
       jwtToken: String,
       //
       passwordChangeOtp: Number,
-      forgetPasswordOtp: Number,
+      passwordChangeOtpTimeOut: Date,
     },
     lastActive: {
       createdAt: Date,

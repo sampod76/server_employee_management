@@ -6,8 +6,8 @@ import { ENUM_USER_ROLE } from '../../../global/enums/users';
 import parseBodyData from '../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../middlewares/validateRequestZod';
 import { uploadAwsS3Bucket } from '../aws/utls.aws';
-import { TaskManagementController } from './controller.taskManagement';
-import { TaskManagementValidation } from './validation.taskManagement';
+import { LeaveManagementController } from './controller.leaveManagement';
+import { LeaveManagementValidation } from './validation.leaveManagement';
 const router = express.Router();
 
 router
@@ -19,7 +19,7 @@ router
       ENUM_USER_ROLE.hrAdmin,
       ENUM_USER_ROLE.employee,
     ),
-    TaskManagementController.getAllTaskManagements,
+    LeaveManagementController.getAllLeaveManagements,
   )
   .post(
     authMiddleware(
@@ -28,11 +28,23 @@ router
       ENUM_USER_ROLE.hrAdmin,
       ENUM_USER_ROLE.employee,
     ),
-    uploadAwsS3Bucket.array('submitDocuments'),
+    uploadAwsS3Bucket.array('provide'),
     parseBodyData({}),
-    validateRequestZod(TaskManagementValidation.createTaskManagementZodSchema),
-    TaskManagementController.createTaskManagement,
+    validateRequestZod(
+      LeaveManagementValidation.createLeaveManagementZodSchema,
+    ),
+    LeaveManagementController.createLeaveManagement,
   );
+
+router.route('/approved-declined/:id').patch(
+  authMiddleware(
+    ENUM_USER_ROLE.admin,
+    ENUM_USER_ROLE.superAdmin,
+    ENUM_USER_ROLE.hrAdmin,
+    // ENUM_USER_ROLE.employee,
+  ),
+  LeaveManagementController.approvedDeclinedlLeaveManagement,
+);
 
 router
   .route('/:id')
@@ -43,28 +55,30 @@ router
       ENUM_USER_ROLE.hrAdmin,
       ENUM_USER_ROLE.employee,
     ),
-    TaskManagementController.getTaskManagementById,
+    LeaveManagementController.getLeaveManagementById,
   )
   .patch(
     authMiddleware(
       ENUM_USER_ROLE.admin,
       ENUM_USER_ROLE.superAdmin,
       ENUM_USER_ROLE.hrAdmin,
-      ENUM_USER_ROLE.employee,
+      // ENUM_USER_ROLE.employee,
     ),
-    uploadAwsS3Bucket.array('submitDocuments'),
+    uploadAwsS3Bucket.array('provide'),
     parseBodyData({}),
-    validateRequestZod(TaskManagementValidation.updateTaskManagementZodSchema),
-    TaskManagementController.updateTaskManagement,
+    validateRequestZod(
+      LeaveManagementValidation.updateLeaveManagementZodSchema,
+    ),
+    LeaveManagementController.updateLeaveManagement,
   )
   .delete(
     authMiddleware(
       ENUM_USER_ROLE.admin,
       ENUM_USER_ROLE.superAdmin,
       ENUM_USER_ROLE.hrAdmin,
-      ENUM_USER_ROLE.employee,
+      // ENUM_USER_ROLE.employee,
     ),
-    TaskManagementController.deleteTaskManagement,
+    LeaveManagementController.deleteLeaveManagement,
   );
 
-export const TaskManagementRoute = router;
+export const LeaveManagementRoute = router;

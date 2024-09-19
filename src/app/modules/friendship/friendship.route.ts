@@ -46,7 +46,15 @@ router
 
 router
   .route('/:id')
-  .get(FriendShipsController.getFriendShipById)
+  .get(
+    authMiddleware(
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
+    ),
+    FriendShipsController.getFriendShipById,
+  )
   .patch(
     authMiddleware(
       ENUM_USER_ROLE.admin,

@@ -347,11 +347,19 @@ const getSingleTaskManagementFromDB = async (
   id: string,
   req?: Request,
 ): Promise<ITaskManagement | null> => {
-  const user = await TaskManagement.isTaskManagementExistMethod(id, {
+  const task = await TaskManagement.isTaskManagementExistMethod(id, {
     populate: true,
   });
+  if (
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    task?.author?.userId?.toString() !== req?.user?.userId &&
+    task?.employee?.userId?.toString() !== req?.user?.userId
+  ) {
+    throw new ApiError(403, 'forbidden access');
+  }
 
-  return user;
+  return task;
 };
 
 const deleteTaskManagementFromDB = async (

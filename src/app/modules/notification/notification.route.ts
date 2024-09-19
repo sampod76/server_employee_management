@@ -34,7 +34,15 @@ router.post(
 );
 router
   .route('/:id')
-  .get(NotificationController.getSingleNotification)
+  .get(
+    authMiddleware(
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
+    ),
+    NotificationController.getSingleNotification,
+  )
   .patch(
     authMiddleware(
       ENUM_USER_ROLE.admin,

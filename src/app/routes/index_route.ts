@@ -21,6 +21,7 @@ import { CheckInOutRoute } from '../modules/checkInOut/route.checkInOut';
 import { ChatMessageRoute } from '../modules/message/messages.route';
 import { ProjectRoute } from '../modules/project/route.project';
 import { TaskManagementRoute } from '../modules/taskManagement/route.taskManagement';
+import { LeaveManagementRoute } from '../modules/leaveManagment/route.leaveManagement';
 
 const router = express.Router();
 
@@ -57,6 +58,10 @@ const moduleRoutes = [
   {
     path: '/checkin-checkout',
     route: CheckInOutRoute,
+  },
+  {
+    path: '/leaves',
+    route: LeaveManagementRoute,
   },
 
   {

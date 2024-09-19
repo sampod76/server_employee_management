@@ -13,71 +13,79 @@ import { IPaginationOption } from '../../interface/pagination';
 import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
 
 import { IUserRef } from '../allUser/typesAndConst';
-import { CheckInOutSearchableFields } from './constants.checkInOut';
-import { ICheckInOut, ICheckInOutFilters } from './interface.checkInOut';
-import { CheckInOut } from './models.checkInOut';
 
-const createCheckInFromDb = async (
-  data: ICheckInOut,
+import {
+  ENUM_LEAVE_MANAGEMENT_STATUS,
+  ILeaveManagementStatus,
+  LeaveManagementSearchableFields,
+} from './constants.leaveManagement';
+import {
+  ILeaveManagement,
+  ILeaveManagementFilters,
+} from './interface.leaveManagement';
+import { LeaveManagement } from './models.leaveManagement';
+
+const createLeaveManagementFromDb = async (
+  data: ILeaveManagement,
   requestUser: IUserRef,
   req: Request,
-): Promise<ICheckInOut | null> => {
-  // console.log(data, 'data');
-  // Set the time to the start of the current day (midnight)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+): Promise<ILeaveManagement | null> => {
+  // Validate input data (optional but recommended)
 
-  // Check if the user has already checked in today
-  const existingCheckIn = await CheckInOut.findOne({
-    'employee.userId': requestUser.userId,
-    checkInTime: { $gte: today },
+  const userId = new Types.ObjectId(data.employee.userId);
+  const fromDate = new Date(data.from);
+  const toDate = new Date(data.to);
+
+  if (fromDate > toDate) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      '`from` date cannot be after `to` date.',
+    );
+  }
+
+  // Define the query to check for overlapping leaves
+  const find = {
+    'employee.userId': userId,
     isDelete: false,
-  });
+    requestStatus: ENUM_LEAVE_MANAGEMENT_STATUS.approved,
+    $or: [
+      {
+        from: { $lte: fromDate },
+        to: { $gte: fromDate },
+      },
+      {
+        from: { $lte: toDate },
+        to: { $gte: toDate },
+      },
+      {
+        from: { $gte: fromDate },
+        to: { $lte: toDate },
+      },
+    ],
+  };
+
+  const existingCheckIn = await LeaveManagement.findOne(find);
 
   if (existingCheckIn) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'You already check in today.');
-  }
-
-  const res = await CheckInOut.create(data);
-  return res;
-};
-const createCheckOutFromDb = async (
-  data: ICheckInOut,
-  requestUser: IUserRef,
-  req: Request,
-): Promise<ICheckInOut | null> => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const existingCheckIn = await CheckInOut.findOne({
-    'employee.userId': requestUser.userId,
-    checkInTime: { $gte: today, $lte: new Date().setHours(23, 59, 59, 999) },
-    isDelete: false,
-  });
-
-  if (!existingCheckIn) {
     throw new ApiError(
       httpStatus.NOT_ACCEPTABLE,
-      "You haven't check in today.",
-    );
-  } else if (existingCheckIn.checkOutTime) {
-    throw new ApiError(
-      httpStatus.NOT_ACCEPTABLE,
-      'You already check out today.',
+      'You are already leave requesting this date',
     );
   }
 
-  const res = await CheckInOut.findByIdAndUpdate(existingCheckIn._id, data, {
-    runValidators: true,
-    new: true,
+  const res = await LeaveManagement.create({
+    ...data,
+    totalLeaveDays:
+      new Date(data.to).getDate() - new Date(data.from).getDate() + 1,
   });
   return res;
 };
 
-const getAllCheckInOutsFromDB = async (
-  filters: ICheckInOutFilters,
+const getAllLeaveManagementsFromDB = async (
+  filters: ILeaveManagementFilters,
   paginationOptions: IPaginationOption,
   req: Request,
-): Promise<IGenericResponse<ICheckInOut[] | null>> => {
+): Promise<IGenericResponse<ILeaveManagement[] | null>> => {
   const {
     searchTerm,
     createdAtFrom,
@@ -94,7 +102,7 @@ const getAllCheckInOutsFromDB = async (
   const andConditions = [];
   if (searchTerm) {
     andConditions.push({
-      $or: CheckInOutSearchableFields.map((field: string) => ({
+      $or: LeaveManagementSearchableFields.map((field: string) => ({
         [field]: {
           $regex: searchTerm,
           $options: 'i',
@@ -123,17 +131,13 @@ const getAllCheckInOutsFromDB = async (
           modifyFiled = {
             ['employee.roleBaseUserId']: new Types.ObjectId(value),
           };
-        } else if (field === 'checkInTime') {
+        } else if (field === 'from') {
           modifyFiled = {
-            ['checkInTime']: { $gte: new Date(value) },
+            ['from']: { $gte: new Date(value) },
           };
-        } else if (field === 'checkOutTime') {
+        } else if (field === 'to') {
           modifyFiled = {
-            ['checkOutTime']: { $lte: new Date(value) },
-          };
-        } else if (field === 'isLate') {
-          modifyFiled = {
-            ['isLate']: value == 'true' ? true : false,
+            ['to']: { $lte: new Date(value) },
           };
         } else {
           modifyFiled = { [field]: value };
@@ -181,7 +185,9 @@ const getAllCheckInOutsFromDB = async (
   const whereConditions =
     andConditions.length > 0 ? { $and: andConditions } : {};
   //!------------check -access validation ------------------
-  const check = (await CheckInOut.findOne(whereConditions)) as ICheckInOut;
+  const check = (await LeaveManagement.findOne(
+    whereConditions,
+  )) as ILeaveManagement;
   if (check) {
     if (
       check?.employee?.userId?.toString() !== req?.user?.userId &&
@@ -270,13 +276,13 @@ const getAllCheckInOutsFromDB = async (
   }
 
   const resultArray = [
-    CheckInOut.aggregate(pipeline),
-    CheckInOut.countDocuments(whereConditions),
+    LeaveManagement.aggregate(pipeline),
+    LeaveManagement.countDocuments(whereConditions),
   ];
   const result = await Promise.all(resultArray);
   //!-- alternatively and faster
   /*
-   const pipeLineResult = await CheckInOut.aggregate([
+   const pipeLineResult = await LeaveManagement.aggregate([
     {
       $facet: {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -301,33 +307,33 @@ const getAllCheckInOutsFromDB = async (
       limit,
       total: result[1] as number,
     },
-    data: result[0] as ICheckInOut[],
+    data: result[0] as ILeaveManagement[],
   };
 };
 
-const updateCheckInOutFromDB = async (
+const updateLeaveManagementFromDB = async (
   id: string,
-  data: ICheckInOut,
+  data: ILeaveManagement,
   req: Request,
-): Promise<ICheckInOut | null> => {
-  const isExist = (await CheckInOut.findOne({
+): Promise<ILeaveManagement | null> => {
+  const isExist = (await LeaveManagement.findOne({
     _id: id,
     isDelete: false,
-  })) as ICheckInOut & {
+  })) as ILeaveManagement & {
     _id: Schema.Types.ObjectId;
-  } as ICheckInOut;
+  } as ILeaveManagement;
   if (!isExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Task not found');
   }
   if (
     req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
-    req?.user?.role !== ENUM_USER_ROLE.admin
-    // && isExist?.employee?.userId?.toString() !== req?.user?.userId
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    isExist?.employee?.userId?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
   }
 
-  const updatedCheckInOut = await CheckInOut.findOneAndUpdate(
+  const updatedLeaveManagement = await LeaveManagement.findOneAndUpdate(
     { _id: id },
     data,
     {
@@ -335,34 +341,87 @@ const updateCheckInOutFromDB = async (
       runValidators: true,
     },
   );
-  if (!updatedCheckInOut) {
+  if (!updatedLeaveManagement) {
     throw new ApiError(400, 'Failed to update Task');
   }
-  return updatedCheckInOut;
+  return updatedLeaveManagement;
 };
-
-const getSingleCheckInOutFromDB = async (
+const approvedDeclinedlLeaveManagementFromDB = async (
   id: string,
-  req?: Request,
-): Promise<ICheckInOut | null> => {
-  const user = await CheckInOut.isCheckInOutExistMethod(id, {
-    populate: true,
-  });
-
-  return user;
-};
-
-const deleteCheckInOutFromDB = async (
-  id: string,
-  query: ICheckInOutFilters,
+  data: { requestStatus: ILeaveManagementStatus },
   req: Request,
-): Promise<ICheckInOut | null> => {
-  const isExist = (await CheckInOut.findOne({
+): Promise<ILeaveManagement | null> => {
+  if (!data.requestStatus) {
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'Request status is required');
+  }
+  const isExist = (await LeaveManagement.findOne({
     _id: id,
     isDelete: false,
-  })) as ICheckInOut & {
+  })) as ILeaveManagement & {
     _id: Schema.Types.ObjectId;
-  } as ICheckInOut;
+  } as ILeaveManagement;
+
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Task not found');
+  }
+
+  if (
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
+    req?.user?.role !== ENUM_USER_ROLE.admin
+    // && isExist?.employee?.userId?.toString() !== req?.user?.userId
+  ) {
+    throw new ApiError(403, 'forbidden access');
+  }
+  if (isExist.requestStatus !== ENUM_LEAVE_MANAGEMENT_STATUS.pending) {
+    throw new ApiError(
+      httpStatus.NOT_ACCEPTABLE,
+      `Leave status can not be changed. Because it is already ${isExist.requestStatus}`,
+    );
+  }
+
+  const updatedLeaveManagement = await LeaveManagement.findOneAndUpdate(
+    { _id: id },
+    { requestStatus: data.requestStatus },
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
+  if (!updatedLeaveManagement) {
+    throw new ApiError(400, 'Failed to update Task');
+  }
+  return updatedLeaveManagement;
+};
+
+const getSingleLeaveManagementFromDB = async (
+  id: string,
+  req?: Request,
+): Promise<ILeaveManagement | null> => {
+  const leave = await LeaveManagement.isLeaveManagementExistMethod(id, {
+    populate: true,
+  });
+  if (
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    leave?.employee?.userId?.toString() !== req?.user?.userId
+  ) {
+    throw new ApiError(403, 'forbidden access');
+  }
+
+  return leave;
+};
+
+const deleteLeaveManagementFromDB = async (
+  id: string,
+  query: ILeaveManagementFilters,
+  req: Request,
+): Promise<ILeaveManagement | null> => {
+  const isExist = (await LeaveManagement.findOne({
+    _id: id,
+    isDelete: false,
+  })) as ILeaveManagement & {
+    _id: Schema.Types.ObjectId;
+  } as ILeaveManagement;
 
   if (!isExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Task not found');
@@ -383,9 +442,9 @@ const deleteCheckInOutFromDB = async (
     (req?.user?.role == ENUM_USER_ROLE.admin ||
       req?.user?.role == ENUM_USER_ROLE.superAdmin)
   ) {
-    data = await CheckInOut.findOneAndDelete({ _id: id });
+    data = await LeaveManagement.findOneAndDelete({ _id: id });
   } else {
-    data = await CheckInOut.findOneAndUpdate(
+    data = await LeaveManagement.findOneAndUpdate(
       { _id: id },
       { isDelete: true },
       { new: true, runValidators: true },
@@ -395,11 +454,11 @@ const deleteCheckInOutFromDB = async (
   return data;
 };
 
-export const CheckInOutService = {
-  createCheckInFromDb,
-  createCheckOutFromDb,
-  getAllCheckInOutsFromDB,
-  updateCheckInOutFromDB,
-  getSingleCheckInOutFromDB,
-  deleteCheckInOutFromDB,
+export const LeaveManagementService = {
+  createLeaveManagementFromDb,
+  approvedDeclinedlLeaveManagementFromDB,
+  getAllLeaveManagementsFromDB,
+  updateLeaveManagementFromDB,
+  getSingleLeaveManagementFromDB,
+  deleteLeaveManagementFromDB,
 };
