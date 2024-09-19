@@ -1,10 +1,6 @@
 import { model, PipelineStage, Schema, Types } from 'mongoose';
 
-import {
-  ENUM_STATUS,
-  ENUM_YN,
-  STATUS_ARRAY,
-} from '../../../global/enum_constant_type';
+import { ENUM_STATUS, STATUS_ARRAY } from '../../../global/enum_constant_type';
 
 import { mongooseFileSchema } from '../../../global/schema/global.schema';
 import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
@@ -59,7 +55,7 @@ CheckInOutSchema.statics.isCheckInOutExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option?.isDelete || ENUM_YN.NO,
+          isDelete: option?.isDelete || false,
         },
       },
     ]);
@@ -77,11 +73,11 @@ CheckInOutSchema.statics.isCheckInOutExistMethod = async function (
     LookupAnyRoleDetailsReusable(pipeline, {
       collections: [
         {
-          roleMatchFiledName: 'author.role',
-          idFiledName: 'author.roleBaseUserId', //$author.roleBaseUserId
+          roleMatchFiledName: 'employee.role',
+          idFiledName: 'employee.roleBaseUserId', //$employee.roleBaseUserId
           pipeLineMatchField: '_id', //$_id
           outPutFieldName: 'details',
-          margeInField: 'author',
+          margeInField: 'employee',
           //CheckInOut: { name: 1, country: 1, profileImage: 1, email: 1 },
         },
       ],

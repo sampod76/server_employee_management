@@ -10,7 +10,9 @@ const TestFile = async () => {
 
     // Define the base directory and the folders to be created
     // Function to start the Redis Docker container
-
+    // const time =
+    //   new Date('2024-02-02').getDate() - new Date('2024-02-09').getDate();
+    // console.log(time);
     createDirectories();
     await asyncFunction();
   } catch (error) {

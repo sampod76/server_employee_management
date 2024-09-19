@@ -27,16 +27,13 @@ const createCheckInFromDb = async (
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Log the calculated start of the day for debugging
-  console.log(`Start of day (timeTo): ${today}`);
-
   // Check if the user has already checked in today
   const existingCheckIn = await CheckInOut.findOne({
     'employee.userId': requestUser.userId,
     checkInTime: { $gte: today },
     isDelete: false,
   });
-  console.log(existingCheckIn);
+
   if (existingCheckIn) {
     throw new ApiError(httpStatus.FORBIDDEN, 'You already check in today.');
   }
@@ -49,7 +46,6 @@ const createCheckOutFromDb = async (
   requestUser: IUserRef,
   req: Request,
 ): Promise<ICheckInOut | null> => {
-  console.log(data, 'data');
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const existingCheckIn = await CheckInOut.findOne({

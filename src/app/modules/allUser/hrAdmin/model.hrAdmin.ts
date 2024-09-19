@@ -8,7 +8,6 @@ import {
 
 import {
   ENUM_STATUS,
-  ENUM_YN,
   STATUS_ARRAY,
 } from '../../../../global/enum_constant_type';
 import { mongooseFileSchema } from '../../../../global/schema/global.schema';
@@ -104,7 +103,7 @@ HrAdminSchema.statics.isHrAdminExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option?.isDelete || ENUM_YN.NO,
+          isDelete: option?.isDelete || false,
         },
       },
       {
