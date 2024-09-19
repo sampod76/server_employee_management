@@ -7,11 +7,11 @@ import pick from '../../share/pick';
 import sendResponse from '../../share/sendResponse';
 import { IUserRef, IUserRefAndDetails } from '../allUser/typesAndConst';
 import { RequestToRefUserObject } from '../allUser/user/user.utils';
-import { TaskManagementFilterableFields } from './constants.checkInOut';
-import { ITaskManagement } from './interface.checkInOut';
-import { TaskManagementService } from './service.checkInOut';
+import { CheckInOutFilterableFields } from './constants.checkInOut';
+import { ICheckInOut } from './interface.checkInOut';
+import { CheckInOutService } from './service.checkInOut';
 
-const createTaskManagement = catchAsync(async (req: Request, res: Response) => {
+const createCheckInOut = catchAsync(async (req: Request, res: Response) => {
   req.body = {
     ...req.body,
     author: RequestToRefUserObject(req.user as IUserRefAndDetails),
@@ -22,62 +22,58 @@ const createTaskManagement = catchAsync(async (req: Request, res: Response) => {
       employee: RequestToRefUserObject(req.user as IUserRefAndDetails),
     };
   }
-  const result = await TaskManagementService.createTaskManagement(
+  const result = await CheckInOutService.createCheckInOut(
     req.body,
     req?.user as IUserRef,
     req,
   );
-  sendResponse<ITaskManagement>(req, res, {
+  sendResponse<ICheckInOut>(req, res, {
     statusCode: 200,
     success: true,
-    message: 'Task created successfully',
+    message: 'CheckInOut created successfully',
     data: result,
   });
 });
 
-//get all TaskManagements
-const getAllTaskManagements = catchAsync(
-  async (req: Request, res: Response) => {
-    const filters = pick(req.query, TaskManagementFilterableFields);
-    const paginationOptions = pick(req.query, PAGINATION_FIELDS);
+//get all CheckInOuts
+const getAllCheckInOuts = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, CheckInOutFilterableFields);
+  const paginationOptions = pick(req.query, PAGINATION_FIELDS);
 
-    const result = await TaskManagementService.getAllTaskManagementsFromDB(
-      filters,
-      paginationOptions,
-      req,
-    );
+  const result = await CheckInOutService.getAllCheckInOutsFromDB(
+    filters,
+    paginationOptions,
+    req,
+  );
 
-    sendResponse(req, res, {
-      statusCode: 200,
-      success: true,
-      message: 'Task found successfully',
-      data: result.data,
-      meta: result.meta,
-    });
-  },
-);
+  sendResponse(req, res, {
+    statusCode: 200,
+    success: true,
+    message: 'CheckInOut found successfully',
+    data: result.data,
+    meta: result.meta,
+  });
+});
 
-//get a TaskManagement by id
-const getTaskManagementById = catchAsync(
-  async (req: Request, res: Response) => {
-    const result = await TaskManagementService.getSingleTaskManagementFromDB(
-      req.params.id,
-      req,
-    );
+//get a CheckInOut by id
+const getCheckInOutById = catchAsync(async (req: Request, res: Response) => {
+  const result = await CheckInOutService.getSingleCheckInOutFromDB(
+    req.params.id,
+    req,
+  );
 
-    sendResponse(req, res, {
-      statusCode: 200,
-      success: true,
-      message: 'Task found successfully',
-      data: result,
-    });
-  },
-);
+  sendResponse(req, res, {
+    statusCode: 200,
+    success: true,
+    message: 'CheckInOut found successfully',
+    data: result,
+  });
+});
 
-//update TaskManagement
-const updateTaskManagement = catchAsync(async (req: Request, res: Response) => {
+//update CheckInOut
+const updateCheckInOut = catchAsync(async (req: Request, res: Response) => {
   // await RequestToFileDecodeAddBodyHandle(req);
-  const result = await TaskManagementService.updateTaskManagementFromDB(
+  const result = await CheckInOutService.updateCheckInOutFromDB(
     req.params.id,
     req.body,
     req,
@@ -86,15 +82,15 @@ const updateTaskManagement = catchAsync(async (req: Request, res: Response) => {
   sendResponse(req, res, {
     statusCode: 200,
     success: true,
-    message: 'Task updated successfully',
+    message: 'CheckInOut updated successfully',
     data: result,
   });
 });
 
-//delete TaskManagement
-const deleteTaskManagement = catchAsync(async (req: Request, res: Response) => {
+//delete CheckInOut
+const deleteCheckInOut = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
-  const result = await TaskManagementService.deleteTaskManagementFromDB(
+  const result = await CheckInOutService.deleteCheckInOutFromDB(
     id,
     req.query,
     req,
@@ -103,15 +99,15 @@ const deleteTaskManagement = catchAsync(async (req: Request, res: Response) => {
   sendResponse(req, res, {
     statusCode: 200,
     success: true,
-    message: 'TaskD deleted successfully',
+    message: 'CheckInOutD deleted successfully',
     data: result,
   });
 });
 
-export const TaskManagementController = {
-  createTaskManagement,
-  getAllTaskManagements,
-  getTaskManagementById,
-  updateTaskManagement,
-  deleteTaskManagement,
+export const CheckInOutController = {
+  createCheckInOut,
+  getAllCheckInOuts,
+  getCheckInOutById,
+  updateCheckInOut,
+  deleteCheckInOut,
 };

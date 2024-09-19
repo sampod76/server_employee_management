@@ -135,10 +135,10 @@ const getAllCheckInOutsFromDB = async (
   const whereConditions =
     andConditions.length > 0 ? { $and: andConditions } : {};
   //!------------check -access validation ------------------
-  const check = (await CheckInOut.findOne(whereConditions)) as ICheckInOut[];
-  if (check?.length) {
+  const check = (await CheckInOut.findOne(whereConditions)) as ICheckInOut;
+  if (check) {
     if (
-      check[0]?.employee?.userId?.toString() !== req?.user?.userId &&
+      check?.employee?.userId?.toString() !== req?.user?.userId &&
       req?.user?.role !== ENUM_USER_ROLE.admin &&
       req?.user?.role !== ENUM_USER_ROLE.superAdmin
     ) {
@@ -156,7 +156,7 @@ const getAllCheckInOutsFromDB = async (
       $lookup: {
         from: 'employees',
         let: {
-          id: 'employee.userId',
+          id: '$employee.roleBaseUserId',
         },
         pipeline: [
           {
@@ -211,15 +211,13 @@ const getAllCheckInOutsFromDB = async (
   //-----------------needProperty--lookup--------------------
   if (needProperty?.toLowerCase()?.includes('author')) {
     const collections = [];
-
     collections.push({
       roleMatchFiledName: 'author.role',
       idFiledName: 'author.roleBaseUserId', //$sender.roleBaseUserId
       pipeLineMatchField: '_id', //$_id
       outPutFieldName: 'details',
-      margeInField: 'assignBy',
+      margeInField: 'author',
     });
-
     LookupAnyRoleDetailsReusable(pipeline, {
       collections: collections,
     });
@@ -277,22 +275,15 @@ const updateCheckInOutFromDB = async (
   }
   if (
     req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
-    req?.user?.role !== ENUM_USER_ROLE.admin &&
-    isExist?.author?.userId?.toString() !== req?.user?.userId &&
-    isExist?.employee?.userId?.toString() !== req?.user?.userId
+    req?.user?.role !== ENUM_USER_ROLE.admin
+    // && isExist?.employee?.userId?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
   }
 
-  const { ...CheckInOutData } = data;
-
-  const updatedCheckInOutData: Partial<ICheckInOut> = {
-    ...CheckInOutData,
-  };
-
   const updatedCheckInOut = await CheckInOut.findOneAndUpdate(
     { _id: id },
-    updatedCheckInOutData,
+    data,
     {
       new: true,
       runValidators: true,
@@ -333,8 +324,8 @@ const deleteCheckInOutFromDB = async (
 
   if (
     req?.user?.role !== ENUM_USER_ROLE.admin &&
-    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
-    isExist?.author?.userId?.toString() !== req?.user?.userId
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin
+    // && isExist?.employee?.userId?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
   }

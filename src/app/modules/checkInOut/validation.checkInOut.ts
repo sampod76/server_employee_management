@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import { I_STATUS, STATUS_ARRAY } from '../../../global/enum_constant_type';
 import { zodFileAfterUploadSchema } from '../../../global/schema/global.schema';
-import { zodRefUser } from '../allUser/typesAndConst';
 
 const CheckInOut_BodyData = z.object({
   // employee: zodRefUser.optional(), //set by controller

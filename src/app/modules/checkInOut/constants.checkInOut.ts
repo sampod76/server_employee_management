@@ -1,8 +1,8 @@
 //
 export const CheckInOutSearchableFields = ['title'];
 export const CheckInOutFilterableFields = [
-  'employeeRoleBaseId',
-  'employeeUserId',
+  'authorRoleBaseId',
+  'authorUserId',
   //
   'myData', //yes no
   'checkInTime',

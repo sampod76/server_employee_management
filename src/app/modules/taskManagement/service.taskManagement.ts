@@ -136,19 +136,17 @@ const getAllTaskManagementsFromDB = async (
   if (sortBy && sortOrder) {
     sortConditions[sortBy] = sortOrder === 'asc' ? 1 : -1;
   }
-
   //****************pagination end ***************/
-
   const whereConditions =
     andConditions.length > 0 ? { $and: andConditions } : {};
   //!------------check -access validation ------------------
   const check = (await TaskManagement.findOne(
     whereConditions,
-  )) as ITaskManagement[];
-  if (check?.length) {
+  )) as ITaskManagement;
+  if (check) {
     if (
-      check[0]?.author?.userId?.toString() !== req?.user?.userId &&
-      check[0]?.employee?.userId?.toString() !== req?.user?.userId &&
+      check?.author?.userId?.toString() !== req?.user?.userId &&
+      check?.employee?.userId?.toString() !== req?.user?.userId &&
       req?.user?.role !== ENUM_USER_ROLE.admin &&
       req?.user?.role !== ENUM_USER_ROLE.superAdmin
     ) {
@@ -161,7 +159,7 @@ const getAllTaskManagementsFromDB = async (
     { $sort: sortConditions },
     { $skip: Number(skip) || 0 },
     { $limit: Number(limit) || 10 },
-    //------employees lookups---------------
+    //----------employees-lookups---------------
     {
       $lookup: {
         from: 'employees',
@@ -268,7 +266,7 @@ const getAllTaskManagementsFromDB = async (
     {
       $project: { details: 0 },
     },
-    // ------end---------------
+    // -------------end---------------
   ];
 
   //-----------------needProperty--lookup--------------------

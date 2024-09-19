@@ -17,6 +17,7 @@ import { FriendShipsRoute } from '../modules/friendship/friendship.route';
 
 import { EmployeeUserRoutes } from '../modules/allUser/employee/route.employee';
 import { HrAdminRoutes } from '../modules/allUser/hrAdmin/route.hrAdmin';
+import { CheckInOutRoute } from '../modules/checkInOut/route.checkInOut';
 import { ChatMessageRoute } from '../modules/message/messages.route';
 import { ProjectRoute } from '../modules/project/route.project';
 import { TaskManagementRoute } from '../modules/taskManagement/route.taskManagement';
@@ -52,6 +53,10 @@ const moduleRoutes = [
   {
     path: '/task-management',
     route: TaskManagementRoute,
+  },
+  {
+    path: '/checkin-checkout',
+    route: CheckInOutRoute,
   },
 
   {
