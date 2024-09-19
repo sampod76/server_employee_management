@@ -11,7 +11,7 @@ import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
 import { ENUM_REDIS_KEY } from '../../redis/consent.redis';
 import { redisClient } from '../../redis/redis';
 import { mongooseIUserRef } from '../allUser/typesAndConst';
-import { ProjectModel, IProject } from './interface.interface';
+import { IProject, ProjectModel } from './interface.interface';
 
 const ProjectSchema = new Schema<IProject, ProjectModel>(
   {
@@ -25,10 +25,10 @@ const ProjectSchema = new Schema<IProject, ProjectModel>(
       type: [{ title: String }],
       trim: true,
     },
-    start: {
+    startDate: {
       type: Date,
     },
-    end: {
+    endDate: {
       type: Date,
     },
     extended: {

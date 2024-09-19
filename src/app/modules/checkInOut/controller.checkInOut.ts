@@ -7,9 +7,9 @@ import pick from '../../share/pick';
 import sendResponse from '../../share/sendResponse';
 import { IUserRef, IUserRefAndDetails } from '../allUser/typesAndConst';
 import { RequestToRefUserObject } from '../allUser/user/user.utils';
-import { TaskManagementFilterableFields } from './constants.taskManagement';
-import { ITaskManagement } from './interface.taskManagement';
-import { TaskManagementService } from './service.taskManagement';
+import { TaskManagementFilterableFields } from './constants.checkInOut';
+import { ITaskManagement } from './interface.checkInOut';
+import { TaskManagementService } from './service.checkInOut';
 
 const createTaskManagement = catchAsync(async (req: Request, res: Response) => {
   req.body = {

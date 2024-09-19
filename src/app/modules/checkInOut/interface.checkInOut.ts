@@ -3,18 +3,17 @@ import { z } from 'zod';
 import { I_STATUS, I_YN } from '../../../global/enum_constant_type';
 
 import { IUserRef } from '../allUser/typesAndConst';
-import { TaskManagementValidation } from './validation.taskManagement';
+import { CheckInOutValidation } from './validation.checkInOut';
 
-export type ITaskManagementFilters = {
+export type ICheckInOutFilters = {
   employeeUserId?: string;
   employeeRoleBaseId?: string;
-  authorUserId?: string;
-  authorRoleBaseId?: string;
-  projectId?: string;
+
   //
   myData?: I_YN;
-  startDate?: string;
-  endDate?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  isLate?: string | boolean;
   //
   searchTerm?: string;
   needProperty?: string;
@@ -25,23 +24,22 @@ export type ITaskManagementFilters = {
   createdAtTo?: string;
 };
 
-export type ITaskManagement = z.infer<
-  typeof TaskManagementValidation.TaskManagement_BodyData
+export type ICheckInOut = z.infer<
+  typeof CheckInOutValidation.CheckInOut_BodyData
 > &
-  z.infer<typeof TaskManagementValidation.TaskManagement_UpdateBodyDate> & {
+  z.infer<typeof CheckInOutValidation.CheckInOut_UpdateBodyDate> & {
     employee: IUserRef;
-    author: IUserRef;
     _id?: Types.ObjectId | string;
-    projectId?: Types.ObjectId | string;
     isDelete: boolean;
+    isLate: boolean;
   };
-export type TaskManagementModel = {
-  isTaskManagementExistMethod(
+export type CheckInOutModel = {
+  isCheckInOutExistMethod(
     id: string,
     option: {
       isDelete?: boolean;
       populate?: boolean;
       needProperty?: string[];
     },
-  ): Promise<ITaskManagement>;
-} & Model<ITaskManagement, Record<string, unknown>>;
+  ): Promise<ICheckInOut>;
+} & Model<ICheckInOut, Record<string, unknown>>;

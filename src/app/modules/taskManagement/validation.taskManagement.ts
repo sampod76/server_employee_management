@@ -9,33 +9,34 @@ import {
   TaskProgressStatusArray,
 } from './constants.taskManagement';
 
-const Project_BodyData = z.object({
+const TaskManagement_BodyData = z.object({
   title: z.string({ required_error: 'Title is required' }).nonempty(),
   projectId: z.string().or(z.instanceof(Types.ObjectId)).optional(),
   // assignBy: zodRefUser.optional(),//admin
   employee: zodRefUser.optional(),
   taskList: z.array(z.object({ title: z.string() })).optional(),
-  start: z.date().or(z.string()).optional(),
-  end: z.date().or(z.string()).optional(),
+  startDate: z.date().or(z.string()).optional(),
+  endDate: z.date().or(z.string()).optional(),
   description: z.string().optional(),
   submitDocuments: z.array(zodFileAfterUploadSchema).optional(),
   taskProgressStatus: z.enum(TaskProgressStatusArray as [ITaskProgressStatus]),
 });
 
-const Project_UpdateBodyDate = z.object({
+const TaskManagement_UpdateBodyDate = z.object({
   status: z.enum(STATUS_ARRAY as [I_STATUS, ...I_STATUS[]]).optional(),
-  isDelete: z.boolean().optional().default(false),
 });
 
-const createProjectZodSchema = z.object({
-  body: Project_BodyData,
+const createTaskManagementZodSchema = z.object({
+  body: TaskManagement_BodyData,
 });
 
-const updateProjectZodSchema = z.object({
-  body: Project_BodyData.merge(Project_UpdateBodyDate).deepPartial(),
+const updateTaskManagementZodSchema = z.object({
+  body: TaskManagement_BodyData.merge(
+    TaskManagement_UpdateBodyDate,
+  ).deepPartial(),
 });
-const ProjectBlockZodSchema = z.object({
-  body: Project_BodyData.deepPartial(),
+const TaskManagementBlockZodSchema = z.object({
+  body: TaskManagement_BodyData.deepPartial(),
 });
 /* 
   .refine(({ body }) => {
@@ -47,12 +48,12 @@ const ProjectBlockZodSchema = z.object({
   });
    */
 
-export const ProjectValidation = {
-  createProjectZodSchema,
-  updateProjectZodSchema,
-  ProjectBlockZodSchema,
+export const TaskManagementValidation = {
+  createTaskManagementZodSchema,
+  updateTaskManagementZodSchema,
+  TaskManagementBlockZodSchema,
   //
-  Project_BodyData,
-  Project_UpdateBodyDate,
+  TaskManagement_BodyData,
+  TaskManagement_UpdateBodyDate,
   //
 };

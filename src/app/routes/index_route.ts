@@ -19,6 +19,7 @@ import { EmployeeUserRoutes } from '../modules/allUser/employee/route.employee';
 import { HrAdminRoutes } from '../modules/allUser/hrAdmin/route.hrAdmin';
 import { ChatMessageRoute } from '../modules/message/messages.route';
 import { ProjectRoute } from '../modules/project/route.project';
+import { TaskManagementRoute } from '../modules/taskManagement/route.taskManagement';
 
 const router = express.Router();
 
@@ -47,6 +48,10 @@ const moduleRoutes = [
   {
     path: '/projects',
     route: ProjectRoute,
+  },
+  {
+    path: '/task-management',
+    route: TaskManagementRoute,
   },
 
   {

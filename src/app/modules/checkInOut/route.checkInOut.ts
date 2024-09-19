@@ -6,8 +6,8 @@ import { ENUM_USER_ROLE } from '../../../global/enums/users';
 import parseBodyData from '../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../middlewares/validateRequestZod';
 import { uploadAwsS3Bucket } from '../aws/utls.aws';
-import { TaskManagementController } from './controller.taskManagement';
-import { TaskManagementValidation } from './validation.taskManagement';
+import { TaskManagementController } from './controller.checkInOut';
+import { TaskManagementValidation } from './validation.checkInOut';
 const router = express.Router();
 
 router

@@ -13,28 +13,25 @@ import { IPaginationOption } from '../../interface/pagination';
 import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
 
 import { IUserRef } from '../allUser/typesAndConst';
-import { TaskManagementSearchableFields } from './constants.taskManagement';
-import {
-  ITaskManagement,
-  ITaskManagementFilters,
-} from './interface.taskManagement';
-import { TaskManagement } from './models.taskManagement';
+import { CheckInOutSearchableFields } from './constants.checkInOut';
+import { ICheckInOut, ICheckInOutFilters } from './interface.checkInOut';
+import { CheckInOut } from './models.checkInOut';
 
-const createTaskManagement = async (
-  data: ITaskManagement,
+const createCheckInOut = async (
+  data: ICheckInOut,
   requestUser: IUserRef,
   req: Request,
-): Promise<ITaskManagement | null> => {
+): Promise<ICheckInOut | null> => {
   // console.log(data, 'data');
-  const res = await TaskManagement.create(data);
+  const res = await CheckInOut.create(data);
   return res;
 };
 
-const getAllTaskManagementsFromDB = async (
-  filters: ITaskManagementFilters,
+const getAllCheckInOutsFromDB = async (
+  filters: ICheckInOutFilters,
   paginationOptions: IPaginationOption,
   req: Request,
-): Promise<IGenericResponse<ITaskManagement[] | null>> => {
+): Promise<IGenericResponse<ICheckInOut[] | null>> => {
   const {
     searchTerm,
     createdAtFrom,
@@ -51,7 +48,7 @@ const getAllTaskManagementsFromDB = async (
   const andConditions = [];
   if (searchTerm) {
     andConditions.push({
-      $or: TaskManagementSearchableFields.map((field: string) => ({
+      $or: CheckInOutSearchableFields.map((field: string) => ({
         [field]: {
           $regex: searchTerm,
           $options: 'i',
@@ -72,15 +69,7 @@ const getAllTaskManagementsFromDB = async (
          modifyFiled = { [field]: value };
          } 
        */
-        if (field === 'authorUserId') {
-          modifyFiled = {
-            ['author.userId']: new Types.ObjectId(value),
-          };
-        } else if (field === 'authorRoleBaseId') {
-          modifyFiled = {
-            ['author.roleBaseUserId']: new Types.ObjectId(value),
-          };
-        } else if (field === 'employeeUserId') {
+        if (field === 'employeeUserId') {
           modifyFiled = {
             ['employee.userId']: new Types.ObjectId(value),
           };
@@ -88,13 +77,17 @@ const getAllTaskManagementsFromDB = async (
           modifyFiled = {
             ['employee.roleBaseUserId']: new Types.ObjectId(value),
           };
-        } else if (field === 'startDate') {
+        } else if (field === 'checkInTime') {
           modifyFiled = {
-            ['startDate']: { $gte: new Date(value) },
+            ['checkInTime']: { $gte: new Date(value) },
           };
-        } else if (field === 'endDate') {
+        } else if (field === 'checkOutTime') {
           modifyFiled = {
-            ['endDate']: { $lte: new Date(value) },
+            ['checkOutTime']: { $lte: new Date(value) },
+          };
+        } else if (field === 'isLate') {
+          modifyFiled = {
+            ['isLate']: value == 'true' ? true : false,
           };
         } else {
           modifyFiled = { [field]: value };
@@ -142,12 +135,9 @@ const getAllTaskManagementsFromDB = async (
   const whereConditions =
     andConditions.length > 0 ? { $and: andConditions } : {};
   //!------------check -access validation ------------------
-  const check = (await TaskManagement.findOne(
-    whereConditions,
-  )) as ITaskManagement[];
+  const check = (await CheckInOut.findOne(whereConditions)) as ICheckInOut[];
   if (check?.length) {
     if (
-      check[0]?.author?.userId?.toString() !== req?.user?.userId &&
       check[0]?.employee?.userId?.toString() !== req?.user?.userId &&
       req?.user?.role !== ENUM_USER_ROLE.admin &&
       req?.user?.role !== ENUM_USER_ROLE.superAdmin
@@ -166,7 +156,7 @@ const getAllTaskManagementsFromDB = async (
       $lookup: {
         from: 'employees',
         let: {
-          id: '$employee.roleBaseUserId',
+          id: 'employee.userId',
         },
         pipeline: [
           {
@@ -215,104 +205,73 @@ const getAllTaskManagementsFromDB = async (
     {
       $project: { details: 0 },
     },
-    {
-      $lookup: {
-        from: 'employees',
-        let: {
-          id: '$employee.roleBaseUserId',
-        },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $eq: ['$_id', '$$id'],
-              },
-            },
-          },
-        ],
-        as: 'details',
-      },
-    },
-    {
-      $addFields: {
-        employee: {
-          $cond: {
-            if: {
-              $and: [
-                { isArray: '$details' },
-                {
-                  $eq: [
-                    {
-                      $size: '$details',
-                    },
-                    0,
-                  ],
-                },
-              ],
-            },
-            then: '$employee',
-            else: {
-              $mergeObjects: [
-                {
-                  ['details']: {
-                    $arrayElemAt: ['$details', 0],
-                  },
-                },
-                '$employee',
-              ],
-            },
-          },
-        },
-      },
-    },
-    {
-      $project: { details: 0 },
-    },
-    // ------end---------------
+    //------end---------------
   ];
 
   //-----------------needProperty--lookup--------------------
+  if (needProperty?.toLowerCase()?.includes('author')) {
+    const collections = [];
 
-  const collections = [];
-  collections.push({
-    roleMatchFiledName: 'author.role',
-    idFiledName: '$author.roleBaseUserId', //$author.roleBaseUserId
-    pipeLineMatchField: '$_id', //$_id
-    outPutFieldName: 'details',
-    margeInField: 'author',
-  });
+    collections.push({
+      roleMatchFiledName: 'author.role',
+      idFiledName: 'author.roleBaseUserId', //$sender.roleBaseUserId
+      pipeLineMatchField: '_id', //$_id
+      outPutFieldName: 'details',
+      margeInField: 'assignBy',
+    });
 
-  LookupAnyRoleDetailsReusable(pipeline, {
-    collections: collections,
-  });
+    LookupAnyRoleDetailsReusable(pipeline, {
+      collections: collections,
+    });
+  }
 
   const resultArray = [
-    TaskManagement.aggregate(pipeline),
-    TaskManagement.countDocuments(whereConditions),
+    CheckInOut.aggregate(pipeline),
+    CheckInOut.countDocuments(whereConditions),
   ];
   const result = await Promise.all(resultArray);
-
+  //!-- alternatively and faster
+  /*
+   const pipeLineResult = await CheckInOut.aggregate([
+    {
+      $facet: {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        data: pipeline,
+        countDocuments: [
+          {
+            $match: whereConditions,
+          },
+          { $count: 'totalData' },
+        ],
+      },
+    },
+  ]);
+  // Extract and format the pipeLineResults
+  const total = pipeLineResult[0]?.countDocuments[0]?.totalData || 0; // Extract total count
+  const result = pipeLineResult[0]?.data || []; // Extract data 
+  */
   return {
     meta: {
       page,
       limit,
       total: result[1] as number,
     },
-    data: result[0] as ITaskManagement[],
+    data: result[0] as ICheckInOut[],
   };
 };
 
-const updateTaskManagementFromDB = async (
+const updateCheckInOutFromDB = async (
   id: string,
-  data: ITaskManagement,
+  data: ICheckInOut,
   req: Request,
-): Promise<ITaskManagement | null> => {
-  const isExist = (await TaskManagement.findOne({
+): Promise<ICheckInOut | null> => {
+  const isExist = (await CheckInOut.findOne({
     _id: id,
     isDelete: false,
-  })) as ITaskManagement & {
+  })) as ICheckInOut & {
     _id: Schema.Types.ObjectId;
-  } as ITaskManagement;
+  } as ICheckInOut;
   if (!isExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Task not found');
   }
@@ -325,48 +284,48 @@ const updateTaskManagementFromDB = async (
     throw new ApiError(403, 'forbidden access');
   }
 
-  const { ...TaskManagementData } = data;
+  const { ...CheckInOutData } = data;
 
-  const updatedTaskManagementData: Partial<ITaskManagement> = {
-    ...TaskManagementData,
+  const updatedCheckInOutData: Partial<ICheckInOut> = {
+    ...CheckInOutData,
   };
 
-  const updatedTaskManagement = await TaskManagement.findOneAndUpdate(
+  const updatedCheckInOut = await CheckInOut.findOneAndUpdate(
     { _id: id },
-    updatedTaskManagementData,
+    updatedCheckInOutData,
     {
       new: true,
       runValidators: true,
     },
   );
-  if (!updatedTaskManagement) {
+  if (!updatedCheckInOut) {
     throw new ApiError(400, 'Failed to update Task');
   }
-  return updatedTaskManagement;
+  return updatedCheckInOut;
 };
 
-const getSingleTaskManagementFromDB = async (
+const getSingleCheckInOutFromDB = async (
   id: string,
   req?: Request,
-): Promise<ITaskManagement | null> => {
-  const user = await TaskManagement.isTaskManagementExistMethod(id, {
+): Promise<ICheckInOut | null> => {
+  const user = await CheckInOut.isCheckInOutExistMethod(id, {
     populate: true,
   });
 
   return user;
 };
 
-const deleteTaskManagementFromDB = async (
+const deleteCheckInOutFromDB = async (
   id: string,
-  query: ITaskManagementFilters,
+  query: ICheckInOutFilters,
   req: Request,
-): Promise<ITaskManagement | null> => {
-  const isExist = (await TaskManagement.findOne({
+): Promise<ICheckInOut | null> => {
+  const isExist = (await CheckInOut.findOne({
     _id: id,
     isDelete: false,
-  })) as ITaskManagement & {
+  })) as ICheckInOut & {
     _id: Schema.Types.ObjectId;
-  } as ITaskManagement;
+  } as ICheckInOut;
 
   if (!isExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Task not found');
@@ -387,9 +346,9 @@ const deleteTaskManagementFromDB = async (
     (req?.user?.role == ENUM_USER_ROLE.admin ||
       req?.user?.role == ENUM_USER_ROLE.superAdmin)
   ) {
-    data = await TaskManagement.findOneAndDelete({ _id: id });
+    data = await CheckInOut.findOneAndDelete({ _id: id });
   } else {
-    data = await TaskManagement.findOneAndUpdate(
+    data = await CheckInOut.findOneAndUpdate(
       { _id: id },
       { isDelete: true },
       { new: true, runValidators: true },
@@ -399,10 +358,10 @@ const deleteTaskManagementFromDB = async (
   return data;
 };
 
-export const TaskManagementService = {
-  createTaskManagement,
-  getAllTaskManagementsFromDB,
-  updateTaskManagementFromDB,
-  getSingleTaskManagementFromDB,
-  deleteTaskManagementFromDB,
+export const CheckInOutService = {
+  createCheckInOut,
+  getAllCheckInOutsFromDB,
+  updateCheckInOutFromDB,
+  getSingleCheckInOutFromDB,
+  deleteCheckInOutFromDB,
 };
