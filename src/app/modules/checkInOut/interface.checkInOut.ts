@@ -32,6 +32,8 @@ export type ICheckInOut = z.infer<
     _id?: Types.ObjectId | string;
     isDelete: boolean;
     isLate: boolean;
+    checkInTime: string | Date;
+    checkOutTime: string | Date;
   };
 export type CheckInOutModel = {
   isCheckInOutExistMethod(

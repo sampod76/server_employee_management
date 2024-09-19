@@ -20,7 +20,9 @@ router
       ENUM_USER_ROLE.employee,
     ),
     CheckInOutController.getAllCheckInOuts,
-  )
+  );
+router
+  .route('/check-in')
   .post(
     authMiddleware(
       ENUM_USER_ROLE.admin,
@@ -31,7 +33,21 @@ router
     uploadAwsS3Bucket.array('provide'),
     parseBodyData({}),
     validateRequestZod(CheckInOutValidation.createCheckInOutZodSchema),
-    CheckInOutController.createCheckInOut,
+    CheckInOutController.createCheckIn,
+  );
+router
+  .route('/check-out')
+  .post(
+    authMiddleware(
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
+    ),
+    uploadAwsS3Bucket.array('provide'),
+    parseBodyData({}),
+    validateRequestZod(CheckInOutValidation.createCheckInOutZodSchema),
+    CheckInOutController.createCheckOut,
   );
 
 router

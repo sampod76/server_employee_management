@@ -5,8 +5,8 @@ import { zodFileAfterUploadSchema } from '../../../global/schema/global.schema';
 
 const CheckInOut_BodyData = z.object({
   // employee: zodRefUser.optional(), //set by controller
-  checkInTime: z.date().or(z.string()).optional(),
-  checkOutTime: z.date().or(z.string()).optional(),
+  // checkInTime: z.date().or(z.string()).optional(),
+  // checkOutTime: z.date().or(z.string()).optional(),
   provide: z.array(zodFileAfterUploadSchema).optional(),
 });
 
@@ -21,23 +21,11 @@ const createCheckInOutZodSchema = z.object({
 const updateCheckInOutZodSchema = z.object({
   body: CheckInOut_BodyData.merge(CheckInOut_UpdateBodyDate).deepPartial(),
 });
-const CheckInOutBlockZodSchema = z.object({
-  body: CheckInOut_BodyData.deepPartial(),
-});
-/* 
-  .refine(({ body }) => {
-    if (body.block?.lastBlockDate) {
-      delete body.block.lastBlockDate;
-      return body;
-    }
-    return true;
-  });
-   */
 
 export const CheckInOutValidation = {
   createCheckInOutZodSchema,
   updateCheckInOutZodSchema,
-  CheckInOutBlockZodSchema,
+
   //
   CheckInOut_BodyData,
   CheckInOut_UpdateBodyDate,

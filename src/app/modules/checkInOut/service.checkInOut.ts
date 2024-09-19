@@ -17,13 +17,57 @@ import { CheckInOutSearchableFields } from './constants.checkInOut';
 import { ICheckInOut, ICheckInOutFilters } from './interface.checkInOut';
 import { CheckInOut } from './models.checkInOut';
 
-const createCheckInOut = async (
+const createCheckInFromDb = async (
   data: ICheckInOut,
   requestUser: IUserRef,
   req: Request,
 ): Promise<ICheckInOut | null> => {
   // console.log(data, 'data');
+  // Set the time to the start of the current day (midnight)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Log the calculated start of the day for debugging
+  console.log(`Start of day (timeTo): ${today}`);
+
+  // Check if the user has already checked in today
+  const existingCheckIn = await CheckInOut.findOne({
+    'employee.userId': requestUser.userId,
+    checkInTime: { $gte: today },
+    isDelete: false,
+  });
+  console.log(existingCheckIn);
+  if (existingCheckIn) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You already check in today.');
+  }
+
   const res = await CheckInOut.create(data);
+  return res;
+};
+const createCheckOutFromDb = async (
+  data: ICheckInOut,
+  requestUser: IUserRef,
+  req: Request,
+): Promise<ICheckInOut | null> => {
+  console.log(data, 'data');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const existingCheckIn = await CheckInOut.findOne({
+    'employee.userId': requestUser.userId,
+    checkInTime: { $gte: today, $lte: new Date().setHours(23, 59, 59, 999) },
+    isDelete: false,
+  });
+
+  if (!existingCheckIn) {
+    throw new ApiError(httpStatus.FORBIDDEN, "You haven't check in today.");
+  } else if (existingCheckIn.checkOutTime) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You already check out today.');
+  }
+
+  const res = await CheckInOut.findByIdAndUpdate(existingCheckIn._id, data, {
+    runValidators: true,
+    new: true,
+  });
   return res;
 };
 
@@ -350,7 +394,8 @@ const deleteCheckInOutFromDB = async (
 };
 
 export const CheckInOutService = {
-  createCheckInOut,
+  createCheckInFromDb,
+  createCheckOutFromDb,
   getAllCheckInOutsFromDB,
   updateCheckInOutFromDB,
   getSingleCheckInOutFromDB,

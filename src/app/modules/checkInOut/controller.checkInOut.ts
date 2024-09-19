@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 
 import { PAGINATION_FIELDS } from '../../../global/constant/pagination';
-import { ENUM_USER_ROLE } from '../../../global/enums/users';
 import catchAsync from '../../share/catchAsync';
 import pick from '../../share/pick';
 import sendResponse from '../../share/sendResponse';
@@ -11,18 +10,14 @@ import { CheckInOutFilterableFields } from './constants.checkInOut';
 import { ICheckInOut } from './interface.checkInOut';
 import { CheckInOutService } from './service.checkInOut';
 
-const createCheckInOut = catchAsync(async (req: Request, res: Response) => {
+const createCheckIn = catchAsync(async (req: Request, res: Response) => {
   req.body = {
     ...req.body,
-    author: RequestToRefUserObject(req.user as IUserRefAndDetails),
+    employee: RequestToRefUserObject(req.user as IUserRefAndDetails),
+    checkInTime: new Date(),
   };
-  if (req?.user?.role === ENUM_USER_ROLE.employee) {
-    req.body = {
-      ...req.body,
-      employee: RequestToRefUserObject(req.user as IUserRefAndDetails),
-    };
-  }
-  const result = await CheckInOutService.createCheckInOut(
+
+  const result = await CheckInOutService.createCheckInFromDb(
     req.body,
     req?.user as IUserRef,
     req,
@@ -30,7 +25,26 @@ const createCheckInOut = catchAsync(async (req: Request, res: Response) => {
   sendResponse<ICheckInOut>(req, res, {
     statusCode: 200,
     success: true,
-    message: 'CheckInOut created successfully',
+    message: 'Check In created successfully',
+    data: result,
+  });
+});
+const createCheckOut = catchAsync(async (req: Request, res: Response) => {
+  req.body = {
+    ...req.body,
+    employee: RequestToRefUserObject(req.user as IUserRefAndDetails),
+    checkOutTime: new Date(),
+  };
+
+  const result = await CheckInOutService.createCheckOutFromDb(
+    req.body,
+    req?.user as IUserRef,
+    req,
+  );
+  sendResponse<ICheckInOut>(req, res, {
+    statusCode: 200,
+    success: true,
+    message: 'Check Out created successfully',
     data: result,
   });
 });
@@ -105,7 +119,8 @@ const deleteCheckInOut = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const CheckInOutController = {
-  createCheckInOut,
+  createCheckIn,
+  createCheckOut,
   getAllCheckInOuts,
   getCheckInOutById,
   updateCheckInOut,
