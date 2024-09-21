@@ -222,7 +222,7 @@ const getAllCheckInOutsFromDB = async (
           $cond: {
             if: {
               $and: [
-                { isArray: '$details' },
+                { "$isArray": '$details' },
                 {
                   $eq: [
                     {
