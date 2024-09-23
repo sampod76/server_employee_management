@@ -3,9 +3,9 @@ import express from 'express';
 import authMiddleware from '../../middlewares/authMiddleware';
 
 import { ENUM_USER_ROLE } from '../../../global/enums/users';
+import { uploadImage } from '../../middlewares/uploader.multer';
 import parseBodyData from '../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../middlewares/validateRequestZod';
-import { uploadAwsS3Bucket } from '../aws/utls.aws';
 import { TaskManagementController } from './controller.taskManagement';
 import { TaskManagementValidation } from './validation.taskManagement';
 const router = express.Router();
@@ -28,7 +28,8 @@ router
       ENUM_USER_ROLE.hrAdmin,
       ENUM_USER_ROLE.employee,
     ),
-    uploadAwsS3Bucket.array('submitDocuments'),
+    // uploadAwsS3Bucket.array('submitDocuments'),
+    uploadImage.array('submitDocuments'),
     parseBodyData({}),
     validateRequestZod(TaskManagementValidation.createTaskManagementZodSchema),
     TaskManagementController.createTaskManagement,
@@ -52,7 +53,8 @@ router
       ENUM_USER_ROLE.hrAdmin,
       ENUM_USER_ROLE.employee,
     ),
-    uploadAwsS3Bucket.array('submitDocuments'),
+    // uploadAwsS3Bucket.array('submitDocuments'),
+    uploadImage.array('submitDocuments'),
     parseBodyData({}),
     validateRequestZod(TaskManagementValidation.updateTaskManagementZodSchema),
     TaskManagementController.updateTaskManagement,

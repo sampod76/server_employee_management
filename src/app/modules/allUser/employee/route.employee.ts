@@ -8,6 +8,7 @@ import validateRequestZod from '../../../middlewares/validateRequestZod';
 import { uploadAwsS3Bucket } from '../../aws/utls.aws';
 import { EmployeeUserController } from './controller.employee';
 import { EmployeeUserValidation } from './validation.employee';
+import { uploadImage } from '../../../middlewares/uploader.multer';
 
 const router = express.Router();
 
@@ -23,7 +24,7 @@ router
       ENUM_USER_ROLE.employee,
     ),
     // uploadAwsS3Bucket.fields([{ name: 'profileImage', maxCount: 1 }]),
-    uploadAwsS3Bucket.single('profileImage'),
+    uploadImage.single('profileImage'),
     parseBodyData({}),
     validateRequestZod(EmployeeUserValidation.updateEmployeeUserZodSchema),
     EmployeeUserController.updateEmployeeUser,

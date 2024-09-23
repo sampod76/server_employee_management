@@ -36,6 +36,7 @@ const uploadToCloudinary = async (
             const response = {
               mimetype: file.mimetype,
               filename: file.filename,
+              fieldname: file.fieldname,
               server_url: `images/${file.filename}`,
               url: result?.url,
               platform: 'cloudinary',
@@ -53,7 +54,12 @@ const uploadToCloudinaryMultiple = async (
 ): Promise<ICloudinaryResponse[] | IFileAfterUpload[] | undefined> => {
   const uploadPromises = files.map(file => {
     return new Promise<ICloudinaryResponse | any>((resolve, reject) => {
-      cloudinary.uploader.upload(
+      uploadToCloudinary(file)
+        .then(res => resolve(res))
+        .catch(error => reject(error));
+
+      /* 
+        cloudinary.uploader.upload(
         file.path,
         function (error: Error, result: ICloudinaryResponse) {
           if (error) {
@@ -64,6 +70,8 @@ const uploadToCloudinaryMultiple = async (
           }
         },
       );
+
+        */
     });
   });
 

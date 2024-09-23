@@ -45,6 +45,16 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
     };
   }
 
+  if (req?.body?.profileImage) {
+    req.body = {
+      ...req.body,
+      [authData.role]: {
+        ...req.body[authData.role],
+        profileImage: req.body.profileImage,
+      },
+    };
+  }
+
   //------------------------------------------
   const result = await UserService.createUser(req.body, req);
   sendResponse<IUser>(req, res, {

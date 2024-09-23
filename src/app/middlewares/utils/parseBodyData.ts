@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { RequestTo_Aws_Multer_FileDecodeAddBodyHandle } from '../../../helper/requestToFilesHandle';
+import { RequestToFileDecodeAddBodyHandle } from '../../../helper/requestToFilesHandle';
 import ApiError from '../../errors/ApiError';
 import catchAsync from '../../share/catchAsync';
 type IParseBodyDate = {
@@ -17,8 +17,8 @@ const parseBodyData = ({
     }
 
     if (isFile) {
-      // await RequestToFileDecodeAddBodyHandle(req);
-      await RequestTo_Aws_Multer_FileDecodeAddBodyHandle(req);
+      await RequestToFileDecodeAddBodyHandle(req);
+      // await RequestTo_Aws_Multer_FileDecodeAddBodyHandle(req);
     }
     const messingRequiredField: string[] = [];
     required_file_fields?.forEach(field => {

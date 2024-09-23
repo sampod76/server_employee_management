@@ -4,8 +4,8 @@ import { NotificationController } from './notification.controller';
 import { ENUM_USER_ROLE } from '../../../global/enums/users';
 import authMiddleware from '../../middlewares/authMiddleware';
 
+import { uploadImage } from '../../middlewares/uploader.multer';
 import parseBodyData from '../../middlewares/utils/parseBodyData';
-import { uploadAwsS3Bucket } from '../aws/utls.aws';
 
 const router = express.Router();
 
@@ -28,7 +28,8 @@ router.post(
     ENUM_USER_ROLE.employee,
   ),
 
-  uploadAwsS3Bucket.single('image'),
+  // uploadAwsS3Bucket.single('image'),
+  uploadImage.single('image'),
   parseBodyData({}),
   NotificationController.createNotification,
 );
@@ -51,7 +52,8 @@ router
       ENUM_USER_ROLE.employee,
     ),
 
-    uploadAwsS3Bucket.single('image'),
+    // uploadAwsS3Bucket.single('image'),
+    uploadImage.single('image'),
     parseBodyData({}),
     NotificationController.updateNotification,
   )
