@@ -143,6 +143,7 @@ const createTempUserFromDb = async (
   </div>`,
   };
 
+  // const result = await sendMailHelper(emailDate);
   //
   const job = await emailQueue.add(ENUM_QUEUE_NAME.email, emailDate);
   //!--if you want to wait then job is completed then use it

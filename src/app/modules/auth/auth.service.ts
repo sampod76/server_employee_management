@@ -18,7 +18,8 @@ import {
 import ApiError from '../../errors/ApiError';
 import { ENUM_QUEUE_NAME } from '../../queue/consent.queus';
 import { emailQueue } from '../../queue/jobs/emailQueues';
-import { IUserRefAndDetails } from '../allUser/typesAndConst';
+import { IEmployeeUser } from '../allUser/employee/interface.employee';
+import { ENUM_VERIFY, IUserRefAndDetails } from '../allUser/typesAndConst';
 import { IUser } from '../allUser/user/user.interface';
 import { User } from '../allUser/user/user.model';
 import { IUserLoginHistory } from '../loginHistory/loginHistory.interface';
@@ -35,19 +36,26 @@ const loginUser = async (
 ): Promise<ILoginUserResponse | any> => {
   const { email, password } = payload;
 
-  const isUserExist = await User.isUserFindMethod(
+  const isUserExist = (await User.isUserFindMethod(
     { email },
     { populate: true, password: true },
-  );
+  )) as IUser & { roleInfo: IEmployeeUser };
   console.log('🚀 ~ isUserExist:', isUserExist);
   if (!isUserExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist');
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'User does not exist');
   } else if (isUserExist.isDelete) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'The account is deleted');
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'The account is deleted');
   } else if (isUserExist.status === ENUM_STATUS.INACTIVE) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Your account is inactive');
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'Your account is inactive');
   } else if (isUserExist.status === ENUM_STATUS.BLOCK) {
-    throw new ApiError(httpStatus.NOT_FOUND, `Your account is blocked`);
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, `Your account is blocked`);
+    //@ts-ignore
+  } else if (isUserExist.roleInfo.verify !== ENUM_VERIFY.ACCEPT) {
+    throw new ApiError(
+      httpStatus.NOT_ACCEPTABLE,
+      //@ts-ignore
+      `Your account is ${isUserExist.roleInfo.verify} state`,
+    );
   } else if (
     isUserExist.password &&
     !(await User.isPasswordMatchMethod(password, isUserExist.password))
@@ -390,12 +398,12 @@ const checkOtpFromDb = async (
     throw new ApiError(httpStatus.BAD_REQUEST, 'User not found!');
   }
 
-  if (profile?.authentication?.status !== ENUM_STATUS.ACTIVE) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      'Authentication code not found. Please send an OTP request',
-    );
-  }
+  // if (profile?.authentication?.status !== ENUM_STATUS.ACTIVE) {
+  //   throw new ApiError(
+  //     httpStatus.NOT_FOUND,
+  //     'Authentication code not found. Please send an OTP request',
+  //   );
+  // }
   if (profile?.authentication?.otp !== Number(otp)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Otp not matching');
   }

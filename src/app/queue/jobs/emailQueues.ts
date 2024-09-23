@@ -39,7 +39,7 @@ export const handler = new Worker(
     // console.log('��� ~ job.data:', job.data);
     // const {} = job.data;
     const result = await sendMailHelper(job.data);
-    // console.log('🚀 ~ result:', result);
+    console.log('🚀 ~ result:', result);
     //  console.log('🚀 ~ process.pid:', process.pid);
     return { result };
   },

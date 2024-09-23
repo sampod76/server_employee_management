@@ -106,6 +106,7 @@ const getAllEmployeeUsersFromDB = async (
         idFiledName: 'email',
         pipeLineMatchField: 'email',
         outPutFieldName: 'userDetails',
+        project: { password: 0 },
       },
     ],
   });
