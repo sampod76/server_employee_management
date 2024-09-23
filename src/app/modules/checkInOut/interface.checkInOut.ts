@@ -13,6 +13,7 @@ export type ICheckInOutFilters = {
   myData?: I_YN;
   checkInTime?: string;
   checkOutTime?: string;
+  toDay?: string;
   isLate?: string | boolean;
   //
   searchTerm?: string;

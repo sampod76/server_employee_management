@@ -6,7 +6,6 @@ import { ENUM_USER_ROLE } from '../../../global/enums/users';
 import { uploadImage } from '../../middlewares/uploader.multer';
 import parseBodyData from '../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../middlewares/validateRequestZod';
-import { uploadAwsS3Bucket } from '../aws/utls.aws';
 import { CheckInOutController } from './controller.checkInOut';
 import { CheckInOutValidation } from './validation.checkInOut';
 const router = express.Router();

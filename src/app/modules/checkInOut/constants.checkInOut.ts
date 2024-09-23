@@ -7,6 +7,7 @@ export const CheckInOutFilterableFields = [
   'myData', //yes no
   'checkInTime',
   'checkOutTime',
+  'toDay',
   // always required filter
   'searchTerm',
   'status',

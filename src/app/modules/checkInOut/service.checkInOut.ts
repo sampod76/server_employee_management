@@ -35,7 +35,10 @@ const createCheckInFromDb = async (
   });
 
   if (existingCheckIn) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'You already check in today.');
+    throw new ApiError(
+      httpStatus.NOT_ACCEPTABLE,
+      'You already check in today.',
+    );
   }
 
   const res = await CheckInOut.create(data);
@@ -66,10 +69,14 @@ const createCheckOutFromDb = async (
     );
   }
 
-  const res = await CheckInOut.findByIdAndUpdate(existingCheckIn._id, data, {
-    runValidators: true,
-    new: true,
-  });
+  const res = await CheckInOut.findByIdAndUpdate(
+    existingCheckIn._id,
+    { $push: { provide: data.provide }, checkOutTime: data.checkOutTime },
+    {
+      runValidators: true,
+      new: true,
+    },
+  );
   return res;
 };
 
@@ -134,6 +141,13 @@ const getAllCheckInOutsFromDB = async (
         } else if (field === 'isLate') {
           modifyFiled = {
             ['isLate']: value == 'true' ? true : false,
+          };
+        } else if (field === 'toDay') {
+          modifyFiled = {
+            checkInTime: {
+              $gte: new Date().setHours(0, 0, 0, 0),
+              $lte: new Date().setHours(23, 59, 59, 999),
+            },
           };
         } else {
           modifyFiled = { [field]: value };
@@ -222,7 +236,7 @@ const getAllCheckInOutsFromDB = async (
           $cond: {
             if: {
               $and: [
-                { "$isArray": '$details' },
+                { $isArray: '$details' },
                 {
                   $eq: [
                     {
