@@ -15,9 +15,8 @@ import {
   decryptCryptoData,
   encryptCryptoData,
 } from '../../../utils/cryptoEncryptDecrypt';
+import { sendMailHelper } from '../../../utils/sendMail';
 import ApiError from '../../errors/ApiError';
-import { ENUM_QUEUE_NAME } from '../../queue/consent.queus';
-import { emailQueue } from '../../queue/jobs/emailQueues';
 import { IEmployeeUser } from '../allUser/employee/interface.employee';
 import { ENUM_VERIFY, IUserRefAndDetails } from '../allUser/typesAndConst';
 import { IUser } from '../allUser/user/user.interface';
@@ -40,7 +39,7 @@ const loginUser = async (
     { email },
     { populate: true, password: true },
   )) as IUser & { roleInfo: IEmployeeUser };
-  console.log('🚀 ~ isUserExist:', isUserExist);
+  // console.log('🚀 ~ isUserExist:', isUserExist);
   if (!isUserExist) {
     throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'User does not exist');
   } else if (isUserExist.isDelete) {
@@ -372,7 +371,8 @@ const forgotPass = async (payload: { email: string }, req: Request) => {
   </div>`,
   };
   //
-  const job = await emailQueue.add(ENUM_QUEUE_NAME.email, result);
+  // const job = await emailQueue.add(ENUM_QUEUE_NAME.email, result);
+  const send = await sendMailHelper(result);
   //!--if you want to wait then job is completed then use it
   // const queueResult = await checkEmailQueueResult(job.id as string);
   await User.findOneAndUpdate(

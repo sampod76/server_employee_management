@@ -14,9 +14,10 @@ import { Admin } from '../admin/admin.model';
 
 import { LookupAnyRoleDetailsReusable } from '../../../../helper/lookUpResuable';
 
-import { ENUM_QUEUE_NAME } from '../../../queue/consent.queus';
-import { emailQueue } from '../../../queue/jobs/emailQueues';
+// import { ENUM_QUEUE_NAME } from '../../../queue/consent.queus';
+// import { emailQueue } from '../../../queue/jobs/emailQueues';
 
+import { sendMailHelper } from '../../../../utils/sendMail';
 import { EmployeeUser } from '../employee/model.employee';
 import { HrAdmin } from '../hrAdmin/model.hrAdmin';
 import { userSearchableFields } from './user.constant';
@@ -145,7 +146,8 @@ const createTempUserFromDb = async (
 
   // const result = await sendMailHelper(emailDate);
   //
-  const job = await emailQueue.add(ENUM_QUEUE_NAME.email, emailDate);
+  // const job = await emailQueue.add(ENUM_QUEUE_NAME.email, emailDate);
+  const job = await sendMailHelper(emailDate);
   //!--if you want to wait then job is completed then use it
   // const queueResult = await checkEmailQueueResult(job.id as string);
   const createdUser = await TempUser.create({
