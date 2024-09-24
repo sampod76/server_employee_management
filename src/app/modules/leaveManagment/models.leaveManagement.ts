@@ -30,6 +30,10 @@ const LeaveManagementSchema = new Schema<
     to: {
       type: Date,
     },
+    dayType: String,
+    leaveType: String,
+    location: String,
+    reason: String,
     totalLeaveDays: Number,
     provide: [mongooseFileSchema],
     requestStatus: {

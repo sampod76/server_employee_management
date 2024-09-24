@@ -8,7 +8,7 @@ export type ILeaveManagementStatus = keyof typeof ENUM_LEAVE_MANAGEMENT_STATUS;
 export const LeaveManagementArray = Object.values(ENUM_LEAVE_MANAGEMENT_STATUS);
 
 //
-export const LeaveManagementSearchableFields = ['title'];
+export const LeaveManagementSearchableFields = ['reason', 'location'];
 export const LeaveManagementFilterableFields = [
   'authorRoleBaseId',
   'authorUserId',

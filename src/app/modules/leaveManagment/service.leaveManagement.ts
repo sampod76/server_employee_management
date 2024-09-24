@@ -3,7 +3,6 @@
 import { Request } from 'express';
 import httpStatus from 'http-status';
 import { PipelineStage, Schema, Types } from 'mongoose';
-import { ENUM_YN } from '../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../global/enums/users';
 import { paginationHelper } from '../../../helper/paginationHelper';
 import ApiError from '../../errors/ApiError';
@@ -14,6 +13,7 @@ import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
 
 import { IUserRef } from '../allUser/typesAndConst';
 
+import moment from 'moment';
 import {
   ENUM_LEAVE_MANAGEMENT_STATUS,
   ILeaveManagementStatus,
@@ -34,14 +34,8 @@ const createLeaveManagementFromDb = async (
 
   const userId = new Types.ObjectId(data.employee.userId);
   const fromDate = new Date(data.from);
+  console.log('🚀 ~ fromDate:', fromDate);
   const toDate = new Date(data.to);
-
-  if (fromDate > toDate) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      '`from` date cannot be after `to` date.',
-    );
-  }
 
   // Define the query to check for overlapping leaves
   const find = {
@@ -50,16 +44,16 @@ const createLeaveManagementFromDb = async (
     requestStatus: ENUM_LEAVE_MANAGEMENT_STATUS.approved,
     $or: [
       {
-        from: { $lte: fromDate },
-        to: { $gte: fromDate },
+        from: { $lte: fromDate.toISOString() },
+        to: { $gte: fromDate.toISOString() },
       },
       {
-        from: { $lte: toDate },
-        to: { $gte: toDate },
+        from: { $lte: toDate.toISOString() },
+        to: { $gte: toDate.toISOString() },
       },
       {
-        from: { $gte: fromDate },
-        to: { $lte: toDate },
+        from: { $gte: fromDate.toISOString() },
+        to: { $lte: toDate.toISOString() },
       },
     ],
   };
@@ -72,11 +66,13 @@ const createLeaveManagementFromDb = async (
       'You are already leave requesting this date',
     );
   }
-
+  const fromDateMoment = moment(fromDate);
+  const toDateMoment = moment(toDate);
+  // Calculate the difference in days
+  const totalDays = toDateMoment.diff(fromDateMoment, 'days');
   const res = await LeaveManagement.create({
     ...data,
-    totalLeaveDays:
-      new Date(data.to).getDate() - new Date(data.from).getDate() + 1,
+    totalLeaveDays: totalDays + 1, // 1 + because from - to 1 day come hoy
   });
   return res;
 };
@@ -332,6 +328,15 @@ const updateLeaveManagementFromDB = async (
   ) {
     throw new ApiError(403, 'forbidden access');
   }
+  if (
+    isExist.requestStatus !== ENUM_LEAVE_MANAGEMENT_STATUS.pending &&
+    isExist?.employee?.userId?.toString() !== req?.user?.userId
+  ) {
+    throw new ApiError(
+      httpStatus.NOT_ACCEPTABLE,
+      `Leave status can not be changed. Because it is already ${isExist.requestStatus}`,
+    );
+  }
 
   const updatedLeaveManagement = await LeaveManagement.findOneAndUpdate(
     { _id: id },
@@ -372,6 +377,7 @@ const approvedDeclinedlLeaveManagementFromDB = async (
   ) {
     throw new ApiError(403, 'forbidden access');
   }
+
   if (isExist.requestStatus !== ENUM_LEAVE_MANAGEMENT_STATUS.pending) {
     throw new ApiError(
       httpStatus.NOT_ACCEPTABLE,
@@ -429,27 +435,26 @@ const deleteLeaveManagementFromDB = async (
 
   if (
     req?.user?.role !== ENUM_USER_ROLE.admin &&
-    req?.user?.role !== ENUM_USER_ROLE.superAdmin
-    // && isExist?.employee?.userId?.toString() !== req?.user?.userId
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
+    isExist?.employee?.userId?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
   }
-
-  let data;
-
   if (
-    query.delete == ENUM_YN.YES && // this is permanently delete but store trash collection
-    (req?.user?.role == ENUM_USER_ROLE.admin ||
-      req?.user?.role == ENUM_USER_ROLE.superAdmin)
+    isExist.requestStatus !== ENUM_LEAVE_MANAGEMENT_STATUS.pending &&
+    isExist?.employee?.userId?.toString() !== req?.user?.userId
   ) {
-    data = await LeaveManagement.findOneAndDelete({ _id: id });
-  } else {
-    data = await LeaveManagement.findOneAndUpdate(
-      { _id: id },
-      { isDelete: true },
-      { new: true, runValidators: true },
+    throw new ApiError(
+      httpStatus.NOT_ACCEPTABLE,
+      `Leave status can not be changed. Because it is already ${isExist.requestStatus}`,
     );
   }
+
+  const data = await LeaveManagement.findOneAndUpdate(
+    { _id: id },
+    { isDelete: true },
+    { new: true, runValidators: true },
+  );
 
   return data;
 };

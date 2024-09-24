@@ -148,6 +148,7 @@ const createTempUserFromDb = async (
   //
   // const job = await emailQueue.add(ENUM_QUEUE_NAME.email, emailDate);
   const job = await sendMailHelper(emailDate);
+  console.log('🚀 ~ job:', job);
   //!--if you want to wait then job is completed then use it
   // const queueResult = await checkEmailQueueResult(job.id as string);
   const createdUser = await TempUser.create({

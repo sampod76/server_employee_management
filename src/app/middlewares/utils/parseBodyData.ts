@@ -12,6 +12,9 @@ const parseBodyData = ({
   required_file_fields,
 }: IParseBodyDate) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    console.log(req?.body);
+    console.log(req.file, 'req.file');
+    console.log(req.files, 'req.files');
     if (req?.body?.data) {
       req.body = JSON.parse(req.body.data);
     }

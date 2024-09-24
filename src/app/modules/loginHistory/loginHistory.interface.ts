@@ -55,5 +55,5 @@ export type IUserLoginHistoryFilters = {
   searchTerm?: string;
   user?: string;
   delete?: 'yes' | 'no';
-  isDelete?: boolean | string;
+  isDelete?: string | boolean;
 };

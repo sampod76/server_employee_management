@@ -64,7 +64,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
       const ip = req.clientIp;
       await UserLoginHistory.findOneAndUpdate(
         {
-          userId: userData._id,
+          userId: userData.userId,
           user_agent: req.headers['user-agent'],
           token: req?.cookies?.refreshToken,
         },
@@ -80,7 +80,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
       await UserLoginHistory.create({
         ip,
         //@ts-ignore
-        userId: userData._id,
+        userId: userData.userId,
         user_agent: req.headers['user-agent'],
         token: refreshToken,
         device_info: deviceInfo,
@@ -95,7 +95,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 
     await UserLoginHistory.create({
       ip,
-      userId: userData._id,
+      userId: userData.userId,
       user_agent: req.headers['user-agent'],
       token: refreshToken,
       device_info: deviceInfo,

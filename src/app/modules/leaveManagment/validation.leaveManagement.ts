@@ -1,15 +1,22 @@
 import { z } from 'zod';
 
+import httpStatus from 'http-status';
 import { I_STATUS, STATUS_ARRAY } from '../../../global/enum_constant_type';
 import { zodFileAfterUploadSchema } from '../../../global/schema/global.schema';
 import ApiError from '../../errors/ApiError';
-import httpStatus from 'http-status';
 
 const LeaveManagement_BodyData = z.object({
   // employee: zodRefUser.optional(), //set by controller
   from: z.date().or(z.string({ required_error: 'from date is required' })),
   to: z.date().or(z.string({ required_error: 'to date is required' })),
   provide: z.array(zodFileAfterUploadSchema).optional(),
+  leaveType: z.string({ required_error: 'Leave type is required' }),
+  dayType: z.string({ required_error: 'Leave type is required' }),
+  location: z.string({ required_error: 'Leave type is required' }).optional(),
+  reason: z
+    .string({ required_error: 'Leave type is required' })
+    .trim()
+    .max(5000),
 });
 
 const LeaveManagement_UpdateBodyDate = z.object({
@@ -33,7 +40,11 @@ const createLeaveManagementZodSchema = z
       }
       const end = new Date(body.to);
 
-      return end > start;
+      if (end.getTime() > start.getTime()) {
+        return true;
+      } else {
+        return false;
+      }
     },
     {
       message: 'Start time should be before End time !  ',
