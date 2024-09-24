@@ -207,11 +207,6 @@ const getAllCheckInOutsFromDB = async (
   }
   //!------------check -access validation ------------------
   const pipeline: PipelineStage[] = [
-    { $match: whereConditions },
-    { $sort: sortConditions },
-    { $skip: Number(skip) || 0 },
-    { $limit: Number(limit) || 10 },
-    //------employees lookups---------------
     {
       $lookup: {
         from: 'employees',
@@ -265,6 +260,13 @@ const getAllCheckInOutsFromDB = async (
     {
       $project: { details: 0 },
     },
+
+    { $match: whereConditions },
+    { $sort: sortConditions },
+    { $skip: Number(skip) || 0 },
+    { $limit: Number(limit) || 10 },
+    //------employees lookups---------------
+
     //------end---------------
   ];
 
