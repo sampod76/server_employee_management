@@ -195,11 +195,6 @@ const getAllLeaveManagementsFromDB = async (
   }
   //!------------check -access validation ------------------
   const pipeline: PipelineStage[] = [
-    { $match: whereConditions },
-    { $sort: sortConditions },
-    { $skip: Number(skip) || 0 },
-    { $limit: Number(limit) || 10 },
-    //------employees lookups---------------
     {
       $lookup: {
         from: 'employees',
@@ -253,6 +248,64 @@ const getAllLeaveManagementsFromDB = async (
     {
       $project: { details: 0 },
     },
+    { $match: whereConditions },
+    { $sort: sortConditions },
+    { $skip: Number(skip) || 0 },
+    { $limit: Number(limit) || 10 },
+    //------employees lookups---------------
+    // {
+    //   $lookup: {
+    //     from: 'employees',
+    //     let: {
+    //       id: '$employee.roleBaseUserId',
+    //     },
+    //     pipeline: [
+    //       {
+    //         $match: {
+    //           $expr: {
+    //             $eq: ['$_id', '$$id'],
+    //           },
+    //         },
+    //       },
+    //     ],
+    //     as: 'details',
+    //   },
+    // },
+    // {
+    //   $addFields: {
+    //     employee: {
+    //       $cond: {
+    //         if: {
+    //           $and: [
+    //             { isArray: '$details' },
+    //             {
+    //               $eq: [
+    //                 {
+    //                   $size: '$details',
+    //                 },
+    //                 0,
+    //               ],
+    //             },
+    //           ],
+    //         },
+    //         then: '$employee',
+    //         else: {
+    //           $mergeObjects: [
+    //             {
+    //               ['details']: {
+    //                 $arrayElemAt: ['$details', 0],
+    //               },
+    //             },
+    //             '$employee',
+    //           ],
+    //         },
+    //       },
+    //     },
+    //   },
+    // },
+    // {
+    //   $project: { details: 0 },
+    // },
     //------end---------------
   ];
 

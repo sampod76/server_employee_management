@@ -32,6 +32,7 @@ use direct connection --> io.on('connection',socket => {
       try {
         // const accessToken = socket.handshake.auth.accessToken;//front-end to send auth  in accessToken;
         const accessToken = socket.handshake.headers.authorization; //front-end to send extraHeaders in token;
+        console.log('🚀 ~ socketServer.use ~ accessToken:', accessToken);
         // console.log('🚀 ~ usp1.on ~ accessToken:', accessToken);
         if (!accessToken) {
           return socket.emit('error', {
@@ -98,7 +99,7 @@ use direct connection --> io.on('connection',socket => {
           },
         );
         //!--only use flutter_app --because nodejs server is support callback but flutter is not support callback
-        socket.on('connection', async (data: any) => {
+        socket.on('connection1', async (data: any) => {
           console.log('🚀 ~ socket.on ~ data:', data);
           await redisClient().set(
             ENUM_REDIS_KEY.socket_user + user.userId + ':' + socket.id,

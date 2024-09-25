@@ -13,13 +13,15 @@ const TaskManagement_BodyData = z.object({
   title: z.string({ required_error: 'Title is required' }).nonempty(),
   projectId: z.string().or(z.instanceof(Types.ObjectId)).optional(),
   // assignBy: zodRefUser.optional(),//admin
-  employee: zodRefUser.optional(),
+  employee: zodRefUser.optional().or(z.string().optional()),
   taskList: z.array(z.object({ title: z.string() })).optional(),
   startDate: z.date().or(z.string()).optional(),
   endDate: z.date().or(z.string()).optional(),
   description: z.string().optional(),
   submitDocuments: z.array(zodFileAfterUploadSchema).optional(),
-  taskProgressStatus: z.enum(TaskProgressStatusArray as [ITaskProgressStatus]),
+  taskProgressStatus: z
+    .enum(TaskProgressStatusArray as [ITaskProgressStatus])
+    .optional(),
 });
 
 const TaskManagement_UpdateBodyDate = z.object({

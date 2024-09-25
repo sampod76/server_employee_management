@@ -3,18 +3,14 @@ import mongoose from 'mongoose';
 import app from './app';
 
 // import { errorLogger, logger } from './app/share/logger';
-import { createAdapter } from '@socket.io/redis-adapter';
 import 'colors';
 import { NextFunction } from 'express';
 import http, { Server } from 'http';
-import Redis from 'ioredis';
 import { Server as SocketServer } from 'socket.io';
-import { kafkaInit } from './app/kafka/kafka';
 import { RedisRunFunction } from './app/redis/service.redis';
 import { errorLogger, logger } from './app/share/logger';
 import config from './config/index';
 import socketConnection from './sockit';
-import { RunBackup } from './utils/DbUtlis/BuckupDb';
 mongoose.set('strictQuery', false);
 process.on('uncaughtException', error => {
   config.env === 'production'
@@ -26,13 +22,10 @@ process.on('uncaughtException', error => {
 
 let server: Server; // এটা তারা বুঝায় সার্ভার কোন এক্টিভিটি আছে কিনা
 
-//
-//
 // const httpServer = http.createServer(app);
 const httpServer = http.createServer(); // ! are you use multiple connections 1. server is run 5000 port -> socket is run 5001 then use
 // Create Redis clients using ioredis
-const pubClient = new Redis(config.redis.url as string);
-const subClient = pubClient.duplicate();
+
 const io = new SocketServer(httpServer, {
   pingTimeout: 60000,
   cors: {
@@ -48,7 +41,7 @@ const io = new SocketServer(httpServer, {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   },
-  adapter: createAdapter(pubClient, subClient),
+  // adapter: createAdapter(pubClient, subClient),
 });
 // const redisClient = new Cluster([
 //   { host: 'localhost', port: 7001 },

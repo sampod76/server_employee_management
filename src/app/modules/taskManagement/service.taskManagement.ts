@@ -19,6 +19,7 @@ import {
   ITaskManagementFilters,
 } from './interface.taskManagement';
 import { TaskManagement } from './models.taskManagement';
+import { EmployeeUser } from '../allUser/employee/model.employee';
 
 const createTaskManagement = async (
   data: ITaskManagement,
@@ -26,6 +27,27 @@ const createTaskManagement = async (
   req: Request,
 ): Promise<ITaskManagement | null> => {
   // console.log(data, 'data');
+  if (requestUser.role === ENUM_USER_ROLE.admin) {
+    if (!data.employee) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Employee field is required');
+    }
+    let id = '';
+    if (typeof data.employee === 'string') {
+      id = data.employee;
+    } else {
+      id = data?.employee?.roleBaseUserId.toString();
+    }
+    const findEmployee = await EmployeeUser.isEmployeeUserExistMethod(id, {
+      populate: true,
+    });
+    console.log('🚀 ~ findEmployee:', findEmployee);
+    data.employee = {
+      roleBaseUserId: findEmployee._id,
+      role: ENUM_USER_ROLE.employee,
+      //@ts-ignore
+      userId: findEmployee.userDetails._id,
+    };
+  }
   const res = await TaskManagement.create(data);
   return res;
 };
@@ -155,117 +177,170 @@ const getAllTaskManagementsFromDB = async (
   }
   //!------------check -access validation ------------------
   const pipeline: PipelineStage[] = [
+    {
+      $lookup: {
+        from: 'employees',
+        let: {
+          id: '$employee.roleBaseUserId',
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ['$_id', '$$id'],
+              },
+            },
+          },
+        ],
+        as: 'details',
+      },
+    },
+    {
+      $addFields: {
+        employee: {
+          $cond: {
+            if: {
+              $and: [
+                { isArray: '$details' },
+                {
+                  $eq: [
+                    {
+                      $size: '$details',
+                    },
+                    0,
+                  ],
+                },
+              ],
+            },
+            then: '$employee',
+            else: {
+              $mergeObjects: [
+                {
+                  ['details']: {
+                    $arrayElemAt: ['$details', 0],
+                  },
+                },
+                '$employee',
+              ],
+            },
+          },
+        },
+      },
+    },
+    {
+      $project: { details: 0 },
+    },
     { $match: whereConditions },
     { $sort: sortConditions },
     { $skip: Number(skip) || 0 },
     { $limit: Number(limit) || 10 },
     //----------employees-lookups---------------
-    {
-      $lookup: {
-        from: 'employees',
-        let: {
-          id: '$employee.roleBaseUserId',
-        },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $eq: ['$_id', '$$id'],
-              },
-            },
-          },
-        ],
-        as: 'details',
-      },
-    },
-    {
-      $addFields: {
-        employee: {
-          $cond: {
-            if: {
-              $and: [
-                { isArray: '$details' },
-                {
-                  $eq: [
-                    {
-                      $size: '$details',
-                    },
-                    0,
-                  ],
-                },
-              ],
-            },
-            then: '$employee',
-            else: {
-              $mergeObjects: [
-                {
-                  ['details']: {
-                    $arrayElemAt: ['$details', 0],
-                  },
-                },
-                '$employee',
-              ],
-            },
-          },
-        },
-      },
-    },
-    {
-      $project: { details: 0 },
-    },
-    {
-      $lookup: {
-        from: 'employees',
-        let: {
-          id: '$employee.roleBaseUserId',
-        },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $eq: ['$_id', '$$id'],
-              },
-            },
-          },
-        ],
-        as: 'details',
-      },
-    },
-    {
-      $addFields: {
-        employee: {
-          $cond: {
-            if: {
-              $and: [
-                { isArray: '$details' },
-                {
-                  $eq: [
-                    {
-                      $size: '$details',
-                    },
-                    0,
-                  ],
-                },
-              ],
-            },
-            then: '$employee',
-            else: {
-              $mergeObjects: [
-                {
-                  ['details']: {
-                    $arrayElemAt: ['$details', 0],
-                  },
-                },
-                '$employee',
-              ],
-            },
-          },
-        },
-      },
-    },
-    {
-      $project: { details: 0 },
-    },
+    // {
+    //   $lookup: {
+    //     from: 'employees',
+    //     let: {
+    //       id: '$employee.roleBaseUserId',
+    //     },
+    //     pipeline: [
+    //       {
+    //         $match: {
+    //           $expr: {
+    //             $eq: ['$_id', '$$id'],
+    //           },
+    //         },
+    //       },
+    //     ],
+    //     as: 'details',
+    //   },
+    // },
+    // {
+    //   $addFields: {
+    //     employee: {
+    //       $cond: {
+    //         if: {
+    //           $and: [
+    //             { isArray: '$details' },
+    //             {
+    //               $eq: [
+    //                 {
+    //                   $size: '$details',
+    //                 },
+    //                 0,
+    //               ],
+    //             },
+    //           ],
+    //         },
+    //         then: '$employee',
+    //         else: {
+    //           $mergeObjects: [
+    //             {
+    //               ['details']: {
+    //                 $arrayElemAt: ['$details', 0],
+    //               },
+    //             },
+    //             '$employee',
+    //           ],
+    //         },
+    //       },
+    //     },
+    //   },
+    // },
+    // {
+    //   $project: { details: 0 },
+    // },
+    // {
+    //   $lookup: {
+    //     from: 'employees',
+    //     let: {
+    //       id: '$employee.roleBaseUserId',
+    //     },
+    //     pipeline: [
+    //       {
+    //         $match: {
+    //           $expr: {
+    //             $eq: ['$_id', '$$id'],
+    //           },
+    //         },
+    //       },
+    //     ],
+    //     as: 'details',
+    //   },
+    // },
+    // {
+    //   $addFields: {
+    //     employee: {
+    //       $cond: {
+    //         if: {
+    //           $and: [
+    //             { isArray: '$details' },
+    //             {
+    //               $eq: [
+    //                 {
+    //                   $size: '$details',
+    //                 },
+    //                 0,
+    //               ],
+    //             },
+    //           ],
+    //         },
+    //         then: '$employee',
+    //         else: {
+    //           $mergeObjects: [
+    //             {
+    //               ['details']: {
+    //                 $arrayElemAt: ['$details', 0],
+    //               },
+    //             },
+    //             '$employee',
+    //           ],
+    //         },
+    //       },
+    //     },
+    //   },
+    // },
+    // {
+    //   $project: { details: 0 },
+    // },
     // -------------end---------------
   ];
 

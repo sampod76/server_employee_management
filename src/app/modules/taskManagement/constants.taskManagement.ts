@@ -6,7 +6,12 @@ export enum ENUM_TASK_PROGRESS_STATUS {
 export const TaskProgressStatusArray = Object.values(ENUM_TASK_PROGRESS_STATUS);
 export type ITaskProgressStatus = keyof typeof ENUM_TASK_PROGRESS_STATUS;
 //
-export const TaskManagementSearchableFields = ['title'];
+export const TaskManagementSearchableFields = [
+  'title',
+  'employee.details.name.firstName',
+  'employee.details.name.lastName',
+  'employee.details.email',
+];
 export const TaskManagementFilterableFields = [
   'employeeRoleBaseId',
   'employeeUserId',
