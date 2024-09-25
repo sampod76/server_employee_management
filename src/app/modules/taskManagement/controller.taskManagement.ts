@@ -92,7 +92,7 @@ const updateTaskManagement = catchAsync(async (req: Request, res: Response) => {
 });
 const updateTaskProgress = catchAsync(async (req: Request, res: Response) => {
   // await RequestToFileDecodeAddBodyHandle(req);
-  const result = await TaskManagementService.updateTaskManagementFromDB(
+  const result = await TaskManagementService.updateTaskProgressFromDB(
     req.params.id,
     req.body,
     req,

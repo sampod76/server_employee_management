@@ -44,7 +44,6 @@ const createTaskManagement = async (
     const findEmployee = await EmployeeUser.isEmployeeUserExistMethod(id, {
       populate: true,
     });
-    console.log('🚀 ~ findEmployee:', findEmployee);
     data.employee = {
       roleBaseUserId: findEmployee._id,
       role: ENUM_USER_ROLE.employee,
@@ -417,25 +416,24 @@ const updateTaskManagementFromDB = async (
     throw new ApiError(403, 'forbidden access');
   }
 
-  // let employeeId = '';
-  // if (typeof data.employee === 'string') {
-  //   employeeId = data.employee;
-  // } else {
-  //   employeeId = data?.employee?.roleBaseUserId.toString();
-  // }
-  // const findEmployee = await EmployeeUser.isEmployeeUserExistMethod(
-  //   employeeId,
-  //   {
-  //     populate: true,
-  //   },
-  // );
-  // console.log('🚀 ~ findEmployee:', findEmployee);
-  // data.employee = {
-  //   roleBaseUserId: findEmployee._id,
-  //   role: ENUM_USER_ROLE.employee,
-  //   //@ts-ignore
-  //   userId: findEmployee.userDetails._id,
-  // };
+  let employeeId = '';
+  if (typeof data.employee === 'string') {
+    employeeId = data.employee;
+  } else {
+    employeeId = data?.employee?.roleBaseUserId.toString();
+  }
+  const findEmployee = await EmployeeUser.isEmployeeUserExistMethod(
+    employeeId,
+    {
+      populate: true,
+    },
+  );
+  data.employee = {
+    roleBaseUserId: findEmployee._id,
+    role: ENUM_USER_ROLE.employee,
+    //@ts-ignore
+    userId: findEmployee.userDetails._id,
+  };
 
   const updatedTaskManagement = await TaskManagement.findOneAndUpdate(
     { _id: id },
@@ -452,7 +450,7 @@ const updateTaskManagementFromDB = async (
 };
 const updateTaskProgressFromDB = async (
   id: string,
-  data: ITaskManagement,
+  data: { completedTaskList: any[]; taskList: any[] },
   req: Request,
 ): Promise<ITaskManagement | null> => {
   const isExist = (await TaskManagement.findOne({
@@ -473,29 +471,31 @@ const updateTaskProgressFromDB = async (
     throw new ApiError(403, 'forbidden access');
   }
 
-  let employeeId = '';
-  if (typeof data.employee === 'string') {
-    employeeId = data.employee;
-  } else {
-    employeeId = data?.employee?.roleBaseUserId.toString();
-  }
-  const findEmployee = await EmployeeUser.isEmployeeUserExistMethod(
-    employeeId,
-    {
-      populate: true,
-    },
-  );
-  console.log('🚀 ~ findEmployee:', findEmployee);
-  data.employee = {
-    roleBaseUserId: findEmployee._id,
-    role: ENUM_USER_ROLE.employee,
-    //@ts-ignore
-    userId: findEmployee.userDetails._id,
+  //@ts-ignore
+  const taskList = isExist?.taskList?.map(task => task?.toObject());
+
+  const updatedTaskList = taskList?.map(task => {
+    const matchedCompletedTask = data.completedTaskList.find(
+      item => item.uuid === task.uuid,
+    );
+
+    return {
+      ...task,
+      isCompleted: !!matchedCompletedTask,
+    };
+  });
+
+  const update = {
+    ...data,
+    taskList: updatedTaskList,
+    status,
   };
+
+  console.log('Updated Data:', update);
 
   const updatedTaskManagement = await TaskManagement.findOneAndUpdate(
     { _id: id },
-    data,
+    update,
     {
       new: true,
       runValidators: true,
