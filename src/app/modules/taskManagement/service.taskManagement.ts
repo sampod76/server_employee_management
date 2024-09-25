@@ -475,7 +475,7 @@ const updateTaskProgressFromDB = async (
   const taskList = isExist?.taskList?.map(task => task?.toObject());
 
   const updatedTaskList = taskList?.map(task => {
-    const matchedCompletedTask = data.completedTaskList.find(
+    const matchedCompletedTask = data?.completedTaskList?.find(
       item => item.uuid === task.uuid,
     );
 
@@ -488,7 +488,6 @@ const updateTaskProgressFromDB = async (
   const update = {
     ...data,
     taskList: updatedTaskList,
-    status,
   };
 
   console.log('Updated Data:', update);

@@ -36,7 +36,10 @@ const TaskManagementSchema = new Schema<ITaskManagement, TaskManagementModel>(
           trim: true,
         },
         uuid: String,
-        isCompleted: Boolean,
+        isCompleted: {
+          type: Boolean,
+          default: false,
+        },
       },
     ],
     completedTaskList: [
