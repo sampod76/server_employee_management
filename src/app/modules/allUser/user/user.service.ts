@@ -277,6 +277,7 @@ const updateUserFromDB = async (
       'Unauthorize user super admin data not update another user',
     );
   }
+
   let updatedUser;
   const session = await mongoose.startSession();
   try {

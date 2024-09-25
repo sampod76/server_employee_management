@@ -3,25 +3,43 @@ import { z } from 'zod';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import authMiddleware from '../../../middlewares/authMiddleware';
 
+import { uploadImage } from '../../../middlewares/uploader.multer';
 import parseBodyData from '../../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../../middlewares/validateRequestZod';
-import { uploadAwsS3Bucket } from '../../aws/utls.aws';
 import { EmployeeUserController } from './controller.employee';
 import { EmployeeUserValidation } from './validation.employee';
-import { uploadImage } from '../../../middlewares/uploader.multer';
 
 const router = express.Router();
 
-router.route('/').get(EmployeeUserController.getAllEmployeeUsers);
+router
+  .route('/')
+  .get(
+    authMiddleware(
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.hrAdmin,
+    ),
+    EmployeeUserController.getAllEmployeeUsers,
+  );
 
 router
   .route('/:id')
-  .get(EmployeeUserController.getSingleEmployeeUser)
+  .get(
+    authMiddleware(
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.hrAdmin,
+    ),
+    EmployeeUserController.getSingleEmployeeUser,
+  )
   .patch(
     authMiddleware(
       ENUM_USER_ROLE.superAdmin,
       ENUM_USER_ROLE.admin,
       ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.hrAdmin,
     ),
     // uploadAwsS3Bucket.fields([{ name: 'profileImage', maxCount: 1 }]),
     uploadImage.single('profileImage'),
@@ -34,6 +52,7 @@ router
       ENUM_USER_ROLE.superAdmin,
       ENUM_USER_ROLE.admin,
       ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.hrAdmin,
     ),
     validateRequestZod(
       z.object({

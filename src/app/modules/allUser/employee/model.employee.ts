@@ -69,7 +69,7 @@ const EmployeeUserSchema = new Schema<IEmployeeUser, EmployeeUserModel>(
     verify: {
       type: String,
       enum: VERIFY_ARRAY,
-      default: ENUM_VERIFY.ACCEPT,
+      default: ENUM_VERIFY.PENDING,
     },
 
     author: mongooseIUserRef,

@@ -4,7 +4,7 @@ import { zodFileAfterUploadSchema } from '../../../../../global/schema/global.sc
 export const employeeZodSchema = z
   .object({
     nid: z.string(),
-    verify: z.boolean(),
+    verify: z.string(),
     passport: z.string(),
     documents: z.array(zodFileAfterUploadSchema),
   })
