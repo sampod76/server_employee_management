@@ -40,7 +40,7 @@ const createLeaveManagementZodSchema = z
       }
       const end = new Date(body.to);
 
-      if (end.getTime() > start.getTime()) {
+      if (end.getTime() >= start.getTime()) {
         return true;
       } else {
         return false;

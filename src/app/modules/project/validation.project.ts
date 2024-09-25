@@ -9,7 +9,9 @@ const Project_BodyData = z.object({
   // author: zodRefUser.required(),// set controller to sender
   title: z.string({ required_error: 'Title is required' }).nonempty(),
   logo: zodFileAfterUploadSchema.optional(),
-  featureList: z.array(z.object({ title: z.string() })).optional(),
+  featureList: z
+    .array(z.object({ title: z.string(), uuid: z.string().optional() }))
+    .optional(),
   startDate: z.date().or(z.string()).optional(),
   endDate: z.date().or(z.string()).optional(),
   extended: z.array(z.date()).optional(),

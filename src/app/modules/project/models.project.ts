@@ -130,7 +130,7 @@ ProjectSchema.statics.isProjectExistMethod = async function (
 // after save then data then call this hook
 ProjectSchema.post('save', async function (data: IProject, next: any) {
   try {
-    await redisClient().set(
+    await redisClient.set(
       ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
       JSON.stringify(data),
       'EX',
@@ -146,7 +146,7 @@ ProjectSchema.post(
   'findOneAndUpdate',
   async function (data: IProject, next: any) {
     try {
-      await redisClient().set(
+      await redisClient.set(
         ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
         JSON.stringify(data),
         'EX',
@@ -163,9 +163,7 @@ ProjectSchema.post(
   'findOneAndDelete',
   async function (data: IProject, next: any) {
     try {
-      await redisClient().del(
-        ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
-      );
+      await redisClient.del(ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id);
       next();
     } catch (error: any) {
       next(error);

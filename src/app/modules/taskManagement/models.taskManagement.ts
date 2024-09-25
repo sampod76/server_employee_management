@@ -35,6 +35,17 @@ const TaskManagementSchema = new Schema<ITaskManagement, TaskManagementModel>(
 
           trim: true,
         },
+        uuid: String,
+        isCompleted: Boolean,
+      },
+    ],
+    completedTaskList: [
+      {
+        title: {
+          type: String,
+          trim: true,
+        },
+        uuid: String,
       },
     ],
     startDate: {
@@ -143,7 +154,7 @@ TaskManagementSchema.post(
   'save',
   async function (data: ITaskManagement, next: any) {
     try {
-      await redisClient().set(
+      await redisClient.set(
         ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
         JSON.stringify(data),
         'EX',
@@ -160,7 +171,7 @@ TaskManagementSchema.post(
   'findOneAndUpdate',
   async function (data: ITaskManagement, next: any) {
     try {
-      await redisClient().set(
+      await redisClient.set(
         ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
         JSON.stringify(data),
         'EX',
@@ -177,9 +188,7 @@ TaskManagementSchema.post(
   'findOneAndDelete',
   async function (data: ITaskManagement, next: any) {
     try {
-      await redisClient().del(
-        ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
-      );
+      await redisClient.del(ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id);
       next();
     } catch (error: any) {
       next(error);

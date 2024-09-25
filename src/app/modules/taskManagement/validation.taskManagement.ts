@@ -14,7 +14,10 @@ const TaskManagement_BodyData = z.object({
   projectId: z.string().or(z.instanceof(Types.ObjectId)).optional(),
   // assignBy: zodRefUser.optional(),//admin
   employee: zodRefUser.optional().or(z.string().optional()),
-  taskList: z.array(z.object({ title: z.string() })).optional(),
+  taskList: z
+    .array(z.object({ title: z.string(), uuid: z.string().optional() }))
+    .optional(),
+
   startDate: z.date().or(z.string()).optional(),
   endDate: z.date().or(z.string()).optional(),
   description: z.string().optional(),
@@ -26,6 +29,9 @@ const TaskManagement_BodyData = z.object({
 
 const TaskManagement_UpdateBodyDate = z.object({
   status: z.enum(STATUS_ARRAY as [I_STATUS, ...I_STATUS[]]).optional(),
+  completedTaskList: z
+    .array(z.object({ title: z.string(), uuid: z.string().optional() }))
+    .optional(),
 });
 
 const createTaskManagementZodSchema = z.object({

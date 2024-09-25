@@ -8,6 +8,7 @@ import parseBodyData from '../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../middlewares/validateRequestZod';
 import { TaskManagementController } from './controller.taskManagement';
 import { TaskManagementValidation } from './validation.taskManagement';
+import { z } from 'zod';
 const router = express.Router();
 
 router
@@ -34,6 +35,28 @@ router
     validateRequestZod(TaskManagementValidation.createTaskManagementZodSchema),
     TaskManagementController.createTaskManagement,
   );
+
+router.route('/submit-task/:id').patch(
+  authMiddleware(
+    ENUM_USER_ROLE.admin,
+    ENUM_USER_ROLE.superAdmin,
+    ENUM_USER_ROLE.hrAdmin,
+    ENUM_USER_ROLE.employee,
+  ),
+  // uploadAwsS3Bucket.array('submitDocuments'),
+  uploadImage.array('submitDocuments'),
+  parseBodyData({}),
+  validateRequestZod(
+    z.object({
+      body: TaskManagementValidation.TaskManagement_UpdateBodyDate.merge(
+        TaskManagementValidation.TaskManagement_BodyData.pick({
+          taskProgressStatus: true,
+        }),
+      ),
+    }),
+  ),
+  TaskManagementController.updateTaskProgress,
+);
 
 router
   .route('/:id')

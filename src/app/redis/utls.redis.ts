@@ -7,7 +7,7 @@ export async function deleteAllKeys(pattern: string) {
 
   do {
     // Use the SCAN command to find keys
-    const [newCursor, foundKeys] = await redisClient().scan(
+    const [newCursor, foundKeys] = await redisClient.scan(
       cursor,
       'MATCH',
       pattern,
@@ -18,7 +18,7 @@ export async function deleteAllKeys(pattern: string) {
 
     if (foundKeys.length > 0) {
       // Delete the keys
-      await redisClient().del(...foundKeys);
+      await redisClient.del(...foundKeys);
       totalDeleted += foundKeys.length;
       console.log(
         `Deleted ${foundKeys} keys, total deleted: ${totalDeleted}`.bgRed,

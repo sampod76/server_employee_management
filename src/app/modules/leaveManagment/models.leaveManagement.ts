@@ -131,7 +131,7 @@ LeaveManagementSchema.post(
   'save',
   async function (data: ILeaveManagement, next: any) {
     try {
-      await redisClient().set(
+      await redisClient.set(
         ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
         JSON.stringify(data),
         'EX',
@@ -148,7 +148,7 @@ LeaveManagementSchema.post(
   'findOneAndUpdate',
   async function (data: ILeaveManagement, next: any) {
     try {
-      await redisClient().set(
+      await redisClient.set(
         ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
         JSON.stringify(data),
         'EX',
@@ -165,9 +165,7 @@ LeaveManagementSchema.post(
   'findOneAndDelete',
   async function (data: ILeaveManagement, next: any) {
     try {
-      await redisClient().del(
-        ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
-      );
+      await redisClient.del(ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id);
       next();
     } catch (error: any) {
       next(error);

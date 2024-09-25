@@ -30,7 +30,7 @@ export const generateUserId = async () => {
 export const findUserInRedisByUserId = async (
   userId: string | Types.ObjectId,
 ) => {
-  const getUser = await redisClient().get(
+  const getUser = await redisClient.get(
     ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + userId.toString(),
   );
   if (getUser) {
@@ -43,7 +43,7 @@ export const setUserInRedisByUserId = async (
   userId: string,
   userDate: IUser,
 ) => {
-  const getUser = await redisClient().set(
+  const getUser = await redisClient.set(
     ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + userId.toString(),
     JSON.stringify(userDate),
     'EX',
@@ -58,7 +58,7 @@ export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
   let findUserData: IUser[];
   if (typeof users[0] === 'string' || users[0] instanceof Types.ObjectId) {
     // Handle the case when `users` is an array of strings (user IDs)
-    const findInRedisUsers = await redisClient().mget(
+    const findInRedisUsers = await redisClient.mget(
       users.map(
         user => ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + user.toString(),
       ),
@@ -86,8 +86,8 @@ export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
           },
           [],
         );
-        // await redisClient().mset('key1','value1','key2','value2','key3','value3');
-        await redisClient().mset(...redisData);
+        // await redisClient.mset('key1','value1','key2','value2','key3','value3');
+        await redisClient.mset(...redisData);
       }
     } else {
       findUserData = findRedis.map(user => {
@@ -105,7 +105,7 @@ export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
     users[0] !== null &&
     'userId' in users[0]
   ) {
-    const findInRedisUsers = await redisClient().mget(
+    const findInRedisUsers = await redisClient.mget(
       users.map(
         (user: any) =>
           ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + user?.userId?.toString(),
@@ -135,8 +135,8 @@ export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
           },
           [],
         );
-        // await redisClient().mset('key1','value1','key2','value2','key3','value3');
-        await redisClient().mset(...redisData);
+        // await redisClient.mset('key1','value1','key2','value2','key3','value3');
+        await redisClient.mset(...redisData);
       }
     } else {
       findUserData = findRedis.map(user => {

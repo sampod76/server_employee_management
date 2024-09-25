@@ -6,7 +6,7 @@ import { redisClient } from '../../app/redis/redis';
 import { errorLogger } from '../../app/share/logger';
 
 const rateLimiter = new RateLimiterRedis({
-  storeClient: redisClient(),
+  storeClient: redisClient,
   keyPrefix: 'middleware',
   points: 100, // Allow 100 requests
   duration: 60, // per 60 seconds (1 minute) single ip

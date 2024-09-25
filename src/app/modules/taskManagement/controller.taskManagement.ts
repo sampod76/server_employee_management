@@ -90,6 +90,21 @@ const updateTaskManagement = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const updateTaskProgress = catchAsync(async (req: Request, res: Response) => {
+  // await RequestToFileDecodeAddBodyHandle(req);
+  const result = await TaskManagementService.updateTaskManagementFromDB(
+    req.params.id,
+    req.body,
+    req,
+  );
+
+  sendResponse(req, res, {
+    statusCode: 200,
+    success: true,
+    message: 'Task updated successfully',
+    data: result,
+  });
+});
 
 //delete TaskManagement
 const deleteTaskManagement = catchAsync(async (req: Request, res: Response) => {
@@ -114,4 +129,5 @@ export const TaskManagementController = {
   getTaskManagementById,
   updateTaskManagement,
   deleteTaskManagement,
+  updateTaskProgress,
 };

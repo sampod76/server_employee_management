@@ -10,7 +10,7 @@ export const consumerRedis = async (): Promise<void> => {
   // Create the consumer group if it doesn't exist
   try {
     //@ts-ignore
-    await redisClient().xgroup('CREATE', streamKey, consumerGroup, '$', {
+    await redisClient.xgroup('CREATE', streamKey, consumerGroup, '$', {
       MKSTREAM: true,
     });
   } catch (error: unknown) {
@@ -22,7 +22,7 @@ export const consumerRedis = async (): Promise<void> => {
   const processMessages = async (): Promise<void> => {
     try {
       // Read messages from the stream for the consumer group
-      const messages = await redisClient().xreadgroup(
+      const messages = await redisClient.xreadgroup(
         'GROUP',
         consumerGroup,
         consumerName,
@@ -53,7 +53,7 @@ export const consumerRedis = async (): Promise<void> => {
                 );
 
                 // Acknowledge the message to remove it from the stream
-                await redisClient().xack(streamKey, consumerGroup, messageId);
+                await redisClient.xack(streamKey, consumerGroup, messageId);
               } catch (error: any) {
                 console.error('Error processing message:', error);
 
@@ -92,7 +92,7 @@ export const consumerRedis = async (): Promise<void> => {
 export const addMessageToStream = async (
   message: IChatMessage,
 ): Promise<void> => {
-  await redisClient().xadd(
+  await redisClient.xadd(
     'message_stream',
     '*',
     'data',

@@ -132,7 +132,7 @@ FriendShipSchema.statics.isFriendShipExistMethod = async function (
 // after save then data then call this hook
 FriendShipSchema.post('save', async function (data: IFriendShip, next: any) {
   try {
-    await redisClient().set(
+    await redisClient.set(
       ENUM_REDIS_KEY.REDIS_IN_SAVE_FRIENDSHIP + data?._id,
       JSON.stringify(data),
       'EX',
@@ -148,7 +148,7 @@ FriendShipSchema.post(
   'findOneAndUpdate',
   async function (data: IFriendShip, next: any) {
     try {
-      await redisClient().set(
+      await redisClient.set(
         ENUM_REDIS_KEY.REDIS_IN_SAVE_FRIENDSHIP + data?._id,
         JSON.stringify(data),
         'EX',
@@ -165,7 +165,7 @@ FriendShipSchema.post(
   'findOneAndDelete',
   async function (data: IFriendShip, next: any) {
     try {
-      await redisClient().del(
+      await redisClient.del(
         ENUM_REDIS_KEY.REDIS_IN_SAVE_FRIENDSHIP + data?._id,
       );
       next();

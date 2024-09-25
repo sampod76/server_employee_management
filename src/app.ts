@@ -14,6 +14,7 @@ import Backend from 'i18next-fs-backend';
 import i18nextMiddleware from 'i18next-http-middleware';
 //----------------------------------------
 import compression, { CompressionOptions } from 'compression';
+import { redisClient } from './app/redis/redis';
 import file_route from './app/routes/file_route';
 import config from './config';
 import helmetConfig from './config/helmetConfig';
@@ -94,6 +95,10 @@ app.set('view engine', 'ejs');
 
 app.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const result = await redisClient.set('test', 'sfsdjkfsd');
+    console.log('🚀 ~ TestFile ~ res:', result);
+    const res2 = await redisClient.get('test');
+    console.log('🚀 ~ TestFile ~ res:', res2);
     // res.render('serverCheck.ejs');
     res.send({ message: 'server is running....' + process.pid });
   } catch (error) {

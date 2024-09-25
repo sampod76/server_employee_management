@@ -201,7 +201,7 @@ userSchema.pre('save', async function (next) {
 userSchema.post('save', async function (data, next) {
   try {
     data.password = '';
-    await redisClient().set(
+    await redisClient.set(
       ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + data?._id,
       JSON.stringify(data),
       'EX',
@@ -216,7 +216,7 @@ userSchema.post('save', async function (data, next) {
 userSchema.post('findOneAndUpdate', async function (data, next) {
   try {
     data.password = '';
-    await redisClient().set(
+    await redisClient.set(
       ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + data?._id,
       JSON.stringify(data),
       'EX',
@@ -231,7 +231,7 @@ userSchema.post('findOneAndUpdate', async function (data, next) {
 userSchema.post('findOneAndDelete', async function (data, next) {
   try {
     // data.password = '';
-    await redisClient().del(ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + data?._id);
+    await redisClient.del(ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + data?._id);
     next();
   } catch (error: any) {
     next(error);

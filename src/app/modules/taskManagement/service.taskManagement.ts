@@ -10,8 +10,13 @@ import ApiError from '../../errors/ApiError';
 import { IGenericResponse } from '../../interface/common';
 import { IPaginationOption } from '../../interface/pagination';
 
-import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
+import {
+  LookupAnyRoleDetailsReusable,
+  LookupReusable,
+} from '../../../helper/lookUpResuable';
 
+import { uuidGenerator } from '../../../utils/uuidGenerator';
+import { EmployeeUser } from '../allUser/employee/model.employee';
 import { IUserRef } from '../allUser/typesAndConst';
 import { TaskManagementSearchableFields } from './constants.taskManagement';
 import {
@@ -19,7 +24,6 @@ import {
   ITaskManagementFilters,
 } from './interface.taskManagement';
 import { TaskManagement } from './models.taskManagement';
-import { EmployeeUser } from '../allUser/employee/model.employee';
 
 const createTaskManagement = async (
   data: ITaskManagement,
@@ -47,6 +51,10 @@ const createTaskManagement = async (
       //@ts-ignore
       userId: findEmployee.userDetails._id,
     };
+    data.taskList = data?.taskList?.map(task => ({
+      title: task.title,
+      uuid: uuidGenerator(),
+    }));
   }
   const res = await TaskManagement.create(data);
   return res;
@@ -359,6 +367,17 @@ const getAllTaskManagementsFromDB = async (
     collections: collections,
   });
 
+  LookupReusable(pipeline, {
+    collections: [
+      {
+        connectionName: 'projects',
+        idFiledName: '$projectId',
+        pipeLineMatchField: '$_id',
+        outPutFieldName: 'projectDetails',
+      },
+    ],
+  });
+
   const resultArray = [
     TaskManagement.aggregate(pipeline),
     TaskManagement.countDocuments(whereConditions),
@@ -392,21 +411,91 @@ const updateTaskManagementFromDB = async (
   if (
     req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     req?.user?.role !== ENUM_USER_ROLE.admin &&
+    isExist?.author?.userId?.toString() !== req?.user?.userId
+    // && isExist?.employee?.userId?.toString() !== req?.user?.userId
+  ) {
+    throw new ApiError(403, 'forbidden access');
+  }
+
+  // let employeeId = '';
+  // if (typeof data.employee === 'string') {
+  //   employeeId = data.employee;
+  // } else {
+  //   employeeId = data?.employee?.roleBaseUserId.toString();
+  // }
+  // const findEmployee = await EmployeeUser.isEmployeeUserExistMethod(
+  //   employeeId,
+  //   {
+  //     populate: true,
+  //   },
+  // );
+  // console.log('🚀 ~ findEmployee:', findEmployee);
+  // data.employee = {
+  //   roleBaseUserId: findEmployee._id,
+  //   role: ENUM_USER_ROLE.employee,
+  //   //@ts-ignore
+  //   userId: findEmployee.userDetails._id,
+  // };
+
+  const updatedTaskManagement = await TaskManagement.findOneAndUpdate(
+    { _id: id },
+    data,
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
+  if (!updatedTaskManagement) {
+    throw new ApiError(400, 'Failed to update Task');
+  }
+  return updatedTaskManagement;
+};
+const updateTaskProgressFromDB = async (
+  id: string,
+  data: ITaskManagement,
+  req: Request,
+): Promise<ITaskManagement | null> => {
+  const isExist = (await TaskManagement.findOne({
+    _id: id,
+    isDelete: false,
+  })) as ITaskManagement & {
+    _id: Schema.Types.ObjectId;
+  } as ITaskManagement;
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Task not found');
+  }
+  if (
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
     isExist?.author?.userId?.toString() !== req?.user?.userId &&
     isExist?.employee?.userId?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
   }
 
-  const { ...TaskManagementData } = data;
-
-  const updatedTaskManagementData: Partial<ITaskManagement> = {
-    ...TaskManagementData,
+  let employeeId = '';
+  if (typeof data.employee === 'string') {
+    employeeId = data.employee;
+  } else {
+    employeeId = data?.employee?.roleBaseUserId.toString();
+  }
+  const findEmployee = await EmployeeUser.isEmployeeUserExistMethod(
+    employeeId,
+    {
+      populate: true,
+    },
+  );
+  console.log('🚀 ~ findEmployee:', findEmployee);
+  data.employee = {
+    roleBaseUserId: findEmployee._id,
+    role: ENUM_USER_ROLE.employee,
+    //@ts-ignore
+    userId: findEmployee.userDetails._id,
   };
 
   const updatedTaskManagement = await TaskManagement.findOneAndUpdate(
     { _id: id },
-    updatedTaskManagementData,
+    data,
     {
       new: true,
       runValidators: true,
@@ -486,4 +575,5 @@ export const TaskManagementService = {
   updateTaskManagementFromDB,
   getSingleTaskManagementFromDB,
   deleteTaskManagementFromDB,
+  updateTaskProgressFromDB,
 };

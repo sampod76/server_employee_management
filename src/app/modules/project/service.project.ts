@@ -12,6 +12,7 @@ import { IPaginationOption } from '../../interface/pagination';
 
 import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
 
+import { uuidGenerator } from '../../../utils/uuidGenerator';
 import { IUserRef } from '../allUser/typesAndConst';
 import { ProjectSearchableFields } from './constants.project';
 import { IProject, IProjectFilters } from './interface.interface';
@@ -23,7 +24,10 @@ const createProject = async (
   req: Request,
 ): Promise<IProject | null> => {
   // console.log(data, 'data');
-
+  data.featureList = data?.featureList?.map(task => ({
+    title: task.title,
+    uuid: uuidGenerator(),
+  }));
   const res = await Project.create(data);
 
   return res;
@@ -160,21 +164,22 @@ const getAllProjectsFromDB = async (
   ];
 
   //-----------------needProperty--lookup--------------------
-  if (needProperty?.toLowerCase()?.includes('author')) {
-    const collections = [];
+  // if (needProperty?.toLowerCase()?.includes('author')) {
+  const collections = [];
 
-    collections.push({
-      roleMatchFiledName: 'author.role',
-      idFiledName: 'author.roleBaseUserId', //$sender.roleBaseUserId
-      pipeLineMatchField: '_id', //$_id
-      outPutFieldName: 'details',
-      //project: { name: 1, country: 1, profileImage: 1, email: 1 },
-    });
+  collections.push({
+    roleMatchFiledName: 'author.role',
+    idFiledName: 'author.roleBaseUserId', //$sender.roleBaseUserId
+    pipeLineMatchField: '_id', //$_id
+    outPutFieldName: 'details',
+    margeInField: 'author',
+    //project: { name: 1, country: 1, profileImage: 1, email: 1 },
+  });
 
-    LookupAnyRoleDetailsReusable(pipeline, {
-      collections: collections,
-    });
-  }
+  LookupAnyRoleDetailsReusable(pipeline, {
+    collections: collections,
+  });
+  // }
 
   const resultArray = [
     Project.aggregate(pipeline),

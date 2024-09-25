@@ -112,7 +112,7 @@ CheckInOutSchema.statics.isCheckInOutExistMethod = async function (
 // after save then data then call this hook
 CheckInOutSchema.post('save', async function (data: ICheckInOut, next: any) {
   try {
-    await redisClient().set(
+    await redisClient.set(
       ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
       JSON.stringify(data),
       'EX',
@@ -128,7 +128,7 @@ CheckInOutSchema.post(
   'findOneAndUpdate',
   async function (data: ICheckInOut, next: any) {
     try {
-      await redisClient().set(
+      await redisClient.set(
         ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
         JSON.stringify(data),
         'EX',
@@ -145,9 +145,7 @@ CheckInOutSchema.post(
   'findOneAndDelete',
   async function (data: ICheckInOut, next: any) {
     try {
-      await redisClient().del(
-        ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id,
-      );
+      await redisClient.del(ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_DATA + data?._id);
       next();
     } catch (error: any) {
       next(error);

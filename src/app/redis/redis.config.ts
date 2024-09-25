@@ -38,7 +38,7 @@
 //   }
 
 //   // Method to get the Redis Cluster client instance
-//   public getRedisClient(): Cluster {
+//   public getredisClient: Cluster {
 //     return this.redisClusterClient;
 //   }
 
