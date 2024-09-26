@@ -15,7 +15,7 @@ const TaskManagement_BodyData = z.object({
   // assignBy: zodRefUser.optional(),//admin
   employee: zodRefUser.optional().or(z.string().optional()),
   taskList: z
-    .array(z.object({ title: z.string(), uuid: z.string().optional() }))
+    .array(z.object({ title: z.string(), uuid: z.string() }))
     .optional(),
 
   startDate: z.date().or(z.string()).optional(),

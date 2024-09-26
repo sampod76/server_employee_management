@@ -50,10 +50,11 @@ const createTaskManagement = async (
       //@ts-ignore
       userId: findEmployee.userDetails._id,
     };
-    data.taskList = data?.taskList?.map(task => ({
-      title: task.title,
-      uuid: uuidGenerator(),
-    }));
+    // data.taskList = data?.taskList?.map(task => ({
+    //   title: task.title,
+    //   uuid: uuidGenerator(),
+    // }));
+    console.log(data);
   }
   const res = await TaskManagement.create(data);
   return res;
