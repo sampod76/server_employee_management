@@ -6,7 +6,6 @@ import { ENUM_USER_ROLE } from '../../../global/enums/users';
 import { uploadFile } from '../../middlewares/uploader.multer';
 import parseBodyData from '../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../middlewares/validateRequestZod';
-import { uploadAwsS3Bucket } from '../aws/utls.aws';
 import { LeaveManagementController } from './controller.leaveManagement';
 import { LeaveManagementValidation } from './validation.leaveManagement';
 const router = express.Router();
@@ -29,8 +28,8 @@ router
       ENUM_USER_ROLE.hrAdmin,
       ENUM_USER_ROLE.employee,
     ),
-    uploadAwsS3Bucket.array('provide'),
-    // uploadFile.array('provide'),
+    // uploadAwsS3Bucket.array('provide'),
+    uploadFile.array('provide'),
     parseBodyData({}),
     validateRequestZod(
       LeaveManagementValidation.createLeaveManagementZodSchema,
