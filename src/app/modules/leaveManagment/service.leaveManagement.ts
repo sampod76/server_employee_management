@@ -123,6 +123,7 @@ const getAllLeaveManagementsFromDB = async (
           modifyFiled = {
             ['employee.userId']: new Types.ObjectId(value),
           };
+          console.log(modifyFiled);
         } else if (field === 'employeeRoleBaseId') {
           modifyFiled = {
             ['employee.roleBaseUserId']: new Types.ObjectId(value),

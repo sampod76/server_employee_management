@@ -74,8 +74,14 @@ export const sendMailHelper = async (bodyData: IMailData) => {
     product: {
       // Appears in header & footer of e-mails
       name: company_name || 'N/A',
-      logo: logo || config.logo,
-      link: logo_to_link || (config.client_side_url as string),
+      logo:
+        logo ||
+        config.logo ||
+        'https://res.cloudinary.com/dqvhxpu11/image/upload/v1726571866/bnzf8epjafddqirzu8xa.jpg',
+      link:
+        logo_to_link ||
+        (config.client_side_url as string) ||
+        'https://res.cloudinary.com/dqvhxpu11/image/upload/v1726571866/bnzf8epjafddqirzu8xa.jpg',
       // Optional product logo
       logoHeight: '50px',
     },

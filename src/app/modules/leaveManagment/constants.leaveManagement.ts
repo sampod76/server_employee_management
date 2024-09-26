@@ -16,8 +16,8 @@ export const LeaveManagementSearchableFields = [
   'employee.details.email',
 ];
 export const LeaveManagementFilterableFields = [
-  'authorRoleBaseId',
-  'authorUserId',
+  'employeeUserId',
+  'employeeRoleBaseId',
   'requestStatus',
   //
   'myData', //yes no
