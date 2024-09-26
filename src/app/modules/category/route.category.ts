@@ -5,7 +5,7 @@ import authMiddleware from '../../middlewares/authMiddleware';
 import { uploadImage } from '../../middlewares/uploader.multer';
 import parseBodyData from '../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../middlewares/validateRequestZod';
-import { uploadAwsS3Bucket } from '../aws/utls.aws';
+// import { uploadAwsS3Bucket } from '../aws/utls.aws';
 import { CategoryController } from './constroller.category';
 import { CategoryValidation } from './validation.category';
 

@@ -12,7 +12,7 @@ export type INotificationFilters = {
   searchTerm?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: string;
+  isDelete?: boolean | string;
 };
 
 export type INotification = {
@@ -24,7 +24,7 @@ export type INotification = {
   bodyText: string;
   isSeen?: I_YN;
   status?: I_STATUS;
-  isDelete?: boolean;
+  isDelete?: boolean | string;
 };
 
 export type NotificationModel = Model<INotification, Record<string, unknown>>;
