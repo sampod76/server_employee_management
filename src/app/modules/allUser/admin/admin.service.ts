@@ -10,6 +10,12 @@ import { paginationHelper } from '../../../../helper/paginationHelper';
 import ApiError from '../../../errors/ApiError';
 import { IGenericResponse } from '../../../interface/common';
 import { IPaginationOption } from '../../../interface/pagination';
+import { CheckInOut } from '../../checkInOut/models.checkInOut';
+import { LeaveManagement } from '../../leaveManagment/models.leaveManagement';
+import { Project } from '../../project/models.project';
+import { TaskManagement } from '../../taskManagement/models.taskManagement';
+import { EmployeeUser } from '../employee/model.employee';
+import { ENUM_VERIFY } from '../typesAndConst';
 import { User } from '../user/user.model';
 import { adminSearchableFields } from './admin.constant';
 import { IAdmin, IAdminFilters } from './admin.interface';
@@ -137,6 +143,134 @@ const getAllAdminsFromDB = async (
       total,
     },
     data: result,
+  };
+};
+const dashboardFromDb = async (
+  filters: IAdminFilters,
+  paginationOptions: IPaginationOption,
+  req: Request,
+): Promise<any> => {
+  const promiss = [
+    EmployeeUser.countDocuments({
+      isDelete: false,
+      verify: ENUM_VERIFY.ACCEPT,
+    }),
+    Project.countDocuments({ isDelete: false }),
+    TaskManagement.countDocuments({ isDelete: false }),
+  ];
+  const [employeeCount, projectCount, taskManagementCount] =
+    await Promise.all(promiss);
+  const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
+  const endOfDay = new Date(new Date().setHours(23, 59, 59, 999));
+
+  const toDayCheckInOut = CheckInOut.aggregate([
+    {
+      $facet: {
+        totalCheckInOffice: [
+          {
+            $match: {
+              isDelete: false,
+              checkInTime: {
+                $gte: startOfDay,
+                $lte: endOfDay,
+              },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: 1 },
+            },
+          },
+        ],
+        totalCheckOutOffice: [
+          {
+            $match: {
+              isDelete: false,
+              checkOutTime: {
+                $gte: startOfDay,
+                $lte: endOfDay,
+              },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: 1 },
+            },
+          },
+        ],
+      },
+    },
+  ]);
+  const employeeManage = EmployeeUser.aggregate([
+    {
+      $match: {
+        isDelete: false,
+        // requestStatus: ENUM_LEAVE_MANAGEMENT_STATUS.pending,
+      },
+    },
+    {
+      $group: {
+        _id: '$verify',
+        total: { $sum: 1 },
+      },
+    },
+  ]);
+  const leaveRequest = LeaveManagement.aggregate([
+    {
+      $match: {
+        isDelete: false,
+        // requestStatus: ENUM_LEAVE_MANAGEMENT_STATUS.pending,
+      },
+    },
+    {
+      $group: {
+        _id: '$requestStatus',
+        total: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const resolve = await Promise.all([
+    toDayCheckInOut,
+    employeeManage,
+    leaveRequest,
+  ]);
+
+  const dashboard = {
+    employeeCount,
+    projectCount,
+    taskManagementCount,
+    //
+    toDayCheckInOut: resolve[0],
+    employeeManage: resolve[1],
+    leaveRequest: resolve[2],
+  };
+  return {
+    totalCheckInOffice:
+      dashboard?.toDayCheckInOut?.[0]?.totalCheckInOffice?.[0]?.total || 0,
+    totalCheckOutOffice:
+      dashboard?.toDayCheckInOut?.[0]?.totalCheckOutOffice?.[0]?.total || 0,
+    totalEmployees: dashboard?.employeeCount || 0,
+    totalProjects: dashboard?.projectCount || 0,
+    totalTasks: dashboard?.taskManagementCount || 0,
+    totalAcceptedEmployees:
+      dashboard?.employeeManage?.find(
+        (emp: { _id: string }) => emp._id === 'accept',
+      )?.total || 0,
+    totalPendingEmployees:
+      dashboard?.employeeManage?.find(
+        (emp: { _id: string }) => emp._id === 'pending',
+      )?.total || 0,
+    totalApprovedLeaves:
+      dashboard?.leaveRequest?.find(
+        (leave: { _id: string }) => leave._id === 'approved',
+      )?.total || 0,
+    totalPendingLeaves:
+      dashboard?.leaveRequest?.find(
+        (leave: { _id: string }) => leave._id === 'pending',
+      )?.total || 0,
   };
 };
 
@@ -329,4 +463,6 @@ export const AdminService = {
   updateAdminFromDB,
   getSingleAdminFromDB,
   deleteAdminFromDB,
+  //
+  dashboardFromDb,
 };

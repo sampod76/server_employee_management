@@ -476,7 +476,7 @@ const updateTaskProgressFromDB = async (
 
   const updatedTaskList = taskList?.map(task => {
     const matchedCompletedTask = data?.completedTaskList?.find(
-      item => item.uuid === task.uuid,
+      item => item?.uuid === task?.uuid,
     );
 
     return {
@@ -485,12 +485,26 @@ const updateTaskProgressFromDB = async (
     };
   });
 
+  /* 
+   let updatedTaskList = taskList;
+  if (data?.completedTaskList?.length) {
+    updatedTaskList = taskList?.map(task => {
+      const matchedCompletedTask = data?.completedTaskList?.find(
+        item => item?.uuid === task?.uuid,
+      );
+
+      return {
+        ...task,
+        isCompleted: !!matchedCompletedTask,
+      };
+    });
+  }
+  */
+
   const update = {
     ...data,
     taskList: updatedTaskList,
   };
-
-  console.log('Updated Data:', update);
 
   const updatedTaskManagement = await TaskManagement.findOneAndUpdate(
     { _id: id },

@@ -16,6 +16,12 @@ router
     authMiddleware(ENUM_USER_ROLE.superAdmin, ENUM_USER_ROLE.admin),
     AdminController.getAllAdmins,
   );
+router
+  .route('/dashboard')
+  .get(
+    authMiddleware(ENUM_USER_ROLE.superAdmin, ENUM_USER_ROLE.admin),
+    AdminController.dashboard,
+  );
 
 router
   .route('/:id')

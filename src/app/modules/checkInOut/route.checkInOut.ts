@@ -21,6 +21,15 @@ router
     ),
     CheckInOutController.getAllCheckInOuts,
   );
+router.route('/check-in-ou-admin').post(
+  authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
+  // uploadAwsS3Bucket.array('provide'),
+  uploadImage.array('provide'),
+  parseBodyData({}),
+  validateRequestZod(CheckInOutValidation.createAdminByCheckInOutZodSchema),
+  CheckInOutController.createAdminByCheckInOut,
+);
+
 router.route('/check-in').post(
   authMiddleware(
     ENUM_USER_ROLE.admin,

@@ -1,8 +1,9 @@
+import { Types } from 'mongoose';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import bcrypt from 'bcrypt';
 import { Request } from 'express';
 import httpStatus from 'http-status';
-import mongoose, { PipelineStage, Schema, Types } from 'mongoose';
+import mongoose, { PipelineStage, Schema } from 'mongoose';
 
 import { ENUM_YN } from '../../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
@@ -12,6 +13,9 @@ import { IGenericResponse } from '../../../interface/common';
 import { IPaginationOption } from '../../../interface/pagination';
 
 import { LookupReusable } from '../../../../helper/lookUpResuable';
+import { CheckInOut } from '../../checkInOut/models.checkInOut';
+import { LeaveManagement } from '../../leaveManagment/models.leaveManagement';
+import { TaskManagement } from '../../taskManagement/models.taskManagement';
 import { ENUM_VERIFY } from '../typesAndConst';
 import { IUser } from '../user/user.interface';
 import { User } from '../user/user.model';
@@ -139,6 +143,84 @@ const getAllEmployeeUsersFromDB = async (
       total,
     },
     data: result,
+  };
+};
+const dashboardFromDb = async (
+  filters: any,
+  paginationOptions: IPaginationOption,
+  req: Request,
+): Promise<any> => {
+  const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
+  const endOfDay = new Date(new Date().setHours(23, 59, 59, 999));
+
+  const toDayCheckInOut = CheckInOut.countDocuments({
+    isDelete: false,
+    // checkInTime: {
+    //   $gte: startOfDay,
+    //   $lte: endOfDay,
+    // },
+    ['employee.userId']: new Types.ObjectId(req?.user?.userId as string),
+  });
+
+  const leaveRequest = LeaveManagement.aggregate([
+    {
+      $match: {
+        isDelete: false,
+        ['employee.userId']: new Types.ObjectId(req?.user?.userId as string),
+        // requestStatus: ENUM_LEAVE_MANAGEMENT_STATUS.pending,
+      },
+    },
+    {
+      $group: {
+        _id: '$requestStatus',
+        total: { $sum: 1 },
+      },
+    },
+  ]);
+  const taskMange = TaskManagement.aggregate([
+    {
+      $match: {
+        isDelete: false,
+        ['employee.userId']: new Types.ObjectId(req?.user?.userId as string),
+        // requestStatus: ENUM_LEAVE_MANAGEMENT_STATUS.pending,
+      },
+    },
+    {
+      $group: {
+        _id: '$taskProgressStatus',
+        total: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const resolve = await Promise.all([toDayCheckInOut, leaveRequest, taskMange]);
+
+  const dashboard = {
+    toDayCheckInOut: resolve[0],
+    leaveRequest: resolve[1],
+    taskMange: resolve[2],
+  };
+
+  return {
+    totalCheckInOffice: dashboard?.toDayCheckInOut || 0,
+    totalApprovedLeaves:
+      dashboard?.leaveRequest?.find(
+        (leave: { _id: string }) => leave._id === 'approved',
+      )?.total || 0,
+    totalPendingLeaves:
+      dashboard?.leaveRequest?.find(
+        (leave: { _id: string }) => leave._id === 'pending',
+      )?.total || 0,
+    totalDoneTasks:
+      dashboard?.taskMange?.find((task: { _id: string }) => task._id === 'done')
+        ?.total || 0,
+    totalToDoTasks:
+      dashboard?.taskMange?.find((task: { _id: string }) => task._id === 'toDo')
+        ?.total || 0,
+    totalInProgressTasks:
+      dashboard?.taskMange?.find(
+        (task: { _id: string }) => task._id === 'inProgress',
+      )?.total || 0,
   };
 };
 
@@ -324,4 +406,5 @@ export const EmployeeUserService = {
   updateEmployeeUserFromDB,
   getSingleEmployeeUserFromDB,
   deleteEmployeeUserFromDB,
+  dashboardFromDb,
 };

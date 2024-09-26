@@ -12,6 +12,7 @@ import { IPaginationOption } from '../../interface/pagination';
 
 import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
 
+import { EmployeeUser } from '../allUser/employee/model.employee';
 import { IUserRef } from '../allUser/typesAndConst';
 import { CheckInOutSearchableFields } from './constants.checkInOut';
 import { ICheckInOut, ICheckInOutFilters } from './interface.checkInOut';
@@ -28,11 +29,11 @@ const createCheckInFromDb = async (
   today.setHours(0, 0, 0, 0);
 
   // Check if the user has already checked in today
-  const existingCheckIn = await CheckInOut.findOne({
+  const existingCheckIn = (await CheckInOut.findOne({
     'employee.userId': requestUser.userId,
     checkInTime: { $gte: today },
     isDelete: false,
-  });
+  })) as any;
 
   if (existingCheckIn) {
     throw new ApiError(
@@ -49,6 +50,8 @@ const createCheckOutFromDb = async (
   requestUser: IUserRef,
   req: Request,
 ): Promise<ICheckInOut | null> => {
+  console.log(data, 'data');
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const existingCheckIn = await CheckInOut.findOne({
@@ -77,6 +80,64 @@ const createCheckOutFromDb = async (
       new: true,
     },
   );
+  return res;
+};
+const createAdminByCheckInOutFromDb = async (
+  data: ICheckInOut,
+  requestUser: IUserRef,
+  req: Request,
+): Promise<ICheckInOut | null> => {
+  const today = new Date(data.checkInTime);
+  today.setHours(0, 0, 0, 0);
+
+  const get = new Date(data.checkInTime);
+  get.setHours(23, 59, 59, 999);
+  let id = '';
+  if (typeof data.employee === 'string') {
+    id = data.employee;
+  } else {
+    id = data?.employee?.roleBaseUserId.toString();
+  }
+  const findEmployee = await EmployeeUser.isEmployeeUserExistMethod(id, {
+    populate: true,
+  });
+  data.employee = {
+    roleBaseUserId: findEmployee._id,
+    role: ENUM_USER_ROLE.employee,
+    //@ts-ignore
+    userId: findEmployee.userDetails._id,
+  };
+  const existingCheckIn = await CheckInOut.findOne({
+    'employee.userId': new Types.ObjectId(data.employee.userId),
+    checkInTime: {
+      $gte: today,
+      $lte: get,
+    },
+    isDelete: false,
+  });
+
+  // if (!existingCheckIn) {
+  //   throw new ApiError(
+  //     httpStatus.NOT_ACCEPTABLE,
+  //     "You haven't check in today.",
+  //   );
+  // } else if (existingCheckIn.checkOutTime) {
+  //   throw new ApiError(
+  //     httpStatus.NOT_ACCEPTABLE,
+  //     'You already check out today.',
+  //   );
+  // }
+  let res = null;
+
+  if (existingCheckIn) {
+    res = await CheckInOut.findByIdAndUpdate(existingCheckIn._id, data, {
+      runValidators: true,
+      new: true,
+    });
+  } else {
+    res = await CheckInOut.create(data);
+  }
+
   return res;
 };
 
@@ -418,4 +479,5 @@ export const CheckInOutService = {
   updateCheckInOutFromDB,
   getSingleCheckInOutFromDB,
   deleteCheckInOutFromDB,
+  createAdminByCheckInOutFromDb,
 };

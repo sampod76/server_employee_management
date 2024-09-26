@@ -60,6 +60,22 @@ const getAllEmployeeUsers = catchAsync(async (req: Request, res: Response) => {
     meta: result.meta,
   });
 });
+const dashboard = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, EmployeeFilterableFields);
+  const paginationOptions = pick(req.query, PAGINATION_FIELDS);
+  const result = await EmployeeUserService.dashboardFromDb(
+    filters,
+    paginationOptions,
+    req,
+  );
+
+  sendResponse<IEmployeeUser[]>(req, res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Get all EmployeeUsers',
+    data: result,
+  });
+});
 
 const updateEmployeeUser = catchAsync(async (req: Request, res: Response) => {
   //-----------------------fil--upload--------------------------
@@ -76,7 +92,11 @@ const updateEmployeeUser = catchAsync(async (req: Request, res: Response) => {
   const { password, role, authentication, ...data } = req.body;
   const id = req.params.id;
 
-  const result = await EmployeeUserService.updateEmployeeUserFromDB(id, data, req);
+  const result = await EmployeeUserService.updateEmployeeUserFromDB(
+    id,
+    data,
+    req,
+  );
   sendResponse<IEmployeeUser>(req, res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -85,16 +105,21 @@ const updateEmployeeUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getSingleEmployeeUser = catchAsync(async (req: Request, res: Response) => {
-  const id = req.params.id;
-  const result = await EmployeeUserService.getSingleEmployeeUserFromDB(id, req);
-  sendResponse<IEmployeeUser>(req, res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'EmployeeUser find successfully',
-    data: result,
-  });
-});
+const getSingleEmployeeUser = catchAsync(
+  async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const result = await EmployeeUserService.getSingleEmployeeUserFromDB(
+      id,
+      req,
+    );
+    sendResponse<IEmployeeUser>(req, res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'EmployeeUser find successfully',
+      data: result,
+    });
+  },
+);
 
 const deleteEmployeeUser = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
@@ -117,4 +142,5 @@ export const EmployeeUserController = {
   updateEmployeeUser,
   getSingleEmployeeUser,
   deleteEmployeeUser,
+  dashboard,
 };

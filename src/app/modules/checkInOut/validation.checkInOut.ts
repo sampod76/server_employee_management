@@ -2,11 +2,18 @@ import { z } from 'zod';
 
 import { I_STATUS, STATUS_ARRAY } from '../../../global/enum_constant_type';
 import { zodFileAfterUploadSchema } from '../../../global/schema/global.schema';
+import { zodRefUser } from '../allUser/typesAndConst';
 
 const CheckInOut_BodyData = z.object({
   // employee: zodRefUser.optional(), //set by controller
   // checkInTime: z.date().or(z.string()).optional(),
   // checkOutTime: z.date().or(z.string()).optional(),
+  provide: z.array(zodFileAfterUploadSchema).optional(),
+});
+const CheckInOut_Admin_BodyData = z.object({
+  employee: zodRefUser.or(z.string()), //set by controller
+  checkInTime: z.date().or(z.string()).optional(),
+  checkOutTime: z.date().or(z.string()).optional(),
   provide: z.array(zodFileAfterUploadSchema).optional(),
 });
 
@@ -16,6 +23,9 @@ const CheckInOut_UpdateBodyDate = z.object({
 
 const createCheckInOutZodSchema = z.object({
   body: CheckInOut_BodyData,
+});
+const createAdminByCheckInOutZodSchema = z.object({
+  body: CheckInOut_Admin_BodyData,
 });
 
 const updateCheckInOutZodSchema = z.object({
@@ -30,4 +40,5 @@ export const CheckInOutValidation = {
   CheckInOut_BodyData,
   CheckInOut_UpdateBodyDate,
   //
+  createAdminByCheckInOutZodSchema,
 };

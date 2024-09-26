@@ -22,7 +22,15 @@ router
     ),
     EmployeeUserController.getAllEmployeeUsers,
   );
-
+router.route('/dashboard').get(
+  authMiddleware(
+    // ENUM_USER_ROLE.superAdmin,
+    // ENUM_USER_ROLE.admin,
+    ENUM_USER_ROLE.employee,
+    // ENUM_USER_ROLE.hrAdmin,
+  ),
+  EmployeeUserController.dashboard,
+);
 router
   .route('/:id')
   .get(

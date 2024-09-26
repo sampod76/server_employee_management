@@ -29,6 +29,21 @@ const createCheckIn = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const createAdminByCheckInOut = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await CheckInOutService.createAdminByCheckInOutFromDb(
+      req.body,
+      req?.user as IUserRef,
+      req,
+    );
+    sendResponse<ICheckInOut>(req, res, {
+      statusCode: 200,
+      success: true,
+      message: 'Check In created successfully',
+      data: result,
+    });
+  },
+);
 const createCheckOut = catchAsync(async (req: Request, res: Response) => {
   req.body = {
     ...req.body,
@@ -125,4 +140,5 @@ export const CheckInOutController = {
   getCheckInOutById,
   updateCheckInOut,
   deleteCheckInOut,
+  createAdminByCheckInOut,
 };
