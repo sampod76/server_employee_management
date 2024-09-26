@@ -19,14 +19,14 @@
 module.exports = {
   apps: [
     {
-      name: 'dr_marzen',
+      name: 'ems_server',
       script: './dist/server.js',
       watch: ['src'],
       ignore_watch: ['node_modules', 'logs'],
       watch_options: {
         followSymlinks: false,
       },
-      instances: 'max', // you can use count of replica you application , 2 or 3 , but you can use max then count max cpu
+      instances: '1', // you can use count of replica you application , 2 or 3 , but you can use max then count max cpu
       exec_mode: 'cluster',
       max_memory_restart: '512M',
       env: {
@@ -49,22 +49,4 @@ module.exports = {
       'pre-start': 'yarn run build',
     },
   ],
-
-  deploy: {
-    production: {
-      user: 'root',
-      host: '', //you host ip
-      ref: 'origin/devsampod', // Track the master branch
-      repo: '',
-      path: '/var/www/drmarzen_server',
-      'pre-deploy-local': '', // Commands to run on your local machine before deployment
-      'post-deploy':
-        'git pull && yarn install && yarn run build && pm2 reload ecosystem.config.js --env production', // Commands to run on the server after pulling the latest code
-      // 'pre-setup': '', // Commands to run on the server before the setup
-      // 'post-setup': '', // Commands to run on the server after the setup
-      env: {
-        NODE_ENV: 'production',
-      },
-    },
-  },
 };
