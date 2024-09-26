@@ -14,7 +14,10 @@ export type IAdminFilters = {
   author?: string;
 };
 
-export type IAdmin = ICommonUser;
+export type IAdmin = ICommonUser & {
+  nid: string;
+  passport: string;
+};
 export type AdminModel = {
   isAdminExistMethod(
     email: string,
