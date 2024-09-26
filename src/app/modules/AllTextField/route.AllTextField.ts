@@ -1,12 +1,12 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
 import { ENUM_USER_ROLE } from '../../../global/enums/users';
 import authMiddleware from '../../middlewares/authMiddleware';
 
-import { uploadAwsS3Bucket } from '../aws/utls.aws';
-import { AllTextFieldController } from './constroller.AllTextField';
-import { AllTextFieldValidation } from './validation.AllTextField';
+import { uploadImage } from '../../middlewares/uploader.multer';
 import parseBodyData from '../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../middlewares/validateRequestZod';
+import { AllTextFieldController } from './constroller.AllTextField';
+import { AllTextFieldValidation } from './validation.AllTextField';
 
 const router = express.Router();
 
@@ -15,9 +15,10 @@ router
   // This route is open
   .get(AllTextFieldController.getAllAllTextField)
   .post(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
 
-    uploadAwsS3Bucket.single('image'),
+    // uploadAwsS3Bucket.single('image'),
+    uploadImage.single('image'),
     parseBodyData({}),
     validateRequestZod(AllTextFieldValidation.createAllTextFieldZodSchema),
     AllTextFieldController.createAllTextField,
@@ -28,15 +29,16 @@ router
   // This route is open
   .get(AllTextFieldController.getSingleAllTextField)
   .patch(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
 
-    uploadAwsS3Bucket.single('image'),
+    // uploadAwsS3Bucket.single('image'),
+    uploadImage.single('image'),
     parseBodyData({}),
     validateRequestZod(AllTextFieldValidation.updateAllTextFieldZodSchema),
     AllTextFieldController.updateAllTextField,
   )
   .delete(
-    authMiddleware(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin, ENUM_USER_ROLE.superAdmin),
     AllTextFieldController.deleteAllTextField,
   );
 

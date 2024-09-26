@@ -1,10 +1,5 @@
 import { z } from 'zod';
-import {
-  I_STATUS,
-  I_YN,
-  STATUS_ARRAY,
-  YN_ARRAY,
-} from '../../../global/enum_constant_type';
+import { I_STATUS, STATUS_ARRAY } from '../../../global/enum_constant_type';
 import { zodFileAfterUploadSchema } from '../../../global/schema/global.schema';
 const createCategoryBodyData = z.object({
   title: z.string({
@@ -22,10 +17,10 @@ const createCategoryZodSchema = z.object({
 const updateCategoryZodSchema = createCategoryZodSchema
   .merge(
     z.object({
-      isDelete: z.enum([...YN_ARRAY] as [I_YN, ...I_YN[]]).optional(),
+      isDelete: z.boolean().optional().default(false),
     }),
   )
-  .partial();
+  .deepPartial();
 
 export const CategoryValidation = {
   createCategoryZodSchema,

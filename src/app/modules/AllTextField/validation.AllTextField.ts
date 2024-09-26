@@ -1,11 +1,6 @@
 import { z } from 'zod';
 
-import {
-  I_STATUS,
-  I_YN,
-  STATUS_ARRAY,
-  YN_ARRAY,
-} from '../../../global/enum_constant_type';
+import { I_STATUS, STATUS_ARRAY } from '../../../global/enum_constant_type';
 import { zodFileAfterUploadSchema } from '../../../global/schema/global.schema';
 import { DATA_TYPE_ARRAY } from './interface.AllTextField';
 
@@ -30,7 +25,7 @@ const createAllTextFieldZodSchema = z.object({
 const updateAllTextFieldZodSchema = createAllTextFieldZodSchema
   .merge(
     z.object({
-      isDelete: z.enum([...YN_ARRAY] as [I_YN, ...I_YN[]]).optional(),
+      isDelete: z.boolean().optional().default(false),
     }),
   )
   .deepPartial();

@@ -14,4 +14,5 @@ export enum ENUM_REDIS_KEY {
   REDIS_IN_SAVE_FRIENDSHIP = 'redis:friendShip:',
   REDIS_IN_SAVE_ALL_TEXT_FIELDS = 'redis:alltextfields:',
   REDIS_IN_SAVE_ALL_USERS = 'redis:users:',
+  REDIS_IN_SAVE_ALL_DATA = 'redis:users:',
 }

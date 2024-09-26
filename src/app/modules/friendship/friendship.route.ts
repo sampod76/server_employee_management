@@ -12,19 +12,19 @@ router
   .route('/')
   .get(
     authMiddleware(
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SUPER_ADMIN,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.BUYER,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
     ),
     FriendShipsController.getAllFriendShips,
   )
   .post(
     authMiddleware(
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SUPER_ADMIN,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.BUYER,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
     ),
 
     validateRequestZod(friendshipValidation.createfriendshipZodSchema),
@@ -35,10 +35,10 @@ router
   .route('/block/:id')
   .patch(
     authMiddleware(
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SUPER_ADMIN,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.BUYER,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
     ),
     validateRequestZod(friendshipValidation.friendshipBlockZodSchema),
     FriendShipsController.updateFriendShipBlock,
@@ -46,23 +46,31 @@ router
 
 router
   .route('/:id')
-  .get(FriendShipsController.getFriendShipById)
+  .get(
+    authMiddleware(
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
+    ),
+    FriendShipsController.getFriendShipById,
+  )
   .patch(
     authMiddleware(
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SUPER_ADMIN,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.BUYER,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
     ),
     validateRequestZod(friendshipValidation.updatefriendshipZodSchema),
     FriendShipsController.updateFriendShip,
   )
   .delete(
     authMiddleware(
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SUPER_ADMIN,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.BUYER,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
     ),
     FriendShipsController.deleteFriendShip,
   );

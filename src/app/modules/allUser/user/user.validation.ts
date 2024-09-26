@@ -2,15 +2,14 @@ import { z } from 'zod';
 
 import httpStatus from 'http-status';
 import { I_STATUS, STATUS_ARRAY } from '../../../../global/enum_constant_type';
-import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { zodFileAfterUploadSchema } from '../../../../global/schema/global.schema';
 import ApiError from '../../../errors/ApiError';
 import { GENDER_ARRAY } from '../typesAndConst';
 import { I_USER_ROLE, USER_ROLE_ARRAY } from './user.interface';
-import { buyerZodSchema } from './zod/buyer.zod';
-import { sellerZodSchema } from './zod/seller.zod';
+import { employeeZodSchema } from './zod/employee.zod';
+import { hrAdminZodSchema } from './zod/hrAdmin.zod';
 
-const authData = z.object({
+export const authData = z.object({
   email: z
     .string({
       required_error: 'Email is required',
@@ -22,7 +21,7 @@ const authData = z.object({
   password: z.string({
     required_error: 'Password is required.',
   }),
-  userName: z.string({ required_error: 'User name is required' }),
+  userName: z.string({ required_error: 'User name is required' }).optional(),
   tempUser: z.object({
     tempUserId: z.string({ required_error: 'Temp user id is required' }),
     otp: z.union([
@@ -51,36 +50,27 @@ export const basicZodData = z.object({
   dateOfBirth: z.string().optional(),
   profileImage: zodFileAfterUploadSchema.optional(),
   // location: zodLocationSchema.optional(),
-  address: z.object({ area: z.string().optional() }),
+  address: z.object({ area: z.string().optional() }).optional(),
 });
 
-export const adminZodData = basicZodData;
+export const adminBodyData = basicZodData;
 
-export const buyerZodData = basicZodData.merge(buyerZodSchema);
-export const sellerZodData = basicZodData.merge(sellerZodSchema);
+export const hradminBodyData = basicZodData.merge(hrAdminZodSchema);
+export const employeeBodyData = basicZodData.merge(employeeZodSchema);
 
 const createUserZodSchema = z
   .object({
     body: z.object({
       authData: authData,
-      admin: adminZodData.optional(),
-      buyer: buyerZodData.optional(),
-      seller: sellerZodData.optional(),
+      admin: adminBodyData.optional(),
+      hrAdmin: hradminBodyData.optional(),
+      employee: employeeBodyData.optional(),
     }),
   })
   .refine(
     bodyData => {
       const role = bodyData.body.authData.role;
       if (role in bodyData.body) {
-        if (
-          role === ENUM_USER_ROLE.SELLER &&
-          !bodyData.body.authData.userName
-        ) {
-          throw new ApiError(
-            httpStatus.NOT_ACCEPTABLE,
-            'User name is required',
-          );
-        }
         return true;
       } else {
         throw new ApiError(
@@ -98,6 +88,7 @@ const createUserZodSchema = z
 //
 const updateUserZodSchema = z.object({
   body: z.object({
+    isDelete: z.boolean().optional().default(false),
     status: z.enum(STATUS_ARRAY as [I_STATUS, ...I_STATUS[]]).optional(),
   }),
 });
@@ -116,7 +107,7 @@ export const UserValidation = {
   updateUserZodSchema,
   tempUser,
   authData,
-  adminZodData,
-  buyerZodData,
-  sellerZodData,
+  adminBodyData,
+  hradminBodyData,
+  employeeBodyData,
 };

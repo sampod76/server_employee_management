@@ -21,7 +21,11 @@ const getAllUserLoginHistorys = async (
   paginationOptions: IPaginationOption,
 ): Promise<IGenericResponse<IUserLoginHistory[]>> => {
   const { searchTerm, ...filtersData } = filters;
-
+  filtersData.isDelete = filtersData.isDelete
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
   const { page, limit, skip, sortBy, sortOrder } =
     paginationHelper.calculatePagination(paginationOptions);
 
@@ -40,10 +44,19 @@ const getAllUserLoginHistorys = async (
 
   if (Object.keys(filtersData).length) {
     andConditions.push({
-      $and: Object.entries(filtersData).map(([field, value]) =>
-        field === 'user'
-          ? { [field]: new Types.ObjectId(value) }
-          : { [field]: value },
+      $and: Object.entries(filtersData).map(
+        //@ts-ignore
+        ([field, value]: [keyof typeof filtersData, string]) => {
+          let modifyFiled;
+          if (field === 'user') {
+            modifyFiled = {
+              ['user']: new Types.ObjectId(value),
+            };
+          } else {
+            modifyFiled = { [field]: value };
+          }
+          return modifyFiled;
+        },
       ),
     });
   }
@@ -118,14 +131,14 @@ const deleteUserLoginHistory = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'UserLoginHistory not found !');
   }
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     isExist?.userId?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
   }
   if (filter.delete === 'yes') {
-    await UserLoginHistory.findByIdAndDelete({ _id: id });
+    // await UserLoginHistory.findByIdAndDelete({ _id: id });
   } else {
     await UserLoginHistory.findByIdAndDelete({ _id: id });
     // await UserLoginHistory.findOneAndUpdate(

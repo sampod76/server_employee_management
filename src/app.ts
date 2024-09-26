@@ -14,10 +14,12 @@ import Backend from 'i18next-fs-backend';
 import i18nextMiddleware from 'i18next-http-middleware';
 //----------------------------------------
 import compression, { CompressionOptions } from 'compression';
+import { redisClient } from './app/redis/redis';
 import file_route from './app/routes/file_route';
 import config from './config';
 import helmetConfig from './config/helmetConfig';
 import { TestFile } from './test';
+import { rateLimiterRedisMiddleware } from './utils/DbUtlis/RateLimiterInRedis';
 const app: Application = express();
 
 app.use(helmetConfig);
@@ -65,7 +67,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 //!-- - some time rate limited is problem my docker compose problem don't use this -->
-// app.use(rateLimiterRedisMiddleware);
+app.use(rateLimiterRedisMiddleware);
 // app.use(rateLimiterMiddlewareMongodb);
 // app.use(compression());
 app.use(compression(compressionOptions));
@@ -93,7 +95,12 @@ app.set('view engine', 'ejs');
 
 app.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.render('serverCheck.ejs');
+    const result = await redisClient.set('test', 'sfsdjkfsd');
+    console.log('🚀 ~ TestFile ~ res:', result);
+    const res2 = await redisClient.get('test');
+    console.log('🚀 ~ TestFile ~ res:', res2);
+    // res.render('serverCheck.ejs');
+    res.send({ message: 'server is running....' + process.pid });
   } catch (error) {
     next(error);
   }

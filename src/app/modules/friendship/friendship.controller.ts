@@ -4,7 +4,7 @@ import { PAGINATION_FIELDS } from '../../../global/constant/pagination';
 import catchAsync from '../../share/catchAsync';
 import pick from '../../share/pick';
 import sendResponse from '../../share/sendResponse';
-import { IUserRef } from '../allUser/typesAndConst';
+import { IUserRef, IUserRefAndDetails } from '../allUser/typesAndConst';
 import { RequestToRefUserObject } from '../allUser/user/user.utils';
 import {
   IServiceNotification,
@@ -17,7 +17,7 @@ import { FriendShipService } from './friendship.service';
 const createFriendShip = catchAsync(async (req: Request, res: Response) => {
   req.body = {
     ...req.body,
-    sender: RequestToRefUserObject(req.user as IUserRef),
+    sender: RequestToRefUserObject(req.user as IUserRefAndDetails),
   };
   const result = await FriendShipService.createFriendShip(
     req.body,

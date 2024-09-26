@@ -57,8 +57,10 @@ const getAllNotificationsFromDB = async (
   const { searchTerm, ...filtersData } = filters;
 
   filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
   const andConditions = [];
 
   if (searchTerm) {
@@ -159,8 +161,8 @@ const updateNotificationFromDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, req.t('notification not found'));
   }
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     !isExist?.userIds?.includes(req?.user?.userId)
   ) {
     throw new ApiError(403, 'forbidden access');
@@ -192,8 +194,8 @@ const updateManyNotificationFromDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, req.t('notification not found'));
   }
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     !isExist?.userIds?.includes(req?.user?.userId)
   ) {
     throw new ApiError(403, 'forbidden access');
@@ -228,8 +230,8 @@ const deleteNotificationFromDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, req.t('notification not found'));
   }
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     !isExist?.userIds?.includes(req?.user?.userId)
   ) {
     throw new ApiError(403, 'forbidden access');

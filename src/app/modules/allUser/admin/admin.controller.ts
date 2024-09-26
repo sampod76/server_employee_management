@@ -50,6 +50,22 @@ const getAllAdmins = catchAsync(async (req: Request, res: Response) => {
     meta: result.meta,
   });
 });
+const dashboard = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, adminFilterableFields);
+  const paginationOptions = pick(req.query, PAGINATION_FIELDS);
+  const result = await AdminService.dashboardFromDb(
+    filters,
+    paginationOptions,
+    req,
+  );
+
+  sendResponse<IAdmin[]>(req, res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Get all Dashobard',
+    data: result,
+  });
+});
 
 const updateAdmin = catchAsync(async (req: Request, res: Response) => {
   //  await RequestToFileDecodeAddBodyHandle(req);
@@ -93,4 +109,5 @@ export const AdminController = {
   updateAdmin,
   getSingleAdmin,
   deleteAdmin,
+  dashboard,
 };

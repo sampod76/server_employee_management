@@ -12,17 +12,24 @@ import { NotificationRoute } from '../modules/notification/notification.route';
 import { adminRoutes } from '../modules/allUser/admin/admin.route';
 
 import { AdminSettingRoute } from '../modules/adminSetting/route.adminSetting';
-import { BuyerUserRoutes } from '../modules/allUser/buyer/route.buyer';
-import { SellerRoutes } from '../modules/allUser/seller/route.seller';
-
 
 import { FriendShipsRoute } from '../modules/friendship/friendship.route';
-import { GigsRoute } from '../modules/gig/route.gig';
+
+import { EmployeeUserRoutes } from '../modules/allUser/employee/route.employee';
+import { HrAdminRoutes } from '../modules/allUser/hrAdmin/route.hrAdmin';
+import { CheckInOutRoute } from '../modules/checkInOut/route.checkInOut';
 import { ChatMessageRoute } from '../modules/message/messages.route';
+import { ProjectRoute } from '../modules/project/route.project';
+import { TaskManagementRoute } from '../modules/taskManagement/route.taskManagement';
+import { LeaveManagementRoute } from '../modules/leaveManagment/route.leaveManagement';
 
 const router = express.Router();
 
 const moduleRoutes = [
+  {
+    path: '/auth',
+    route: AuthRoutes,
+  },
   {
     path: '/users',
     route: userRoutes,
@@ -33,16 +40,28 @@ const moduleRoutes = [
   },
 
   {
-    path: '/buyer-users',
-    route: BuyerUserRoutes,
+    path: '/hr-admin',
+    route: HrAdminRoutes,
   },
   {
-    path: '/seller-users',
-    route: SellerRoutes,
+    path: '/employee',
+    route: EmployeeUserRoutes,
   },
   {
-    path: '/auth',
-    route: AuthRoutes,
+    path: '/projects',
+    route: ProjectRoute,
+  },
+  {
+    path: '/task-management',
+    route: TaskManagementRoute,
+  },
+  {
+    path: '/checkin-checkout',
+    route: CheckInOutRoute,
+  },
+  {
+    path: '/leaves',
+    route: LeaveManagementRoute,
   },
 
   {
@@ -53,10 +72,6 @@ const moduleRoutes = [
   {
     path: '/category',
     route: CategoryRoute,
-  },
-  {
-    path: '/gig',
-    route: GigsRoute,
   },
 
   {

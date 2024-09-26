@@ -9,7 +9,7 @@ export type IAdminSettingFilters = {
   settingType?: string;
   status?: I_STATUS;
   delete?: I_YN;
-  isDelete?: string;
+  isDelete?: string | boolean;
 };
 //
 export enum ENUM_ADMIN_SETTING_TYPE {

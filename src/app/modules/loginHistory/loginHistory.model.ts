@@ -82,9 +82,8 @@ export const UserLoginHistorySchema = new Schema<
     },
 
     isDelete: {
-      type: String,
-      default: 'no',
-      enum: ['yes', 'no'],
+      type: Boolean,
+      default: false,
     },
   },
   {

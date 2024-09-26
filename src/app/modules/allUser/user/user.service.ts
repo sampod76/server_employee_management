@@ -4,21 +4,22 @@ import { Request } from 'express';
 import httpStatus from 'http-status';
 import mongoose, { PipelineStage, Schema } from 'mongoose';
 import { z } from 'zod';
-import { ENUM_STATUS, ENUM_YN } from '../../../../global/enum_constant_type';
+import { ENUM_STATUS } from '../../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { paginationHelper } from '../../../../helper/paginationHelper';
 import ApiError from '../../../errors/ApiError';
 import { IGenericResponse } from '../../../interface/common';
 import { IPaginationOption } from '../../../interface/pagination';
 import { Admin } from '../admin/admin.model';
-import { BuyerUser } from '../buyer/model.buyer';
 
 import { LookupAnyRoleDetailsReusable } from '../../../../helper/lookUpResuable';
 
-import { ENUM_QUEUE_NAME } from '../../../queue/consent.queus';
-import { emailQueue } from '../../../queue/jobs/emailQueues';
-import { ENUM_ORDER_STATUS } from '../../order/constants.order';
-import { Seller } from '../seller/model.seller';
+// import { ENUM_QUEUE_NAME } from '../../../queue/consent.queus';
+// import { emailQueue } from '../../../queue/jobs/emailQueues';
+
+import { sendMailHelper } from '../../../../utils/sendMail';
+import { EmployeeUser } from '../employee/model.employee';
+import { HrAdmin } from '../hrAdmin/model.hrAdmin';
 import { userSearchableFields } from './user.constant';
 import { ITempUser, IUser, IUserFilters } from './user.interface';
 import { TempUser, User } from './user.model';
@@ -48,7 +49,7 @@ const createUser = async (
     throw new ApiError(400, 'Failed to get request user');
   }
   if (verifyTempUser?.authentication?.otp !== Number(authData?.tempUser?.otp)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Otp not matching');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'OTP not matching');
   }
   if (
     verifyTempUser?.authentication?.timeOut &&
@@ -70,16 +71,16 @@ const createUser = async (
     if (Array.isArray(createdUser) && !createdUser?.length) {
       throw new ApiError(400, 'Failed to create user');
     }
-    if (authData?.role === ENUM_USER_ROLE.ADMIN) {
+    if (authData?.role === ENUM_USER_ROLE.admin) {
       roleCreate = await Admin.create([{ ...roleData, ...authData }], {
         session,
       });
-    } else if (authData?.role === ENUM_USER_ROLE.BUYER) {
-      roleCreate = await BuyerUser.create([{ ...roleData, ...authData }], {
+    } else if (authData?.role === ENUM_USER_ROLE.employee) {
+      roleCreate = await EmployeeUser.create([{ ...roleData, ...authData }], {
         session,
       });
-    } else if (authData?.role === ENUM_USER_ROLE.SELLER) {
-      roleCreate = await Seller.create([{ ...roleData, ...authData }], {
+    } else if (authData?.role === ENUM_USER_ROLE.hrAdmin) {
+      roleCreate = await HrAdmin.create([{ ...roleData, ...authData }], {
         session,
       });
     }
@@ -112,7 +113,7 @@ const createTempUserFromDb = async (
   req: Request,
 ): Promise<IUser | null> => {
   const previousUser = await User.findOne({ email: user.email?.toLowerCase() });
-  if (previousUser?.isDelete === ENUM_YN.YES) {
+  if (previousUser?.isDelete) {
     throw new ApiError(
       400,
       'The account associated with this email is deleted. Please choose another email.',
@@ -143,8 +144,11 @@ const createTempUserFromDb = async (
   </div>`,
   };
 
+  // const result = await sendMailHelper(emailDate);
   //
-  const job = await emailQueue.add(ENUM_QUEUE_NAME.email, emailDate);
+  // const job = await emailQueue.add(ENUM_QUEUE_NAME.email, emailDate);
+  const job = await sendMailHelper(emailDate);
+  console.log('🚀 ~ job:', job);
   //!--if you want to wait then job is completed then use it
   // const queueResult = await checkEmailQueueResult(job.id as string);
   const createdUser = await TempUser.create({
@@ -164,8 +168,10 @@ const getAllUsersFromDB = async (
   const { searchTerm, needProperty, multipleRole, ...filtersData } = filters;
 
   filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
 
   const andConditions = [];
 
@@ -222,320 +228,7 @@ const getAllUsersFromDB = async (
     });
     pipeline.push({ $sort: sortConditions });
   }
-  if (needProperty?.includes('rating')) {
-    const pipeLine: PipelineStage[] = [
-      {
-        $lookup: {
-          from: 'reviews',
-          let: { id: '$_id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$buyer.userId', '$$id'] },
-                    { $eq: ['$isDelete', ENUM_YN.NO] },
-                  ],
-                },
-              },
-            },
-            {
-              $group: {
-                _id: null,
-                mainAverage: { $avg: '$overallRating' },
-                totalRating: { $sum: '$overallRating' },
-                totalReview: { $sum: 1 },
-              },
-            },
-            {
-              $addFields: {
-                average: { $floor: '$mainAverage' },
-                totalRating: { $floor: '$totalRating' },
-              },
-            },
-          ],
-          as: 'averageRatingDetails', // group to add 4 field automatically and manually addField me
-          //output
-          /* 
-           {
-             "_id": null,
-             "mainAverage": 4.5,
-             "totalRating": 4.5,
-             "totalReview": 1,
-             "average": 4,
-             "total": 4
-           }
-          */
-        },
-      },
-      {
-        $addFields: {
-          averageRating: {
-            $cond: {
-              if: { $eq: [{ $size: '$averageRatingDetails' }, 0] },
-              then: [{ average: 0, total: 0, totalReview: 0 }],
-              else: '$averageRatingDetails',
-            },
-          },
-        },
-      },
-      { $unwind: '$averageRating' },
-      { $project: { averageRatingDetails: 0 } },
-    ];
-    pipeline.push(...pipeLine);
-  }
-  if (needProperty?.includes('insights')) {
-    const pipeLine: PipelineStage[] = [
-      //buyerProfileToTotal
-      {
-        $lookup: {
-          from: 'orders',
-          let: { id: '$_id' },
-          pipeline: [
-            //first of all your all review by buyer Profile
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$buyer.userId', '$$id'] },
-                    // {
-                    //   $or: [
-                    //     { $eq: ['$buyer.userId', '$$id'] },
-                    //     { $eq: ['$seller.userId', '$$id'] },
-                    //   ],
-                    // },
-                    { $eq: ['$isDelete', ENUM_YN.NO] },
-                  ],
-                },
-              },
-            },
-            //then parallel call matching all order statements -> complete,accepted
-            {
-              $facet: {
-                completed: [
-                  {
-                    $match: {
-                      $expr: {
-                        $and: [
-                          {
-                            $eq: ['$orderStatus', ENUM_ORDER_STATUS.completed],
-                          },
-                          { $eq: ['$isDelete', ENUM_YN.NO] },
-                        ],
-                      },
-                    },
-                  },
-                  {
-                    $group: {
-                      _id: null,
-                      count: { $sum: 1 },
-                    },
-                  },
-                ],
-                accepted: [
-                  {
-                    $match: {
-                      $expr: {
-                        $and: [
-                          { $eq: ['$orderStatus', ENUM_ORDER_STATUS.accept] },
-                          { $eq: ['$isDelete', ENUM_YN.NO] },
-                        ],
-                      },
-                    },
-                  },
-                  {
-                    $group: {
-                      _id: null,
-                      count: { $sum: 1 },
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-          as: 'buyerProfileToTotal',
-          /* //? output
-             "buyerProfileToTotal":  [{
-                "completed": [
-                     {
-                         "_id": null,
-                         "count": 1
-                     }
-                  ],
-                "accepted": [
-                      {
-                          "_id": null,
-                          "count": 5
-                      }
-                  ]
-        }],
-          */
-        },
-      },
-      {
-        $unwind: '$buyerProfileToTotal',
-      },
-      {
-        $addFields: {
-          buyerProfileToTotal: {
-            completed: {
-              $cond: {
-                if: {
-                  $eq: [{ $size: '$buyerProfileToTotal.completed.count' }, 0],
-                },
-                then: 0,
-                else: {
-                  $arrayElemAt: ['$buyerProfileToTotal.completed.count', 0],
-                },
-              },
-            },
-            accepted: {
-              $cond: {
-                if: {
-                  $eq: [{ $size: '$buyerProfileToTotal.accepted.count' }, 0],
-                },
-                then: 0,
-                else: {
-                  $arrayElemAt: ['$buyerProfileToTotal.accepted.count', 0],
-                },
-              },
-            },
-          },
-        },
-      },
-      /* //!-- output---modified
-       "buyerProfileToTotal": {
-          "completed": 1,
-          "accepted": 0
-          },
-      
-      */
 
-      //sellerProfileToTotal
-      {
-        $lookup: {
-          from: 'orders',
-          let: { id: '$_id' },
-          pipeline: [
-            //first of all your all review by buyer Profile
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$seller.userId', '$$id'] },
-                    { $eq: ['$isDelete', ENUM_YN.NO] },
-                  ],
-                },
-              },
-            },
-            //then parallel call matching all order statements -> complete,accepted
-            {
-              $facet: {
-                completed: [
-                  {
-                    $match: {
-                      $expr: {
-                        $and: [
-                          {
-                            $eq: ['$orderStatus', ENUM_ORDER_STATUS.completed],
-                          },
-                          { $eq: ['$isDelete', ENUM_YN.NO] },
-                        ],
-                      },
-                    },
-                  },
-                  {
-                    $group: {
-                      _id: null,
-                      count: { $sum: 1 },
-                    },
-                  },
-                ],
-                accepted: [
-                  {
-                    $match: {
-                      $expr: {
-                        $and: [
-                          { $eq: ['$orderStatus', ENUM_ORDER_STATUS.accept] },
-                          { $eq: ['$isDelete', ENUM_YN.NO] },
-                        ],
-                      },
-                    },
-                  },
-                  {
-                    $group: {
-                      _id: null,
-                      count: { $sum: 1 },
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-          as: 'sellerProfileToTotal',
-          /* //? output
-             "sellerProfileToTotal":  [{
-                "completed": [
-                     {
-                         "_id": null,
-                         "count": 1
-                     }
-                  ],
-                "accepted": [
-                      {
-                          "_id": null,
-                          "count": 5
-                      }
-                  ]
-        }],
-          */
-        },
-      },
-      {
-        $unwind: '$sellerProfileToTotal',
-      },
-      //--optional --> only modify respond by readable
-      {
-        $addFields: {
-          // optional
-          sellerProfileToTotal: {
-            completed: {
-              $cond: {
-                if: {
-                  $eq: [{ $size: '$sellerProfileToTotal.completed.count' }, 0],
-                },
-                then: 0,
-                else: {
-                  $arrayElemAt: ['$sellerProfileToTotal.completed.count', 0],
-                },
-              },
-            },
-            accepted: {
-              $cond: {
-                if: {
-                  $eq: [{ $size: '$sellerProfileToTotal.accepted.count' }, 0],
-                },
-                then: 0,
-                else: {
-                  $arrayElemAt: ['$sellerProfileToTotal.accepted.count', 0],
-                },
-              },
-            },
-          },
-        },
-      },
-      /* //!-- output---modified
-       "sellerProfileToTotal": {
-          "completed": 1,
-          "accepted": 0
-          },
-      
-      */
-
-      //
-    ];
-    pipeline.push(...pipeLine);
-  }
   const resultArray = [
     User.aggregate(pipeline),
     User.countDocuments(whereConditions),
@@ -567,16 +260,16 @@ const updateUserFromDB = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     isExist?._id?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'Unauthorize user');
   }
 
   if (
-    (data?.role === ENUM_USER_ROLE.SUPER_ADMIN ||
-      data?.role === ENUM_USER_ROLE.ADMIN) &&
+    (data?.role === ENUM_USER_ROLE.superAdmin ||
+      data?.role === ENUM_USER_ROLE.admin) &&
     isExist?._id?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(
@@ -584,6 +277,7 @@ const updateUserFromDB = async (
       'Unauthorize user super admin data not update another user',
     );
   }
+
   let updatedUser;
   const session = await mongoose.startSession();
   try {
@@ -596,19 +290,19 @@ const updateUserFromDB = async (
     });
     if (data.status) {
       let roleUser;
-      if (isExist.role === ENUM_USER_ROLE.BUYER) {
-        roleUser = await BuyerUser.findOneAndUpdate(
+      if (isExist.role === ENUM_USER_ROLE.employee) {
+        roleUser = await EmployeeUser.findOneAndUpdate(
           { email: isExist.email },
           data,
           { runValidators: true, session },
         );
-      } else if (isExist.role === ENUM_USER_ROLE.SELLER) {
-        roleUser = await Seller.findOneAndUpdate(
+      } else if (isExist.role === ENUM_USER_ROLE.hrAdmin) {
+        roleUser = await HrAdmin.findOneAndUpdate(
           { email: isExist.email },
           data,
           { runValidators: true, session },
         );
-      } else if (isExist.role === ENUM_USER_ROLE.ADMIN) {
+      } else if (isExist.role === ENUM_USER_ROLE.admin) {
         roleUser = await Admin.findOneAndUpdate(
           { email: isExist.email },
           data,
@@ -646,9 +340,6 @@ const getSingleUserFromDB = async (
     },
   );
 
-  if (!user) {
-    throw new ApiError(400, 'Failed to get user');
-  }
   return user;
 };
 
@@ -666,8 +357,8 @@ const deleteUserFromDB = async (
   }
 
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN &&
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
     isExist?._id?.toString() !== req?.user?.userId
   ) {
     throw new ApiError(403, 'forbidden access');
@@ -675,8 +366,8 @@ const deleteUserFromDB = async (
 
   //---- if user when delete you account then give his password
   if (
-    req?.user?.role !== ENUM_USER_ROLE.ADMIN &&
-    req?.user?.role !== ENUM_USER_ROLE.SUPER_ADMIN
+    req?.user?.role !== ENUM_USER_ROLE.admin &&
+    req?.user?.role !== ENUM_USER_ROLE.superAdmin
   ) {
     if (
       isExist.password &&
@@ -693,32 +384,32 @@ const deleteUserFromDB = async (
     session.startTransaction();
     data = await User.findOneAndUpdate(
       { _id: id },
-      { isDelete: ENUM_YN.YES },
+      { isDelete: true },
       { new: true, runValidators: true, session },
     );
     if (!data?._id) {
       throw new ApiError(400, 'Felid to delete user');
     }
     let roleUser;
-    if (data?.role === ENUM_USER_ROLE.BUYER) {
-      roleUser = await BuyerUser.findOneAndUpdate(
+    if (data?.role === ENUM_USER_ROLE.employee) {
+      roleUser = await EmployeeUser.findOneAndUpdate(
         { email: data?.email },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { runValidators: true, new: true },
       );
-    } else if (data?.role === ENUM_USER_ROLE.SELLER) {
-      roleUser = await Seller.findOneAndUpdate(
+    } else if (data?.role === ENUM_USER_ROLE.hrAdmin) {
+      roleUser = await HrAdmin.findOneAndUpdate(
         { email: data?.email },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { runValidators: true, new: true },
       );
     } else if (
-      req.user.role === ENUM_USER_ROLE.SUPER_ADMIN &&
-      data?.role === ENUM_USER_ROLE.ADMIN
+      req.user.role === ENUM_USER_ROLE.superAdmin &&
+      data?.role === ENUM_USER_ROLE.admin
     ) {
       roleUser = await Admin.findOneAndUpdate(
         { email: data?.email },
-        { isDelete: ENUM_YN.YES },
+        { isDelete: true },
         { runValidators: true, new: true },
       );
     }

@@ -7,6 +7,7 @@ import {
   IMulterUploadFile,
 } from '../app/interface/fileUpload';
 import { ImgbbUploader } from '../app/middlewares/uploadImgBB';
+import { FileUploadHelper } from '../app/middlewares/uploderCloudinary';
 import config from '../config';
 import { bytesToKbAndMb } from '../utils/bytesTokbAndMb';
 
@@ -36,7 +37,7 @@ import { bytesToKbAndMb } from '../utils/bytesTokbAndMb';
    */
 
 export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
-  console.log(req.files, 'req.files');
+  console.log(req.file, 'req.file');
   try {
     const file = req.file as IMulterUploadFile;
     // const d = new makeImage(file);
@@ -59,8 +60,11 @@ export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
             `File ${file.originalname} exceeds the size limit of ${config.fileSize.image} kb for images.`,
           );
         }
-        const imgbb = await ImgbbUploader.uploadSingleFileImgbb(file);
-        bodyData[file.fieldname] = imgbb;
+        // const imgbb = await ImgbbUploader.uploadSingleFileImgbb(file);
+        // bodyData[file.fieldname] = imgbb;
+        const cloudinary = await FileUploadHelper.uploadToCloudinary(file);
+        bodyData[file.fieldname] = cloudinary;
+
         /* // if you are manual handling your response . Remember you are change imgbbUploader response
         bodyData[file.fieldname] = {
           mimetype: file.mimetype,
@@ -105,6 +109,7 @@ export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
       }
       req.body = bodyData;
     } else if (req.files) {
+      console.log(req.files, 'req.files');
       if (req.files instanceof Array && req.files?.length) {
         //---imagbb---
         let images: IMulterUploadFile[] = [];
@@ -128,7 +133,10 @@ export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
           }
         });
         if (images.length) {
-          images = await ImgbbUploader.uploadMultipleFileImgbb(images);
+          // images = await ImgbbUploader.uploadMultipleFileImgbb(images);
+          images = (await FileUploadHelper.uploadToCloudinaryMultiple(
+            images,
+          )) as any;
         }
         // if(videos.length){
         //   videos = await videoUploder.uploadMultipleFileImgbb(videos);
@@ -145,8 +153,9 @@ export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
           } else if (!obj[file.fieldname]?.length) {
             obj[file.fieldname] = [];
           }
-
+          console.log(allModifyFiles, 'allModifyFiles');
           if (file?.mimetype?.includes('image')) {
+            console.log(file, 'file dd');
             //@ts-ignore
             if (file?.url) {
               obj[file.fieldname].push(file); // when image not upload imgbb then comment it
@@ -224,6 +233,7 @@ export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
         Object.entries(obj).forEach(([key, value]) => {
           req.body[key] = value;
         });
+        console.log(req.body, 'req.body');
       } else {
         //field type object in fields array
         const bodyData = { ...req.body };
@@ -256,11 +266,16 @@ export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
             ([key, value]: [string, any]) => {
               if (key.includes('_images')) {
                 return new Promise((resolve, reject) => {
-                  ImgbbUploader.uploadMultipleFileImgbb(value)
+                  FileUploadHelper.uploadToCloudinaryMultiple(value)
                     .then(res => {
                       return resolve({ fieldname: key, values: res });
                     })
                     .catch(err => reject(err));
+                  // ImgbbUploader.uploadMultipleFileImgbb(value)
+                  //   .then(res => {
+                  //     return resolve({ fieldname: key, values: res });
+                  //   })
+                  //   .catch(err => reject(err));
                 });
               }
             },

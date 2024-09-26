@@ -43,7 +43,7 @@ export type IUserLoginHistory = {
   token: string;
   device_info: Idevice_info;
   status: I_STATUS;
-  isDelete: string;
+  isDelete: boolean;
 };
 
 export type UserLoginHistoryModel = Model<
@@ -55,5 +55,5 @@ export type IUserLoginHistoryFilters = {
   searchTerm?: string;
   user?: string;
   delete?: 'yes' | 'no';
-  isDelete?: 'yes' | 'no';
+  isDelete?: string | boolean;
 };

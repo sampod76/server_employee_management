@@ -36,7 +36,7 @@ const uploadSingleFileImgbb = async (
       .then((response: ITypeImgbb) => {
         const modifyAndAddImage = {
           mimetype: file.mimetype,
-          fileName: file.filename,
+          filename: file.filename,
           server_url: `images/${file.filename}`,
           url: response?.url,
           durl: response?.delete_url,
@@ -61,7 +61,7 @@ const uploadMultipleFileImgbb = async (
         .then((response: ITypeImgbb) => {
           const modifyAndAddImage = {
             mimetype: file.mimetype,
-            fileName: file.filename,
+            filename: file.filename,
             server_url: `images/${file.filename}`,
             url: response?.url,
             durl: response?.delete_url,

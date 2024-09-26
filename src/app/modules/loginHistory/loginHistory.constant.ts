@@ -2,6 +2,6 @@ export const UserLoginHistorySearchableFields = ['id', 'email'];
 
 export const UserLoginHistoryFilterableFields = [
   'searchTerm',
-  'user',
+  'userId',
   'isDelete',
 ];

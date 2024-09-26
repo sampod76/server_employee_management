@@ -67,6 +67,7 @@ export const RedisRunFunction = async () => {
   //     console.error('Error deleting keys:', err);
   //   });
   const res = await redisClient.flushall('ASYNC');
+  // await consumerRedis();
   console.log('🚀 ~ RedisRunFunction ~ res:'.red, res);
   //------------------------- delete all keys-----------------------
   const sub = await subRedis.subscribe(...subscribeArray);

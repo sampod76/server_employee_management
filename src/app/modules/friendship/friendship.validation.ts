@@ -1,12 +1,6 @@
 import { z } from 'zod';
 
-import { Types } from 'mongoose';
-import {
-  I_STATUS,
-  I_YN,
-  STATUS_ARRAY,
-  YN_ARRAY,
-} from '../../../global/enum_constant_type';
+import { I_STATUS, STATUS_ARRAY } from '../../../global/enum_constant_type';
 import { zodRefUser } from '../allUser/typesAndConst';
 
 const friendshipBodyData = z.object({
@@ -16,14 +10,14 @@ const friendshipBodyData = z.object({
 
 const friendshipUpdateBodyDate = z.object({
   // lastMessage: z.string().or(z.instanceof(Types.ObjectId)),
-  requestAccept: z.enum(YN_ARRAY as [I_YN]).optional(),
+  requestAccept: z.boolean().optional().default(false),
   status: z.enum(STATUS_ARRAY as [I_STATUS, ...I_STATUS[]]).optional(),
-  isDelete: z.enum([...YN_ARRAY] as [I_YN, ...I_YN[]]).optional(),
+  isDelete: z.boolean().optional().default(false),
 });
 
 const friendshipBlockZodData = z.object({
   block: z.object({
-    isBlock: z.enum(YN_ARRAY as [I_YN]),
+    isBlock: z.boolean(),
     reason: z.string().optional(),
     lastBlockDate: z.date().optional(), // only type interface preps. Replace controller
     blocker: zodRefUser, // only type interface preps. Replace controller

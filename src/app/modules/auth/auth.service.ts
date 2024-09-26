@@ -9,16 +9,16 @@ import config from '../../../config';
 import httpStatus from 'http-status';
 import qrcode from 'qrcode';
 import speakeasy from 'speakeasy';
-import { ENUM_STATUS, ENUM_YN } from '../../../global/enum_constant_type';
+import { ENUM_STATUS } from '../../../global/enum_constant_type';
 import { jwtHelpers } from '../../../helper/jwtHelpers';
 import {
   decryptCryptoData,
   encryptCryptoData,
 } from '../../../utils/cryptoEncryptDecrypt';
+import { sendMailHelper } from '../../../utils/sendMail';
 import ApiError from '../../errors/ApiError';
-import { ENUM_QUEUE_NAME } from '../../queue/consent.queus';
-import { emailQueue } from '../../queue/jobs/emailQueues';
-import { IUserRefAndDetails } from '../allUser/typesAndConst';
+import { IEmployeeUser } from '../allUser/employee/interface.employee';
+import { ENUM_VERIFY, IUserRefAndDetails } from '../allUser/typesAndConst';
 import { IUser } from '../allUser/user/user.interface';
 import { User } from '../allUser/user/user.model';
 import { IUserLoginHistory } from '../loginHistory/loginHistory.interface';
@@ -35,18 +35,26 @@ const loginUser = async (
 ): Promise<ILoginUserResponse | any> => {
   const { email, password } = payload;
 
-  const isUserExist = await User.isUserFindMethod(
+  const isUserExist = (await User.isUserFindMethod(
     { email },
     { populate: true, password: true },
-  );
+  )) as IUser & { roleInfo: IEmployeeUser };
+  // console.log('🚀 ~ isUserExist:', isUserExist);
   if (!isUserExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist');
-  } else if (isUserExist.isDelete === ENUM_YN.YES) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'The account is deleted');
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'User does not exist');
+  } else if (isUserExist.isDelete) {
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'The account is deleted');
   } else if (isUserExist.status === ENUM_STATUS.INACTIVE) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Your account is inactive');
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'Your account is inactive');
   } else if (isUserExist.status === ENUM_STATUS.BLOCK) {
-    throw new ApiError(httpStatus.NOT_FOUND, `Your account is blocked`);
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, `Your account is blocked`);
+    //@ts-ignore
+  } else if (isUserExist.roleInfo.verify !== ENUM_VERIFY.ACCEPT) {
+    throw new ApiError(
+      httpStatus.NOT_ACCEPTABLE,
+      //@ts-ignore
+      `Your account is ${isUserExist.roleInfo.verify} state`,
+    );
   } else if (
     isUserExist.password &&
     !(await User.isPasswordMatchMethod(password, isUserExist.password))
@@ -98,7 +106,7 @@ const loginOutFromDb = async (
   if (checkLoginHistory) {
     // result = await UserLoginHistory.findOneAndUpdate(
     //   { _id: id },
-    //   { isDelete: ENUM_YN.YES },
+    //   { isDelete: true },
     // );
     result = await UserLoginHistory.findByIdAndDelete(id);
   } else {
@@ -188,7 +196,7 @@ const refreshToken = async (
       userId: new Types.ObjectId(userId),
       // user_agent: user_agent,
       token: token,
-      isDelete: ENUM_YN.NO,
+      isDelete: false,
     }),
   ];
   const resolver = (await Promise.all(promises)) as [
@@ -203,7 +211,7 @@ const refreshToken = async (
   // checking old password
   else if (isUserExist.status === ENUM_STATUS.INACTIVE) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Your account is deactivated');
-  } else if (isUserExist.isDelete === ENUM_YN.YES) {
+  } else if (isUserExist.isDelete) {
     throw new ApiError(httpStatus.NOT_FOUND, `Your account is deleted`);
   } else if (isUserExist.status === ENUM_STATUS.BLOCK) {
     throw new ApiError(httpStatus.NOT_FOUND, `Your account is blocked`);
@@ -250,7 +258,7 @@ const changePassword = async (
   //alternative way
   const isUserExist = (await User.findOne({
     _id: user?.userId,
-    isDelete: ENUM_YN.NO,
+    isDelete: false,
   }).select('+password')) as any;
 
   if (!isUserExist) {
@@ -263,7 +271,7 @@ const changePassword = async (
   // checking old password
   else if (isUserExist.status === ENUM_STATUS.INACTIVE) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Your account is deactivated');
-  } else if (isUserExist.isDelete === ENUM_YN.YES) {
+  } else if (isUserExist.isDelete) {
     throw new ApiError(httpStatus.NOT_FOUND, `Your account is deleted`);
   }
   //  else if (isUserExist.status === ENUM_STATUS.BLOCK) {
@@ -305,7 +313,7 @@ const forgotPass = async (payload: { email: string }, req: Request) => {
   };
 
   // let profile = null;
-  // if (user.role === ENUM_USER_ROLE.ADMIN) {
+  // if (user.role === ENUM_USER_ROLE.admin) {
   //   profile = await Admin.findById(user.id);
   // } else if (user.role === ENUM_USER_ROLE.MODERATOR) {
   //   profile = await Moderator.findById(user.id);
@@ -321,7 +329,7 @@ const forgotPass = async (payload: { email: string }, req: Request) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email not found!');
   } else if (profile.status === ENUM_STATUS.INACTIVE) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Your account is deactivated');
-  } else if (profile.isDelete === ENUM_YN.YES) {
+  } else if (profile.isDelete) {
     throw new ApiError(httpStatus.NOT_FOUND, `Your account is deleted`);
   }
 
@@ -363,7 +371,8 @@ const forgotPass = async (payload: { email: string }, req: Request) => {
   </div>`,
   };
   //
-  const job = await emailQueue.add(ENUM_QUEUE_NAME.email, result);
+  // const job = await emailQueue.add(ENUM_QUEUE_NAME.email, result);
+  const send = await sendMailHelper(result);
   //!--if you want to wait then job is completed then use it
   // const queueResult = await checkEmailQueueResult(job.id as string);
   await User.findOneAndUpdate(
@@ -389,12 +398,12 @@ const checkOtpFromDb = async (
     throw new ApiError(httpStatus.BAD_REQUEST, 'User not found!');
   }
 
-  if (profile?.authentication?.status !== ENUM_STATUS.ACTIVE) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      'Authentication code not found. Please send an OTP request',
-    );
-  }
+  // if (profile?.authentication?.status !== ENUM_STATUS.ACTIVE) {
+  //   throw new ApiError(
+  //     httpStatus.NOT_FOUND,
+  //     'Authentication code not found. Please send an OTP request',
+  //   );
+  // }
   if (profile?.authentication?.otp !== Number(otp)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Otp not matching');
   }

@@ -55,8 +55,8 @@ export const sendMailHelper = async (bodyData: IMailData) => {
     port: 465,
     secure: true,
     auth: {
-      user: 'united.chouat@gmail.com',
-      pass: 'tvczozicinulfsek', // tvcz ozic inul fsek --> remove space-> tvczozicinulfsek
+      user: 'sampodsubroto03@gmail.com',
+      pass: 'ayumgkyaqhkflyza', // tvcz ozic inul fsek --> remove space-> tvczozicinulfsek
       //   user: convertToSingleQuotes(config.nodemailer.auth_user as string),
       //   pass: convertToSingleQuotes(config.nodemailer.auth_pass as string),
       // user: config.nodemailer.auth_user as string,

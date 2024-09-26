@@ -19,7 +19,7 @@ const createAdminSettingByDb = async (
 ): Promise<IAdminSetting | null> => {
   const findAlreadyExists = await AdminSetting.findOne({
     settingType: payload.settingType,
-    isDelete: ENUM_YN.NO,
+    isDelete: false,
   });
   //
   let result;
@@ -46,11 +46,12 @@ const getAllAdminSettingFromDb = async (
 ): Promise<IGenericResponse<IAdminSetting[]>> => {
   //****************search and filters start************/
   const { searchTerm, ...filtersData } = filters;
-  console.log('🚀 ~ filtersData:', filtersData);
 
   filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
   const andConditions = [];
   if (searchTerm) {
     andConditions.push({
@@ -180,7 +181,7 @@ const deleteAdminSettingByIdFromDb = async (
   } else {
     result = await AdminSetting.findOneAndUpdate(
       { _id: id },
-      { isDelete: ENUM_YN.YES },
+      { isDelete: true },
     );
     if (!result) {
       throw new ApiError(httpStatus.NOT_FOUND, req.t('Failed to delete'));
