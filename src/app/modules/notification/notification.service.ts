@@ -79,7 +79,7 @@ const getAllNotificationsFromDB = async (
       $and: Object.entries(filtersData).map(([field, value]) =>
         field === 'userId'
           ? {
-              ['userIds']: { $in: [new Types.ObjectId(value)] },
+              ['userIds']: { $in: [new Types.ObjectId(value as string)] },
             }
           : {
               [field]: value,
