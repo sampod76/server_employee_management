@@ -4,11 +4,11 @@ import helmet from 'helmet';
 import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
-import { produceMessageByKafka } from './app/kafka/producer.kafka';
 import { IUserRef } from './app/modules/allUser/typesAndConst';
 import { IFriendShip } from './app/modules/friendship/friendship.interface';
 import { FriendShip } from './app/modules/friendship/friendship.models';
 import { IChatMessage } from './app/modules/message/messages.interface';
+import { ChatMessageService } from './app/modules/message/messages.service';
 import { ENUM_REDIS_KEY } from './app/redis/consent.redis';
 import { redisClient } from './app/redis/redis';
 import { findAllSocketsIdsFromUserId } from './app/redis/service.redis';
@@ -16,7 +16,6 @@ import { logger } from './app/share/logger';
 import { yourAreOnlineOffline } from './app/socket/socket.service';
 import { ENUM_SOCKET_EMIT_ON_TYPE } from './app/socket/socketTypes';
 import config from './config';
-import { ENUM_YN } from './global/enum_constant_type';
 import { jwtHelpers } from './helper/jwtHelpers';
 
 const socketConnection = async (socketServer: Server) => {
@@ -33,6 +32,7 @@ use direct connection --> io.on('connection',socket => {
       try {
         // const accessToken = socket.handshake.auth.accessToken;//front-end to send auth  in accessToken;
         const accessToken = socket.handshake.headers.authorization; //front-end to send extraHeaders in token;
+        console.log('🚀 ~ socketServer.use ~ accessToken:', accessToken);
         // console.log('🚀 ~ usp1.on ~ accessToken:', accessToken);
         if (!accessToken) {
           return socket.emit('error', {
@@ -184,14 +184,14 @@ use direct connection --> io.on('connection',socket => {
                   message: 'Forbidden',
                 });
                 return;
-              } else if (getFriendShip?.requestAccept !== ENUM_YN.YES) {
+              } else if (!getFriendShip?.requestAccept) {
                 socket.emit('error', {
                   success: false,
                   statusCode: httpStatus.FORBIDDEN,
                   message: 'You are not allowed to send message',
                 });
                 return;
-              } else if (getFriendShip?.block?.isBlock == ENUM_YN.YES) {
+              } else if (getFriendShip?.block?.isBlock) {
                 socket.emit('error', {
                   success: false,
                   statusCode: httpStatus.FORBIDDEN,
@@ -279,7 +279,10 @@ use direct connection --> io.on('connection',socket => {
               //   JSON.stringify(messageData),
               // );
 
-              await produceMessageByKafka(JSON.stringify(messageData));
+              // await produceMessageByKafka(JSON.stringify(messageData));
+              const result =
+                await ChatMessageService.createChatMessage(messageData);
+              // await addMessageToStream(messageData);
             } else {
               socket.emit('error', {
                 success: false,

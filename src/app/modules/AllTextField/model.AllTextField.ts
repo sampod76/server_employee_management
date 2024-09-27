@@ -1,11 +1,6 @@
 import mongoose, { Schema, model } from 'mongoose';
 
-import {
-  ENUM_STATUS,
-  ENUM_YN,
-  STATUS_ARRAY,
-  YN_ARRAY,
-} from '../../../global/enum_constant_type';
+import { ENUM_STATUS, STATUS_ARRAY } from '../../../global/enum_constant_type';
 import { mongooseFileSchema } from '../../../global/schema/global.schema';
 import ApiError from '../../errors/ApiError';
 import {
@@ -40,9 +35,8 @@ const AllTextFieldSchema = new Schema<IAllTextField, AllTextFieldModel>(
       default: ENUM_STATUS.ACTIVE,
     },
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
     //--- for --TrashAllTextField---
     oldRecord: {

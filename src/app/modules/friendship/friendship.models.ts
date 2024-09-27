@@ -1,12 +1,6 @@
 import { model, PipelineStage, Schema, Types } from 'mongoose';
 
-import {
-  ENUM_STATUS,
-  ENUM_YN,
-  I_YN,
-  STATUS_ARRAY,
-  YN_ARRAY,
-} from '../../../global/enum_constant_type';
+import { ENUM_STATUS, STATUS_ARRAY } from '../../../global/enum_constant_type';
 
 import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
 import { ENUM_REDIS_KEY } from '../../redis/consent.redis';
@@ -20,9 +14,8 @@ const FriendShipSchema = new Schema<IFriendShip, FriendShipModel>(
     receiver: mongooseIUserRef,
     block: {
       isBlock: {
-        type: String,
-        enum: YN_ARRAY,
-        default: ENUM_YN.NO,
+        type: Boolean,
+        default: false,
       },
       lastBlockDate: Date,
       reason: {
@@ -40,14 +33,12 @@ const FriendShipSchema = new Schema<IFriendShip, FriendShipModel>(
       createdAt: Date,
     },
     requestAccept: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.YES,
+      type: Boolean,
+      default: true,
     },
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
     status: {
       type: String,
@@ -66,7 +57,7 @@ const FriendShipSchema = new Schema<IFriendShip, FriendShipModel>(
 FriendShipSchema.statics.isFriendShipExistMethod = async function (
   id: string,
   option?: {
-    isDelete?: I_YN;
+    isDelete?: boolean;
     populate?: boolean;
   },
 ): Promise<IFriendShip | null> {
@@ -76,7 +67,7 @@ FriendShipSchema.statics.isFriendShipExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option?.isDelete || ENUM_YN.NO,
+          isDelete: option?.isDelete || false,
         },
       },
     ]);
@@ -86,7 +77,7 @@ FriendShipSchema.statics.isFriendShipExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option.isDelete || ENUM_YN.NO,
+          isDelete: option.isDelete || false,
         },
       },
     ];

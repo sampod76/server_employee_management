@@ -3,7 +3,6 @@ import { model, PipelineStage, Schema, Types } from 'mongoose';
 import {
   ENUM_STATUS,
   ENUM_YN,
-  I_YN,
   STATUS_ARRAY,
   YN_ARRAY,
 } from '../../../global/enum_constant_type';
@@ -32,9 +31,8 @@ const ChatMessageSchema = new Schema<IChatMessage, ChatMessageModel>(
       default: ENUM_STATUS.ACTIVE,
     },
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
     //--- for --TrashCategory---
   },
@@ -45,7 +43,7 @@ const ChatMessageSchema = new Schema<IChatMessage, ChatMessageModel>(
 ChatMessageSchema.statics.isChatMessageExistMethod = async function (
   id: string,
   option?: {
-    isDelete?: I_YN;
+    isDelete?: boolean;
     populate?: boolean;
   },
 ): Promise<IChatMessage | null> {
@@ -55,7 +53,7 @@ ChatMessageSchema.statics.isChatMessageExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option?.isDelete || ENUM_YN.NO,
+          isDelete: option?.isDelete || false,
         },
       },
     ]);
@@ -65,7 +63,7 @@ ChatMessageSchema.statics.isChatMessageExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option.isDelete || ENUM_YN.NO,
+          isDelete: option.isDelete || false,
         },
       },
     ];

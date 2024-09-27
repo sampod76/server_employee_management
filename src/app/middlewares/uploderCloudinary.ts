@@ -4,6 +4,7 @@ import { v2 as cloudinary } from 'cloudinary';
 
 import {
   ICloudinaryResponse,
+  IFileAfterUpload,
   IMulterUploadFile,
 } from '../interface/fileUpload';
 
@@ -21,29 +22,44 @@ cloudinary.config({
 const uploadToCloudinary = async (
   file: IMulterUploadFile,
 ): Promise<ICloudinaryResponse | undefined> => {
-  return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload(
-      file.path,
-      function (error: Error, result: ICloudinaryResponse) {
-        // for after upload then remove it
-        //  unlinkFile(file.path)
-        if (error) {
-          unlinkFile(file.path);
-          reject(error);
-        } else {
-          resolve(result);
-        }
-      },
-    );
-  });
+  return new Promise<ICloudinaryResponse | IFileAfterUpload | any>(
+    (resolve, reject) => {
+      cloudinary.uploader.upload(
+        file.path,
+        function (error: Error, result: ICloudinaryResponse) {
+          // for after upload then remove it
+          //  unlinkFile(file.path)
+          if (error) {
+            unlinkFile(file.path);
+            reject(error);
+          } else {
+            const response = {
+              mimetype: file.mimetype,
+              filename: file.filename,
+              fieldname: file.fieldname,
+              server_url: `images/${file.filename}`,
+              url: result?.url,
+              platform: 'cloudinary',
+            };
+            resolve(response);
+          }
+        },
+      );
+    },
+  );
 };
 
 const uploadToCloudinaryMultiple = async (
   files: IMulterUploadFile[],
-): Promise<ICloudinaryResponse[] | undefined> => {
+): Promise<ICloudinaryResponse[] | IFileAfterUpload[] | undefined> => {
   const uploadPromises = files.map(file => {
-    return new Promise<ICloudinaryResponse>((resolve, reject) => {
-      cloudinary.uploader.upload(
+    return new Promise<ICloudinaryResponse | any>((resolve, reject) => {
+      uploadToCloudinary(file)
+        .then(res => resolve(res))
+        .catch(error => reject(error));
+
+      /* 
+        cloudinary.uploader.upload(
         file.path,
         function (error: Error, result: ICloudinaryResponse) {
           if (error) {
@@ -54,6 +70,8 @@ const uploadToCloudinaryMultiple = async (
           }
         },
       );
+
+        */
     });
   });
 

@@ -19,7 +19,7 @@ const createCategoryByDb = async (
 ): Promise<ICategory> => {
   const findAlreadyExists = await Category.findOne({
     title: payload.title,
-    isDelete: ENUM_YN.NO,
+    isDelete: false,
   });
   //
 
@@ -40,8 +40,10 @@ const getAllCategoryFromDb = async (
   const { searchTerm, ...filtersData } = filters;
 
   filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
   const andConditions = [];
   if (searchTerm) {
     andConditions.push({
@@ -169,10 +171,7 @@ const deleteCategoryByIdFromDb = async (
     }
     return result;
   } else {
-    result = await Category.findOneAndUpdate(
-      { _id: id },
-      { isDelete: ENUM_YN.YES },
-    );
+    result = await Category.findOneAndUpdate({ _id: id }, { isDelete: true });
     if (!result) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Failed to delete');
     }

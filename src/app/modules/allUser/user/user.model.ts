@@ -7,25 +7,21 @@ import config from '../../../../config';
 import {
   ENUM_SOCKET_STATUS,
   ENUM_STATUS,
-  ENUM_YN,
-  I_YN,
   SOCKET_STATUS_ARRAY,
   STATUS_ARRAY,
-  YN_ARRAY,
 } from '../../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { mongooseLocationSchema } from '../../../../global/schema/global.schema';
 import ApiError from '../../../errors/ApiError';
 import { Admin } from '../admin/admin.model';
-import { BuyerUser } from '../buyer/model.buyer';
 
 import { LookupAnyRoleDetailsReusable } from '../../../../helper/lookUpResuable';
 
 import { ENUM_REDIS_KEY } from '../../../redis/consent.redis';
 import { redisClient } from '../../../redis/redis';
-import { ENUM_ORDER_STATUS } from '../../order/constants.order';
-import { Seller } from '../seller/model.seller';
-import { mongooseIUserRef } from '../typesAndConst';
+
+import { EmployeeUser } from '../employee/model.employee';
+import { HrAdmin } from '../hrAdmin/model.hrAdmin';
 import { IUser, USER_ROLE_ARRAY, UserModel } from './user.interface';
 
 const userSchema = new Schema<IUser, UserModel>(
@@ -38,8 +34,7 @@ const userSchema = new Schema<IUser, UserModel>(
       type: String,
       // required: true,
     },
-    buyer: mongooseIUserRef,
-    seller: mongooseIUserRef,
+
     email: {
       type: String,
       required: true,
@@ -52,44 +47,41 @@ const userSchema = new Schema<IUser, UserModel>(
       type: String,
       required: true,
       enum: USER_ROLE_ARRAY,
-      default: ENUM_USER_ROLE.BUYER,
+      default: ENUM_USER_ROLE.employee,
     },
     password: {
       type: String,
       required: true,
       select: 0,
     },
-    //
+
     //
     authentication: {
       otp: Number,
       timeOut: Date,
       jwtToken: String,
-      status: {
-        type: String,
-        enum: STATUS_ARRAY,
-        // default: ENUM_STATUS.ACTIVE,
-      },
+      //
+      passwordChangeOtp: Number,
+      passwordChangeOtpTimeOut: Date,
     },
     lastActive: {
       createdAt: Date,
     },
     secret: String,
+    location: mongooseLocationSchema,
     socketStatus: {
       type: String,
       enum: SOCKET_STATUS_ARRAY,
       default: ENUM_SOCKET_STATUS.OFFLINE,
-    },
-    location: mongooseLocationSchema,
+    }, // set yourAreOnlineOffline function
     status: {
       type: String,
       enum: STATUS_ARRAY,
       default: ENUM_STATUS.ACTIVE,
     },
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -103,7 +95,7 @@ const userSchema = new Schema<IUser, UserModel>(
 userSchema.statics.isUserFindMethod = async function (
   query: { id?: string; email?: string },
   option?: {
-    isDelete?: I_YN;
+    isDelete?: boolean;
     populate?: boolean;
     password?: boolean;
     needProperty?: string[];
@@ -119,7 +111,7 @@ userSchema.statics.isUserFindMethod = async function (
   if (option?.isDelete) {
     match.isDelete = option.isDelete;
   } else {
-    match.isDelete = ENUM_YN.NO;
+    match.isDelete = false;
   }
   const project: any = { __v: 0, password: 0 };
   if (option?.password) {
@@ -154,329 +146,7 @@ userSchema.statics.isUserFindMethod = async function (
         },
       ],
     });
-    if (option?.needProperty?.includes('rating')) {
-      const pipeLine: PipelineStage[] = [
-        {
-          $lookup: {
-            from: 'reviews',
-            let: { id: '$_id' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$buyer.userId', '$$id'] },
-                      { $eq: ['$isDelete', ENUM_YN.NO] },
-                    ],
-                  },
-                },
-              },
-              {
-                $group: {
-                  _id: null,
-                  mainAverage: { $avg: '$overallRating' },
-                  totalRating: { $sum: '$overallRating' },
-                  totalReview: { $sum: 1 },
-                },
-              },
-              {
-                $addFields: {
-                  average: { $floor: '$mainAverage' },
-                  totalRating: { $floor: '$totalRating' },
-                },
-              },
-            ],
-            as: 'averageRatingDetails', // group to add 4 field automatically and manually addField me
-            //output
-            /* 
-             {
-               "_id": null,
-               "mainAverage": 4.5,
-               "totalRating": 4.5,
-               "totalReview": 1,
-               "average": 4,
-               "total": 4
-             }
-            */
-          },
-        },
-        {
-          $addFields: {
-            averageRating: {
-              $cond: {
-                if: { $eq: [{ $size: '$averageRatingDetails' }, 0] },
-                then: [{ average: 0, total: 0, totalReview: 0 }],
-                else: '$averageRatingDetails',
-              },
-            },
-          },
-        },
-        { $unwind: '$averageRating' },
-        { $project: { averageRatingDetails: 0 } },
-      ];
-      pipeline.push(...pipeLine);
-    }
-    if (option?.needProperty?.includes('insights')) {
-      const pipeLine: PipelineStage[] = [
-        //buyerProfileToTotal
-        {
-          $lookup: {
-            from: 'orders',
-            let: { id: '$_id' },
-            pipeline: [
-              //first of all your all review by buyer Profile
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$buyer.userId', '$$id'] },
-                      // {
-                      //   $or: [
-                      //     { $eq: ['$buyer.userId', '$$id'] },
-                      //     { $eq: ['$seller.userId', '$$id'] },
-                      //   ],
-                      // },
-                      { $eq: ['$isDelete', ENUM_YN.NO] },
-                    ],
-                  },
-                },
-              },
-              //then parallel call matching all order statements -> complete,accepted
-              {
-                $facet: {
-                  completed: [
-                    {
-                      $match: {
-                        $expr: {
-                          $and: [
-                            {
-                              $eq: [
-                                '$orderStatus',
-                                ENUM_ORDER_STATUS.completed,
-                              ],
-                            },
-                            { $eq: ['$isDelete', ENUM_YN.NO] },
-                          ],
-                        },
-                      },
-                    },
-                    {
-                      $group: {
-                        _id: null,
-                        count: { $sum: 1 },
-                      },
-                    },
-                  ],
-                  accepted: [
-                    {
-                      $match: {
-                        $expr: {
-                          $and: [
-                            { $eq: ['$orderStatus', ENUM_ORDER_STATUS.accept] },
-                            { $eq: ['$isDelete', ENUM_YN.NO] },
-                          ],
-                        },
-                      },
-                    },
-                    {
-                      $group: {
-                        _id: null,
-                        count: { $sum: 1 },
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-            as: 'buyerProfileToTotal',
-            /* //? output
-               "buyerProfileToTotal":  [{
-                  "completed": [
-                       {
-                           "_id": null,
-                           "count": 1
-                       }
-                    ],
-                  "accepted": [
-                        {
-                            "_id": null,
-                            "count": 5
-                        }
-                    ]
-          }],
-            */
-          },
-        },
-        {
-          $unwind: '$buyerProfileToTotal',
-        },
-        {
-          $addFields: {
-            buyerProfileToTotal: {
-              completed: {
-                $cond: {
-                  if: {
-                    $eq: [{ $size: '$buyerProfileToTotal.completed.count' }, 0],
-                  },
-                  then: 0,
-                  else: {
-                    $arrayElemAt: ['$buyerProfileToTotal.completed.count', 0],
-                  },
-                },
-              },
-              accepted: {
-                $cond: {
-                  if: {
-                    $eq: [{ $size: '$buyerProfileToTotal.accepted.count' }, 0],
-                  },
-                  then: 0,
-                  else: {
-                    $arrayElemAt: ['$buyerProfileToTotal.accepted.count', 0],
-                  },
-                },
-              },
-            },
-          },
-        },
-        /* //!-- output---modified
-         "buyerProfileToTotal": {
-            "completed": 1,
-            "accepted": 0
-            },
-        
-        */
 
-        //sellerProfileToTotal
-        {
-          $lookup: {
-            from: 'orders',
-            let: { id: '$_id' },
-            pipeline: [
-              //first of all your all review by buyer Profile
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$seller.userId', '$$id'] },
-                      { $eq: ['$isDelete', ENUM_YN.NO] },
-                    ],
-                  },
-                },
-              },
-              //then parallel call matching all order statements -> complete,accepted
-              {
-                $facet: {
-                  completed: [
-                    {
-                      $match: {
-                        $expr: {
-                          $and: [
-                            {
-                              $eq: [
-                                '$orderStatus',
-                                ENUM_ORDER_STATUS.completed,
-                              ],
-                            },
-                            { $eq: ['$isDelete', ENUM_YN.NO] },
-                          ],
-                        },
-                      },
-                    },
-                    {
-                      $group: {
-                        _id: null,
-                        count: { $sum: 1 },
-                      },
-                    },
-                  ],
-                  accepted: [
-                    {
-                      $match: {
-                        $expr: {
-                          $and: [
-                            { $eq: ['$orderStatus', ENUM_ORDER_STATUS.accept] },
-                            { $eq: ['$isDelete', ENUM_YN.NO] },
-                          ],
-                        },
-                      },
-                    },
-                    {
-                      $group: {
-                        _id: null,
-                        count: { $sum: 1 },
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-            as: 'sellerProfileToTotal',
-            /* //? output
-               "sellerProfileToTotal":  [{
-                  "completed": [
-                       {
-                           "_id": null,
-                           "count": 1
-                       }
-                    ],
-                  "accepted": [
-                        {
-                            "_id": null,
-                            "count": 5
-                        }
-                    ]
-          }],
-            */
-          },
-        },
-        {
-          $unwind: '$sellerProfileToTotal',
-        },
-        //--optional --> only modify respond by readable
-        {
-          $addFields: {
-            // optional
-            sellerProfileToTotal: {
-              completed: {
-                $cond: {
-                  if: {
-                    $eq: [
-                      { $size: '$sellerProfileToTotal.completed.count' },
-                      0,
-                    ],
-                  },
-                  then: 0,
-                  else: {
-                    $arrayElemAt: ['$sellerProfileToTotal.completed.count', 0],
-                  },
-                },
-              },
-              accepted: {
-                $cond: {
-                  if: {
-                    $eq: [{ $size: '$sellerProfileToTotal.accepted.count' }, 0],
-                  },
-                  then: 0,
-                  else: {
-                    $arrayElemAt: ['$sellerProfileToTotal.accepted.count', 0],
-                  },
-                },
-              },
-            },
-          },
-        },
-        /* //!-- output---modified
-         "sellerProfileToTotal": {
-            "completed": 1,
-            "accepted": 0
-            },
-        
-        */
-
-        //
-      ];
-      pipeline.push(...pipeLine);
-    }
     //!---Any role add then this role Must be add allGetUsers in --
     const result = (await User.aggregate(pipeline)) as IUser[];
 
@@ -503,11 +173,11 @@ userSchema.pre('save', async function (next) {
     }
       */
     let roleUser;
-    if (user.role === ENUM_USER_ROLE.BUYER) {
-      roleUser = await BuyerUser.findOne({ email: user.email });
-    } else if (user.role === ENUM_USER_ROLE.SELLER) {
-      roleUser = await Seller.findOne({ email: user.email });
-    } else if (user.role === ENUM_USER_ROLE.ADMIN) {
+    if (user.role === ENUM_USER_ROLE.employee) {
+      roleUser = await EmployeeUser.findOne({ email: user.email });
+    } else if (user.role === ENUM_USER_ROLE.hrAdmin) {
+      roleUser = await HrAdmin.findOne({ email: user.email });
+    } else if (user.role === ENUM_USER_ROLE.admin) {
       roleUser = await Admin.findOne({ email: user.email });
     }
 
@@ -583,13 +253,12 @@ const tempUserSchema = new Schema(
       type: String,
       required: true,
       enum: USER_ROLE_ARRAY,
-      default: ENUM_USER_ROLE.BUYER,
+      default: ENUM_USER_ROLE.employee,
     },
-    isEmailVerify: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
-    },
+    // isEmailVerify:  {
+    //   type: Boolean,
+    //   default: false,
+    // },
     authentication: {
       type: {
         otp: Number,
@@ -608,9 +277,8 @@ const tempUserSchema = new Schema(
       default: ENUM_STATUS.ACTIVE,
     },
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
   },
   {

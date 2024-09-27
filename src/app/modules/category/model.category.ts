@@ -1,11 +1,6 @@
 import mongoose, { Schema, model } from 'mongoose';
 
-import {
-  ENUM_STATUS,
-  ENUM_YN,
-  STATUS_ARRAY,
-  YN_ARRAY,
-} from '../../../global/enum_constant_type';
+import { ENUM_STATUS, STATUS_ARRAY } from '../../../global/enum_constant_type';
 import { mongooseFileSchema } from '../../../global/schema/global.schema';
 import ApiError from '../../errors/ApiError';
 import { CategoryModel, ICategory } from './interface.category';
@@ -32,9 +27,8 @@ const CategorySchema = new Schema<ICategory, CategoryModel>(
     },
 
     isDelete: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
     //--- for --TrashCategory---
     oldRecord: {
@@ -59,7 +53,6 @@ CategorySchema.pre('findOneAndDelete', async function (next) {
     const { _id, ...data } = (await this.model
       .findOne({ _id: dataId?._id })
       .lean()) as { _id: mongoose.Schema.Types.ObjectId; data: any };
-    // console.log('🚀 ~ file: model.category.ts:40 ~ _id:', data);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     if (!data?.oldRecord?.refId) {

@@ -56,9 +56,12 @@ export default {
     atlasUrl: process.env.DATABASE_URL_ATLAS,
   },
   database_url:
+    // process.env.NODE_ENV === 'development'
+    //   ? process.env.DATABASE_URL_ATLAS
+    //   : `mongodb://${process.env.DATABASE_IP}:${process.env.DATABASE_PORT}/${process.env.DATABASE_NAME}`, //mongodb://127.0.0.1:29017/chouatamar
     process.env.NODE_ENV === 'development'
       ? process.env.DATABASE_URL_ATLAS
-      : `mongodb://${process.env.DATABASE_IP}:${process.env.DATABASE_PORT}/${process.env.DATABASE_NAME}`, //mongodb://127.0.0.1:29017/chouatamar
+      : process.env.DATABASE_URL_ATLAS, //mongodb://127.0.0.1:29017/chouatamar
   default_student_pass: process.env.DEFAULT_STUDENT_PASS,
   default_moderator_pass: process.env.DEFAULT_MODERATOR_PASS,
   default_admin_pass: process.env.DEFAULT_ADMIN_PASS,

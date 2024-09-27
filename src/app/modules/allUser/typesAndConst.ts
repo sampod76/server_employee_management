@@ -72,5 +72,5 @@ export type ICommonUser = {
   };
   author?: IUserRef;
   status: I_STATUS;
-  isDelete: I_YN;
+  isDelete: boolean;
 };

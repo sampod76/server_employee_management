@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 
 import config from '../../../config';
 
-import { ENUM_YN } from '../../../global/enum_constant_type';
 import { getDeviceInfo } from '../../../helper/getDeviceInfo';
 import ApiError from '../../errors/ApiError';
 import catchAsync from '../../share/catchAsync';
@@ -65,7 +64,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
       const ip = req.clientIp;
       await UserLoginHistory.findOneAndUpdate(
         {
-          userId: userData._id,
+          userId: userData.userId,
           user_agent: req.headers['user-agent'],
           token: req?.cookies?.refreshToken,
         },
@@ -81,7 +80,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
       await UserLoginHistory.create({
         ip,
         //@ts-ignore
-        userId: userData._id,
+        userId: userData.userId,
         user_agent: req.headers['user-agent'],
         token: refreshToken,
         device_info: deviceInfo,
@@ -96,7 +95,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 
     await UserLoginHistory.create({
       ip,
-      userId: userData._id,
+      userId: userData.userId,
       user_agent: req.headers['user-agent'],
       token: refreshToken,
       device_info: deviceInfo,
@@ -237,7 +236,7 @@ const profile = catchAsync(async (req: Request, res: Response) => {
   const user = await User.isUserFindMethod(
     { id: req?.user?.userId },
     {
-      isDelete: ENUM_YN.NO,
+      isDelete: false,
       populate: true,
       needProperty: ['rating', 'insights'],
     },

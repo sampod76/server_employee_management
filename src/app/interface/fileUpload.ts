@@ -36,6 +36,7 @@ export type IFileAfterUpload = {
   mimetype: string;
   server_url?: string;
   filename?: string;
+  fieldname?: string;
   path?: string;
   url?: string;
   durl?: string;

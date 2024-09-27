@@ -10,13 +10,16 @@ export type ICategoryFilters = {
   serialNumber?: number;
   delete?: I_YN;
   children?: string;
-  isDelete?: string;
+  isDelete?: string | boolean;
+  createdAtFrom?: string;
+  createdAtTo?: string;
+  needProperty?: string;
 };
 
 export type ICategory = z.infer<
   typeof CategoryValidation.createCategoryBodyData
 > & {
-  isDelete: I_YN;
+  isDelete: boolean;
 
   oldRecord?: {
     refId: Types.ObjectId;

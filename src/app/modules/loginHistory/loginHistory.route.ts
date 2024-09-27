@@ -12,10 +12,10 @@ router
   .route('/')
   .get(
     authMiddleware(
-      ENUM_USER_ROLE.BUYER,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SUPER_ADMIN,
+      ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
     ),
     UserLoginHistoryController.getAllUserLoginHistorys,
   );
@@ -24,19 +24,19 @@ router
   .route('/:id')
   .get(
     authMiddleware(
-      ENUM_USER_ROLE.BUYER,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SUPER_ADMIN,
+      ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
     ),
     UserLoginHistoryController.getSingleUserLoginHistory,
   )
   .patch(
     authMiddleware(
-      ENUM_USER_ROLE.BUYER,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SUPER_ADMIN,
+      ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
     ),
     validateRequestZod(
       UserLoginHistoryValidation.updateUserLoginHistoryZodSchema,
@@ -45,10 +45,10 @@ router
   )
   .delete(
     authMiddleware(
-      ENUM_USER_ROLE.BUYER,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SUPER_ADMIN,
+      ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
     ),
     UserLoginHistoryController.deleteUserLoginHistory,
   );

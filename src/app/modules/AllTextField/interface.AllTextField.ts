@@ -28,7 +28,7 @@ export type IAllTextFieldFilters = {
   dataType?: IDataType;
   status?: I_STATUS;
   delete?: I_YN;
-  isDelete?: string;
+  isDelete?: boolean | string;
 };
 
 export type IAllTextField = {
@@ -39,7 +39,7 @@ export type IAllTextField = {
   bodyData: Record<string, string>;
   //
   status: I_STATUS;
-  isDelete: I_YN;
+  isDelete: boolean;
   //--- for --Trash---
   oldRecord?: {
     refId: Types.ObjectId;

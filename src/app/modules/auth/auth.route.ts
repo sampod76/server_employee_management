@@ -18,10 +18,10 @@ router.post(
 router.post(
   '/log-out-history/:id', // id --> login history _id
   authMiddleware(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SELLER,
-    ENUM_USER_ROLE.BUYER,
-    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.admin,
+    ENUM_USER_ROLE.hrAdmin,
+    ENUM_USER_ROLE.employee,
+    ENUM_USER_ROLE.superAdmin,
   ),
   // validateRequestZod(AuthValidation.refreshTokenZodSchema),
   AuthController.logOut,
@@ -34,7 +34,7 @@ router.post(
 );
 router.post(
   '/send-mail',
-  authMiddleware(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  authMiddleware(ENUM_USER_ROLE.superAdmin, ENUM_USER_ROLE.admin),
   // validateRequestZod(AuthValidation.refreshTokenZodSchema),
   AuthController.sendMailAuth,
 );
@@ -44,10 +44,10 @@ router.post(
   apiLimiter(10, 30),
   validateRequestZod(AuthValidation.changePasswordZodSchema),
   authMiddleware(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SELLER,
-    ENUM_USER_ROLE.BUYER,
-    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.admin,
+    ENUM_USER_ROLE.hrAdmin,
+    ENUM_USER_ROLE.employee,
+    ENUM_USER_ROLE.superAdmin,
   ),
 
   AuthController.changePassword,
@@ -56,10 +56,10 @@ router.post(
 router.get(
   '/profile',
   authMiddleware(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SELLER,
-    ENUM_USER_ROLE.BUYER,
-    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.admin,
+    ENUM_USER_ROLE.hrAdmin,
+    ENUM_USER_ROLE.employee,
+    ENUM_USER_ROLE.superAdmin,
   ),
   AuthController.profile,
 );
@@ -90,10 +90,10 @@ router
   .post(
     apiLimiter(10, 30),
     authMiddleware(
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.BUYER,
-      ENUM_USER_ROLE.SUPER_ADMIN,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.superAdmin,
     ),
     AuthController.enableTwoFactorAuth,
   );
@@ -102,10 +102,10 @@ router
   .post(
     apiLimiter(10, 30),
     authMiddleware(
-      ENUM_USER_ROLE.ADMIN,
-      ENUM_USER_ROLE.SELLER,
-      ENUM_USER_ROLE.BUYER,
-      ENUM_USER_ROLE.SUPER_ADMIN,
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
+      ENUM_USER_ROLE.superAdmin,
     ),
     AuthController.verifyTwoFactorAuth,
   );

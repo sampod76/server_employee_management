@@ -291,7 +291,7 @@ router
   .route('/')
   .get(${capitalize(folderName)}Controller.getAll${capitalize(folderName)})
   .post(
-    authMiddleware(ENUM_USER_ROLE.ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin),
     validateRequestZod(${capitalize(folderName)}Validation.create${capitalize(
       folderName,
     )}ZodSchema),
@@ -302,13 +302,13 @@ router
   .route('/:id')
   .get(${capitalize(folderName)}Controller.getSingle${capitalize(folderName)})
   .patch(
-    authMiddleware(ENUM_USER_ROLE.ADMIN),
+    authMiddleware(ENUM_USER_ROLE.admin),
     validateRequestZod(${capitalize(folderName)}Validation.update${capitalize(
       folderName,
     )}ZodSchema),
     ${capitalize(folderName)}Controller.update${capitalize(folderName)}
   )
-  .delete(authMiddleware(ENUM_USER_ROLE.ADMIN), ${capitalize(
+  .delete(authMiddleware(ENUM_USER_ROLE.admin), ${capitalize(
     folderName,
   )}Controller.delete${capitalize(folderName)});
 

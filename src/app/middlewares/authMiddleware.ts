@@ -14,6 +14,7 @@ const authMiddleware =
       //get authorization token
       let verifiedUser = null;
       const token = req.headers.authorization;
+      // console.log('🚀 ~ token:', token);
 
       if (!token) {
         throw new ApiError(httpStatus.UNAUTHORIZED, 'Unauthorized access');
