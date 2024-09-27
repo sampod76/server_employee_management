@@ -15,7 +15,6 @@ import {
   LookupReusable,
 } from '../../../helper/lookUpResuable';
 
-import { uuidGenerator } from '../../../utils/uuidGenerator';
 import { EmployeeUser } from '../allUser/employee/model.employee';
 import { IUserRef } from '../allUser/typesAndConst';
 import { TaskManagementSearchableFields } from './constants.taskManagement';
@@ -50,10 +49,11 @@ const createTaskManagement = async (
       //@ts-ignore
       userId: findEmployee.userDetails._id,
     };
-    data.taskList = data?.taskList?.map(task => ({
-      title: task.title,
-      uuid: uuidGenerator(),
-    }));
+    // data.taskList = data?.taskList?.map(task => ({
+    //   title: task.title,
+    //   uuid: uuidGenerator(),
+    // }));
+    console.log(data);
   }
   const res = await TaskManagement.create(data);
   return res;
@@ -422,18 +422,20 @@ const updateTaskManagementFromDB = async (
   } else {
     employeeId = data?.employee?.roleBaseUserId.toString();
   }
-  const findEmployee = await EmployeeUser.isEmployeeUserExistMethod(
-    employeeId,
-    {
-      populate: true,
-    },
-  );
-  data.employee = {
-    roleBaseUserId: findEmployee._id,
-    role: ENUM_USER_ROLE.employee,
-    //@ts-ignore
-    userId: findEmployee.userDetails._id,
-  };
+  if (id) {
+    const findEmployee = await EmployeeUser.isEmployeeUserExistMethod(
+      employeeId,
+      {
+        populate: true,
+      },
+    );
+    data.employee = {
+      roleBaseUserId: findEmployee._id,
+      role: ENUM_USER_ROLE.employee,
+      //@ts-ignore
+      userId: findEmployee.userDetails._id,
+    };
+  }
 
   const updatedTaskManagement = await TaskManagement.findOneAndUpdate(
     { _id: id },

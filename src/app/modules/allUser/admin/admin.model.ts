@@ -40,6 +40,8 @@ const adminSchema = new Schema<IAdmin, AdminModel>(
       type: Date,
       trim: true,
     },
+    nid: String,
+    passport: String,
     gender: {
       type: String,
       enum: GENDER_ARRAY,

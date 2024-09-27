@@ -89,6 +89,10 @@ const getAllLeaveManagementsFromDB = async (
     needProperty,
     ...filtersData
   } = filters;
+  const userDetails = req.user as IUserRef;
+  if (userDetails?.role === ENUM_USER_ROLE.employee) {
+    filtersData.employeeUserId = userDetails.userId.toString();
+  }
   filtersData.isDelete = filtersData.isDelete
     ? filtersData.isDelete == 'true'
       ? true

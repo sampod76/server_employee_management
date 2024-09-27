@@ -53,7 +53,9 @@ export const basicZodData = z.object({
   address: z.object({ area: z.string().optional() }).optional(),
 });
 
-export const adminBodyData = basicZodData;
+export const adminBodyData = basicZodData.merge(
+  employeeZodSchema.pick({ nid: true, passport: true }),
+);
 
 export const hradminBodyData = basicZodData.merge(hrAdminZodSchema);
 export const employeeBodyData = basicZodData.merge(employeeZodSchema);
