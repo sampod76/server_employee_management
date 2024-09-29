@@ -13,6 +13,7 @@ import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import i18nextMiddleware from 'i18next-http-middleware';
 //----------------------------------------
+
 import compression, { CompressionOptions } from 'compression';
 import file_route from './app/routes/file_route';
 import config from './config';
