@@ -35,7 +35,7 @@ export const zodFileAfterUploadSchema = z.object(
     filename: z.string().optional(),
     fieldname: z.string().optional(),
     // url: z.string().optional(),
-    url: z.string(),
+    url: z.string().optional(),
     cdn: z.string().optional(),
     durl: z.string().optional(),
     platform: z.string(), // Assuming IImagePlatform is a string type
