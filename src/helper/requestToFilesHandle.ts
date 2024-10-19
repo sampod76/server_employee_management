@@ -37,7 +37,7 @@ import { bytesToKbAndMb } from '../utils/bytesTokbAndMb';
    */
 
 export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
-  console.log(req.file, 'req.file');
+  // console.log(req.file, 'req.file');
   try {
     const file = req.file as IMulterUploadFile;
     // const d = new makeImage(file);
@@ -109,7 +109,7 @@ export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
       }
       req.body = bodyData;
     } else if (req.files) {
-      console.log(req.files, 'req.files');
+      // console.log(req.files, 'req.files');
       if (req.files instanceof Array && req.files?.length) {
         //---imagbb---
         let images: IMulterUploadFile[] = [];
@@ -153,9 +153,9 @@ export const RequestToFileDecodeAddBodyHandle = async (req: Request) => {
           } else if (!obj[file.fieldname]?.length) {
             obj[file.fieldname] = [];
           }
-          console.log(allModifyFiles, 'allModifyFiles');
+          // console.log(allModifyFiles, 'allModifyFiles');
           if (file?.mimetype?.includes('image')) {
-            console.log(file, 'file dd');
+            // console.log(file, 'file dd');
             //@ts-ignore
             if (file?.url) {
               obj[file.fieldname].push(file); // when image not upload imgbb then comment it

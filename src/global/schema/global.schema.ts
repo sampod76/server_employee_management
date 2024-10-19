@@ -25,6 +25,7 @@ export const mongooseFileSchema = new Schema<IFileAfterUpload>(
   },
   {
     _id: false,
+    timestamps: true,
   },
 );
 export const zodFileAfterUploadSchema = z.object(
