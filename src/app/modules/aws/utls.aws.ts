@@ -1,3 +1,4 @@
+import path from 'path';
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /**
  * @use this is pre signed url -->for get -->GetObjectCommand
@@ -40,14 +41,14 @@ const putSingleImageObjectCommandToUrl = async (
   fileData: IAwsInputFile,
 ): Promise<IAwsOutputPreUrl> => {
   let filePath;
-  const modifyFileName = Date.now() + '-' + fileData.filename;
-  // const fileExt = path.extname(fileData.filename);
+  // const modifyFileName = Date.now() + '-' + fileData.filename;
+  const fileExt = path.extname(fileData.filename);
 
-  // const modifyFileName =
-  //   fileData.filename.replace(fileExt, '').toLowerCase().split(' ').join('-') +
-  //   '-' +
-  //   Date.now() +
-  //   fileExt;
+  const modifyFileName =
+    fileData.filename.replace(fileExt, '').toLowerCase().split(' ').join('-') +
+    '-' +
+    Date.now() +
+    fileExt;
   if (fileData.mimetype.includes('image')) {
     filePath = `upload/images/${modifyFileName}`;
   } else if (fileData.mimetype.includes('audio')) {

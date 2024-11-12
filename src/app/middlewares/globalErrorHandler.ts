@@ -10,10 +10,10 @@ import handleZodError from '../errors/handleZodError';
 import { IGenericErrorMessage } from '../interface/error';
 // import { errorLogger } from '../share/logger';
 import httpStatus from 'http-status';
+import { requestToDeleteFile } from '../../helper/requestToDeleteFile';
 import handleCastError from '../errors/handleCastError';
 import handleMongoUniqueError from '../errors/handleMongoUniqueError';
 import { errorLogger } from '../share/logger';
-import { requestToDeleteFile } from '../../helper/requestToDeleteFile';
 
 // import path from 'path';
 

@@ -2,6 +2,15 @@
   "include": ["src", "src/app/errors/.ts", "src/**/*.ts", "@types/**/*.d.ts"], // which files to compile
   "exclude": ["node_modules"], // which files to skip
   "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@app/*": ["src/app/*"],
+      "@config/*": ["src/config/*"],
+      "@helper/*": ["src/helper/*"],
+      "@import/*": ["src/import/*"],
+      "@language/*": ["src/language/*"],
+      "@utils/*": ["src/utils/*"]
+    },
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */
