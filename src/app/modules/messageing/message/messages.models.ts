@@ -2,10 +2,7 @@ import { model, PipelineStage, Schema, Types } from 'mongoose';
 
 import {
   ENUM_STATUS,
-  ENUM_YN,
-  I_YN,
   STATUS_ARRAY,
-  YN_ARRAY,
 } from '../../../../global/enum_constant_type';
 import { mongooseFileSchema } from '../../../../global/schema/global.schema';
 import { mongooseIUserRef } from '../../allUser/typesAndConst';
@@ -51,7 +48,7 @@ const ChatMessageSchema = new Schema<IChatMessage, ChatMessageModel>(
 ChatMessageSchema.statics.isChatMessageExistMethod = async function (
   id: string,
   option?: {
-    isDelete?: I_YN;
+    isDelete?: boolean;
     populate?: boolean;
   },
 ): Promise<IChatMessage | null> {
@@ -61,7 +58,7 @@ ChatMessageSchema.statics.isChatMessageExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option?.isDelete || ENUM_YN.NO,
+          isDelete: option?.isDelete || false,
         },
       },
     ]);
@@ -71,7 +68,7 @@ ChatMessageSchema.statics.isChatMessageExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option.isDelete || ENUM_YN.NO,
+          isDelete: option.isDelete || false,
         },
       },
     ];

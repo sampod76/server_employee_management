@@ -3,7 +3,6 @@
 import { Request } from 'express';
 import httpStatus from 'http-status';
 import mongoose, { PipelineStage, Schema, Types } from 'mongoose';
-import { ENUM_YN } from '../../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { paginationHelper } from '../../../../helper/paginationHelper';
 import ApiError from '../../../errors/ApiError';
@@ -21,12 +20,10 @@ import { ENUM_REDIS_KEY } from '../../../redis/consent.redis';
 import { redisClient } from '../../../redis/redis';
 import { findAllSocketsIdsFromUserId } from '../../../redis/service.redis';
 import { redisSetter } from '../../../redis/utls.redis';
-import { ISellerUser } from '../../allUser/seller/interface.seller';
+
 import { IUserRef, IUserRefAndDetails } from '../../allUser/typesAndConst';
-import { IUser } from '../../allUser/user/user.interface';
-import { User } from '../../allUser/user/user.model';
 import { validateUserInDbOrRedis } from '../../allUser/user/user.utils';
-import { IGig } from '../../gig/interface.gig';
+
 import { GroupMember } from '../groupUserMember/models.groupUserMember';
 import { GroupsSearchableFields } from './constants.groups';
 import { IGroups, IGroupsFilters } from './interface.groups';
@@ -40,7 +37,7 @@ const createGroups = async (
   const findData = await Groups.findOne({
     name: { $regex: new RegExp(data.name.trim(), 'i') },
     author: new Types.ObjectId(data.author.userId),
-    isDelete: ENUM_YN.NO,
+    isDelete: false,
   });
 
   if (findData) {
@@ -188,30 +185,6 @@ const checkUserIdToExistGroupsFromDb = async (
       { key: whenMySender, value: findData, ttl: 24 * 60 },
       { key: whenMyReceiver, value: findData, ttl: 24 * 60 },
     ]);
-  } else {
-    if (req.query?.createGroups == true) {
-      //if when checking and not found Groups then auto matic create user
-      const receiverInfo = (await User.isUserFindMethod(
-        { id: userId },
-        { populate: true },
-      )) as IUser & { roleInfo: ISellerUser };
-
-      const createGroups = await Groups.create({
-        receiver: {
-          userId: receiverInfo._id,
-          roleBaseUserId: receiverInfo.roleInfo._id,
-          role: receiverInfo.role,
-        },
-        sender: {
-          userId: user?.userId,
-          roleBaseUserId: user?.roleBaseUserId,
-          role: user?.role,
-        },
-      });
-      return createGroups;
-    } else {
-      return null;
-    }
   }
   //------ check online office------
   const promises2: any[] = [];
@@ -264,8 +237,10 @@ const getAllGroupssFromDB = async (
     ...filtersData
   } = filters;
   filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
 
   const andConditions = [];
   if (searchTerm) {
@@ -426,17 +401,7 @@ const getAllGroupssFromDB = async (
   }
   //
   const collections: ILookupCollection<any>[] = [];
-  if (needProperty && needProperty.includes('gigId')) {
-    const gigCollecting: ILookupCollection<IGig> = {
-      connectionName: 'gigs',
-      idFiledName: '$gigId',
-      pipeLineMatchField: '$_id',
-      outPutFieldName: 'gigDetails',
-      //project: { name: 1, country: 1, profileImage: 1, email: 1 },
-    };
-    // Push the object into the collections array
-    collections.push(gigCollecting);
-  }
+
   if (needProperty && needProperty.includes('lastMessage')) {
     const lastMessagePipeline: PipelineStage[] = [
       {
@@ -500,17 +465,6 @@ const getAllGroupssFromDB = async (
     pipeline.push(...lastMessagePipeline);
   }
 
-  if (needProperty && needProperty.includes('orderId')) {
-    const gigCollecting: ILookupCollection<IGig> = {
-      connectionName: 'orders',
-      idFiledName: '$orderId',
-      pipeLineMatchField: '$_id',
-      outPutFieldName: 'orderDetails',
-      //project: { name: 1, country: 1, profileImage: 1, email: 1 },
-    };
-    // Push the object into the collections array
-    collections.push(gigCollecting);
-  }
   // Use the collections in LookupReusable
   LookupReusable<any, any>(pipeline, {
     collections: collections,
@@ -636,7 +590,7 @@ const deleteGroupsFromDB = async (
   //   _id: Schema.Types.ObjectId;
   // };
   const isExist = (await Groups.aggregate([
-    { $match: { _id: new Types.ObjectId(id), isDelete: ENUM_YN.NO } },
+    { $match: { _id: new Types.ObjectId(id), isDelete: false } },
   ])) as IGroups[];
 
   if (!isExist.length) {

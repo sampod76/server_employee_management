@@ -12,7 +12,7 @@ export type IGroupMemberFilters = {
   receiverRoleBaseId?: string;
   groupId?: string;
   orderId?: string;
-  isBlock?: I_YN;
+  isBlock?: boolean | string;
   myData?: I_YN;
 
   //
@@ -20,7 +20,7 @@ export type IGroupMemberFilters = {
   needProperty?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: I_YN;
+  isDelete?: boolean | string;
 };
 export enum ENUM_GROUP_MEMBER_ROLE_TYPE {
   admin = 'admin',
@@ -47,7 +47,7 @@ export type GroupMemberModel = {
   isGroupMemberExistMethod(
     id: string,
     option: {
-      isDelete?: I_YN;
+      isDelete?: boolean;
       populate?: boolean;
     },
   ): Promise<IGroupMember>;

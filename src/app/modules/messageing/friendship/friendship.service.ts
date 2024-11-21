@@ -3,7 +3,6 @@
 import { Request } from 'express';
 import httpStatus from 'http-status';
 import { PipelineStage, Schema, Types } from 'mongoose';
-import { ENUM_YN } from '../../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { paginationHelper } from '../../../../helper/paginationHelper';
 import ApiError from '../../../errors/ApiError';
@@ -283,9 +282,10 @@ const getAllFriendShipsFromDB = async (
 ): Promise<IGenericResponse<IFriendShip[] | null>> => {
   const { searchTerm, needProperty, ...filtersData } = filters;
   filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
-
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
   const andConditions = [];
   if (searchTerm) {
     andConditions.push({
@@ -602,7 +602,7 @@ const updateFriendShipBlockFromDb = async (
 
   const { block, ...FriendShipData } = data;
   const updatedFriendShipData: Partial<IFriendShip> = { ...FriendShipData };
-  if (block?.isBlock === ENUM_YN.NO) {
+  if (block?.isBlock === false) {
     if (
       isExist?.block?.blocker?.userId?.toString() !== req?.user?.userId &&
       req.user?.role !== ENUM_USER_ROLE.admin &&
@@ -669,7 +669,7 @@ const deleteFriendShipFromDB = async (
   //   _id: Schema.Types.ObjectId;
   // };
   const isExist = (await FriendShip.aggregate([
-    { $match: { _id: new Types.ObjectId(id), isDelete: ENUM_YN.NO } },
+    { $match: { _id: new Types.ObjectId(id), isDelete: false } },
   ])) as IFriendShip[];
 
   if (!isExist.length) {

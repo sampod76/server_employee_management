@@ -24,7 +24,7 @@ const socketConnection = async (socketServer: Server) => {
 by default io.of('/) . this case optional user-namespace
 use direct connection --> io.on('connection',socket => {
    socket.on('disconnect', async() => {
-        const userData =await User.findByIdAndUpdate(user.userId, {is_online:ENUM_YN.NO})
+        const userData =await User.findByIdAndUpdate(user.userId, {is_online:false})
       });
 })
  */

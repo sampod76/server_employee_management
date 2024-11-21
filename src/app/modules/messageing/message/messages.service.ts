@@ -1,7 +1,6 @@
 import { Request } from 'express';
 import httpStatus from 'http-status';
 import { PipelineStage, Schema, Types } from 'mongoose';
-import { ENUM_YN } from '../../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { paginationHelper } from '../../../../helper/paginationHelper';
 import ApiError from '../../../errors/ApiError';
@@ -28,9 +27,7 @@ const getAllChatMessagesFromDB = async (
   requestUser: IUserRef & { id: string },
 ): Promise<IGenericResponse<IChatMessage[] | null>> => {
   const { searchTerm, ...filtersData } = filters;
-  filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+  filtersData.isDelete = filtersData.isDelete ? filtersData.isDelete : false;
   console.log(requestUser);
   const andConditions = [];
 
@@ -211,7 +208,7 @@ const deleteChatMessageFromDB = async (
   //   _id: Schema.Types.ObjectId;
   // };
   const isExist = (await ChatMessage.aggregate([
-    { $match: { _id: new Types.ObjectId(id), isDelete: ENUM_YN.NO } },
+    { $match: { _id: new Types.ObjectId(id), isDelete: false } },
   ])) as IChatMessage[];
 
   if (!isExist.length) {

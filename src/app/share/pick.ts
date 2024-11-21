@@ -9,6 +9,7 @@ const pick = <T extends Record<string, unknown>, K extends keyof T>(
     if (obj && Object.hasOwnProperty.call(obj, key)) {
       if (obj[key]) {
         finalObj[key] = obj[key];
+        // obj[key] === 'true' ? true : obj[key] === 'false' ? false : obj[key];
       }
     }
   }

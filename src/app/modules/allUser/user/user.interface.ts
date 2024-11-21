@@ -23,7 +23,7 @@ export type IUserFilters = {
   isDelete?: string | boolean;
   contactNumber?: string;
   needProperty?: string;
-  socketStatus?: I_YN;
+  socketStatus?: boolean;
   //
   latitude?: string;
   longitude?: string;

@@ -1,5 +1,4 @@
 import { PipelineStage, Types } from 'mongoose';
-import { ENUM_YN } from '../../../../global/enum_constant_type';
 import { LookupAnyRoleDetailsReusable } from '../../../../helper/lookUpResuable';
 import { ENUM_REDIS_KEY } from '../../../redis/consent.redis';
 import { redisClient } from '../../../redis/redis';
@@ -28,7 +27,7 @@ export const findGroupMemberInRedisOrDb = async (
         {
           $match: {
             _id: new Types.ObjectId(groupMemberId),
-            isDelete: ENUM_YN.NO,
+            isDelete: false,
           },
         },
       ];

@@ -17,7 +17,7 @@ export type IGroupMessageFilters = {
   searchTerm?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: I_YN;
+  isDelete?: boolean;
   isSeen?: I_YN;
 };
 
@@ -30,7 +30,7 @@ export type GroupMessageModel = {
   isGroupMessageExistMethod(
     id: string,
     option: {
-      isDelete?: I_YN;
+      isDelete?: boolean;
       populate?: boolean;
     },
   ): Promise<IGroupMessage>;

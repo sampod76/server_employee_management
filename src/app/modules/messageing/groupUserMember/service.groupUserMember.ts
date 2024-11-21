@@ -3,7 +3,6 @@
 import { Request } from 'express';
 import httpStatus from 'http-status';
 import { PipelineStage, Schema, Types } from 'mongoose';
-import { ENUM_YN } from '../../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import { paginationHelper } from '../../../../helper/paginationHelper';
 import ApiError from '../../../errors/ApiError';
@@ -30,11 +29,11 @@ import {
   validateUserInDbOrRedis,
 } from '../../allUser/user/user.utils';
 
+import { IGroups } from '../groups/interface.groups';
 import { Groups } from '../groups/models.groups';
 import { GroupMemberSearchableFields } from './constants.groupUserMember';
 import { IGroupMember, IGroupMemberFilters } from './interface.groupUserMember';
 import { GroupMember } from './models.groupUserMember';
-import { IGroups } from '../groups/interface.groups';
 
 const createGroupMember = async (
   data: IGroupMember,
@@ -54,19 +53,19 @@ const createGroupMember = async (
             data.receiver?.userId as string,
           ),
           groupId: new Types.ObjectId(data.groupId as string),
-          isDelete: ENUM_YN.NO,
+          isDelete: false,
         },
         {
           'sender.userId': new Types.ObjectId(data.receiver?.userId as string),
           'receiver.userId': new Types.ObjectId(data.sender?.userId as string),
           groupId: new Types.ObjectId(data.groupId as string),
-          isDelete: ENUM_YN.NO,
+          isDelete: false,
         },
       ],
     }),
     Groups.findOne({
       _id: data.groupId,
-      isDelete: ENUM_YN.NO,
+      isDelete: false,
     }),
   ]);
 
@@ -296,8 +295,10 @@ const getAllGroupMembersFromDB = async (
 ): Promise<IGenericResponse<IGroupMember[] | null>> => {
   const { searchTerm, needProperty, ...filtersData } = filters;
   filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete
-    : ENUM_YN.NO;
+    ? filtersData.isDelete == 'true'
+      ? true
+      : false
+    : false;
 
   const andConditions = [];
   if (searchTerm) {
@@ -622,7 +623,7 @@ const updateGroupMemberBlockFromDb = async (
 
   const { block, ...GroupMemberData } = data;
   const updatedGroupMemberData: Partial<IGroupMember> = { ...GroupMemberData };
-  if (block?.isBlock === ENUM_YN.NO) {
+  if (block?.isBlock === false) {
     if (
       isExist?.block?.blocker?.userId?.toString() !== req?.user?.userId &&
       req.user?.role !== ENUM_USER_ROLE.admin &&
@@ -689,7 +690,7 @@ const deleteGroupMemberFromDB = async (
   //   _id: Schema.Types.ObjectId;
   // };
   const isExist = (await GroupMember.aggregate([
-    { $match: { _id: new Types.ObjectId(id), isDelete: ENUM_YN.NO } },
+    { $match: { _id: new Types.ObjectId(id), isDelete: false } },
   ])) as IGroupMember[];
 
   if (!isExist.length) {
