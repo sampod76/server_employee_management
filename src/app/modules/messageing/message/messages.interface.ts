@@ -19,8 +19,8 @@ export type IChatMessageFilters = {
   searchTerm?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: boolean;
-  isSeen?: I_YN;
+  isDelete?: boolean | string;
+  isSeen?: boolean | string;
 };
 
 export type IChatMessage = z.infer<typeof messageZodData> & {
