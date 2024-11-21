@@ -10,8 +10,8 @@ import pick from '../../share/pick';
 import sendResponse from '../../share/sendResponse';
 import { Notification_FilterableFields } from './notification.constant';
 
-import { INotification } from './notification.interface';
 import config from '../../../config';
+import { INotification } from './notification.interface';
 
 // import { ENUM_YN } from '../../../enums/globalEnums';
 
@@ -29,7 +29,7 @@ const createNotification = catchAsync(async (req: Request, res: Response) => {
   );
 
   // if (
-  //   req.query.isSendNotification === ENUM_YN.YES &&
+  //   req.query.isSendNotification === true &&
   //   Array.isArray(result?.userIds) &&
   //   result?.userIds.length > 0
   // ) {

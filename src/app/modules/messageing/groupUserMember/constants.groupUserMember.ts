@@ -1,20 +1,19 @@
-export const friendshipSearchableFields = ['title'];
+export const GroupMemberSearchableFields = ['title'];
 
-export const friendshipFilterableFields = [
+export const GroupMemberFilterableFields = [
   'senderRoleBaseId',
   'senderUserId',
   'receiverRoleBaseId',
   'receiverUserId',
-
+  'groupId',
+  'orderId',
   'isBlock', //yes no
   'requestAccept', //yes no
   'myData', //yes no
   // always required filter
-  'delete', // for permanent delete
   'searchTerm',
+  'delete', // for permanent delete
   'status',
   'isDelete',
-  'createdAtFrom',
-  'createdAtTo',
   'needProperty',
 ];

@@ -1,14 +1,14 @@
 import { Request } from 'express';
 import httpStatus from 'http-status';
 import { PipelineStage, Schema, Types } from 'mongoose';
-import { ENUM_YN } from '../../../global/enum_constant_type';
-import { ENUM_USER_ROLE } from '../../../global/enums/users';
-import { paginationHelper } from '../../../helper/paginationHelper';
-import ApiError from '../../errors/ApiError';
-import { IGenericResponse } from '../../interface/common';
-import { IPaginationOption } from '../../interface/pagination';
+import { ENUM_YN } from '../../../../global/enum_constant_type';
+import { ENUM_USER_ROLE } from '../../../../global/enums/users';
+import { paginationHelper } from '../../../../helper/paginationHelper';
+import ApiError from '../../../errors/ApiError';
+import { IGenericResponse } from '../../../interface/common';
+import { IPaginationOption } from '../../../interface/pagination';
 
-import { IUserRef } from '../allUser/typesAndConst';
+import { IUserRef } from '../../allUser/typesAndConst';
 
 import { messageSearchableFields } from './messages.constants';
 import { IChatMessage, IChatMessageFilters } from './messages.interface';
@@ -29,11 +29,9 @@ const getAllChatMessagesFromDB = async (
 ): Promise<IGenericResponse<IChatMessage[] | null>> => {
   const { searchTerm, ...filtersData } = filters;
   filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete == 'true'
-      ? true
-      : false
-    : false;
-
+    ? filtersData.isDelete
+    : ENUM_YN.NO;
+  console.log(requestUser);
   const andConditions = [];
 
   if (searchTerm) {
@@ -72,15 +70,17 @@ const getAllChatMessagesFromDB = async (
             modifyFiled = {
               ['receiver.roleBaseUserId']: new Types.ObjectId(value),
             };
-          } else if (field === 'findMyChats' && value === ENUM_YN.YES) {
+          } else if (field === 'findMyChats' && value === 'yes') {
             modifyFiled = {
               $or: [
                 {
-                  'sender.userId': new Types.ObjectId(requestUser.id as string),
+                  'sender.userId': new Types.ObjectId(
+                    requestUser.userId as string,
+                  ),
                 },
                 {
                   'receiver.userId': new Types.ObjectId(
-                    requestUser.id as string,
+                    requestUser.userId as string,
                   ),
                 },
               ],
@@ -211,7 +211,7 @@ const deleteChatMessageFromDB = async (
   //   _id: Schema.Types.ObjectId;
   // };
   const isExist = (await ChatMessage.aggregate([
-    { $match: { _id: new Types.ObjectId(id), isDelete: false } },
+    { $match: { _id: new Types.ObjectId(id), isDelete: ENUM_YN.NO } },
   ])) as IChatMessage[];
 
   if (!isExist.length) {
@@ -226,9 +226,7 @@ const deleteChatMessageFromDB = async (
     throw new ApiError(403, 'forbidden access');
   }
 
-  let data;
-
-  data = await ChatMessage.findOneAndUpdate(
+  const data = await ChatMessage.findOneAndUpdate(
     { _id: id },
     { isDelete: true },
     { new: true, runValidators: true },

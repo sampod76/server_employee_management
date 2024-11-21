@@ -145,7 +145,7 @@ const deleteUserLoginHistory = async (
     //   { _id: id },
     //   {
     //     status: ENUM_STATUS.DEACTIVATE,
-    //     isDelete: ENUM_YN.YES,
+    //     isDelete: true,
     //   },
     // );
   }

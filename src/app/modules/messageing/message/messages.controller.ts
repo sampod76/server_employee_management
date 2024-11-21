@@ -1,20 +1,20 @@
 import { Request, Response } from 'express';
 
-import { PAGINATION_FIELDS } from '../../../global/constant/pagination';
-import catchAsync from '../../share/catchAsync';
-import pick from '../../share/pick';
-import sendResponse from '../../share/sendResponse';
-import { IUserRef } from '../allUser/typesAndConst';
+import { PAGINATION_FIELDS } from '../../../../global/constant/pagination';
+import catchAsync from '../../../share/catchAsync';
+import pick from '../../../share/pick';
+import sendResponse from '../../../share/sendResponse';
+import { IUserRef } from '../../allUser/typesAndConst';
 import { messageFilterableFields } from './messages.constants';
 import { IChatMessage } from './messages.interface';
 import { ChatMessageService } from './messages.service';
 
 const createChatMessage = catchAsync(async (req: Request, res: Response) => {
   // await RequestToFileDecodeAddBodyHandle(req);
-  // console.log('create ChatMessage', req.body);
+
   req.body = {
     ...req.body,
-    author: {
+    sender: {
       role: req.user?.role,
       userId: req?.user?.userId,
       roleBaseUserId: req.user?.roleBaseUserId,

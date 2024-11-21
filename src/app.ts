@@ -19,7 +19,7 @@ import file_route from './app/routes/file_route';
 import config from './config';
 import helmetConfig from './config/helmetConfig';
 import { TestFile } from './test';
-import { rateLimiterRedisMiddleware } from './utils/DbUtlis/RateLimiterInRedis';
+import { rateLimiterRedisMiddleware } from '@utils/DbUtlis/RateLimiterInRedis';
 const app: Application = express();
 
 app.use(helmetConfig);

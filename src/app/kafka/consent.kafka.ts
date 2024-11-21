@@ -6,4 +6,7 @@ import config from '../../config';
 
 export const ENUM_KAFKA_TOPIC = {
   MESSAGE: `${config.kafka.clientId}_message`,
+  groupMessage: `${config.kafka.clientId}_groupMessage`,
+  friendShipUpdateSortList: `${config.kafka.clientId}_friendShipUpdateSortList`,
+  groupMemberUpdateSortList: `${config.kafka.clientId}_groupMemberUpdateSortList`,
 } as const;

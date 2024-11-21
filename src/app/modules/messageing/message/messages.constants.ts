@@ -1,4 +1,4 @@
-export const messageSearchableFields = ['model.name'];
+export const messageSearchableFields = ['message'];
 
 export const messageFilterableFields = [
   'senderRoleBaseId',
@@ -6,6 +6,8 @@ export const messageFilterableFields = [
   'receiverRoleBaseId',
   'receiverUserId',
   'friendShipId',
+  'gigId',
+  'orderId',
   'isSeen',
   'findMyChats',
   // always required filter

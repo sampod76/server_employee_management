@@ -7,7 +7,6 @@ import { IPaginationOption } from '../../interface/pagination';
 
 import { Request } from 'express';
 import httpStatus from 'http-status';
-import { ENUM_YN } from '../../../global/enum_constant_type';
 import ApiError from '../../errors/ApiError';
 import { adminSetting_SEARCHABLE_FIELDS } from './consent.adminSetting';
 import { IAdminSetting, IAdminSettingFilters } from './interface.adminSetting';
@@ -172,7 +171,7 @@ const deleteAdminSettingByIdFromDb = async (
   }
 
   let result;
-  if (query.delete == ENUM_YN.YES) {
+  if (query.delete == 'yes') {
     result = await AdminSetting.findByIdAndDelete(id);
     if (!result) {
       throw new ApiError(httpStatus.NOT_FOUND, req.t('Failed to delete'));

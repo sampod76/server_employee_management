@@ -8,7 +8,6 @@ import { IPaginationOption } from '../../interface/pagination';
 import { Request } from 'express';
 import httpStatus from 'http-status';
 
-import { ENUM_YN } from '../../../global/enum_constant_type';
 import ApiError from '../../errors/ApiError';
 import { ALL_TEXT_FIELD_SEARCHABLE_FIELDS } from './consent.AllTextField';
 import { IAllTextField, IAllTextFieldFilters } from './interface.AllTextField';
@@ -144,7 +143,7 @@ const deleteAllTextFieldByIdFromDb = async (
   }
 
   let result;
-  if (query.delete == ENUM_YN.YES) {
+  if (query.delete == 'yes') {
     result = await AllTextField.findByIdAndDelete(id);
     if (!result) {
       throw new ApiError(httpStatus.NOT_FOUND, req.t('Failed to delete'));

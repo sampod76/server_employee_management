@@ -31,3 +31,34 @@ export async function deleteAllKeys(pattern: string) {
       .bgGreen,
   );
 }
+
+export type IRedisSetter<T> = {
+  key: string;
+  value: T;
+  ttl?: number;
+}[];
+export const redisSetter = async <T>(
+  data: IRedisSetter<T>,
+  ttl = 24 * 60 * 60,
+) => {
+  try {
+    const promises: Promise<string>[] = [];
+    data.forEach(value => {
+      promises.push(
+        redisClient.set(
+          value.key,
+          typeof value.value !== 'string'
+            ? JSON.stringify(value.value)
+            : value.value,
+          'EX',
+          value.ttl || ttl,
+        ),
+      );
+    });
+
+    const res = await Promise.all(promises);
+    return res;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};

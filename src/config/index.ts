@@ -11,33 +11,18 @@ export default {
   redis: {
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
-    //
-    host1: process.env.REDIS_HOST1,
-    host1_port: process.env.REDIS_HOST1_PORT,
-    //
-    host2: process.env.REDIS_HOST2,
-    host2_port: process.env.REDIS_HOST2_PORT,
-    //
-    host3: process.env.REDIS_HOST3,
-    host3_port: process.env.REDIS_HOST3_PORT,
-    //
-    host4: process.env.REDIS_HOST4,
-    host4_port: process.env.REDIS_HOST4_PORT,
-    //
-    host5: process.env.REDIS_HOST5,
-    host5_port: process.env.REDIS_HOST5_PORT,
-    //
-    host6: process.env.REDIS_HOST6,
-    host6_port: process.env.REDIS_HOST6_PORT,
-    //
     userName: process.env.REDIS_USER_NAME,
     password: process.env.REDIS_PASSWORD,
     url: process.env.REDIS_URL,
   },
   kafka: {
-    url: process.env.KAFKA_URL,
+    url:
+      process.env.NODE_ENV === 'development'
+        ? process.env.KAFKA_URL_LOCAL
+        : process.env.KAFKA_URL_PRODUCTION,
     clientId: process.env.KAFKA_CLIENT_ID,
   },
+
   fileSize: {
     image: Number(process.env.MAX_IMAGE_SIZE) || 1024,
     pdf: Number(process.env.MAX_PDF_SIZE) || 1024,
@@ -56,12 +41,9 @@ export default {
     atlasUrl: process.env.DATABASE_URL_ATLAS,
   },
   database_url:
-    // process.env.NODE_ENV === 'development'
-    //   ? process.env.DATABASE_URL_ATLAS
-    //   : `mongodb://${process.env.DATABASE_IP}:${process.env.DATABASE_PORT}/${process.env.DATABASE_NAME}`, //mongodb://127.0.0.1:29017/chouatamar
     process.env.NODE_ENV === 'development'
       ? process.env.DATABASE_URL_ATLAS
-      : process.env.DATABASE_URL_ATLAS, //mongodb://127.0.0.1:29017/chouatamar
+      : `mongodb://${process.env.DATABASE_IP}:${process.env.DATABASE_PORT}/${process.env.DATABASE_NAME}`, //mongodb://127.0.0.1:29017/chouatamar
   default_student_pass: process.env.DEFAULT_STUDENT_PASS,
   default_moderator_pass: process.env.DEFAULT_MODERATOR_PASS,
   default_admin_pass: process.env.DEFAULT_ADMIN_PASS,

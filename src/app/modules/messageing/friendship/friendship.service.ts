@@ -3,20 +3,33 @@
 import { Request } from 'express';
 import httpStatus from 'http-status';
 import { PipelineStage, Schema, Types } from 'mongoose';
-import { ENUM_YN } from '../../../global/enum_constant_type';
-import { ENUM_USER_ROLE } from '../../../global/enums/users';
-import { paginationHelper } from '../../../helper/paginationHelper';
-import ApiError from '../../errors/ApiError';
-import { IGenericResponse } from '../../interface/common';
-import { IPaginationOption } from '../../interface/pagination';
+import { ENUM_YN } from '../../../../global/enum_constant_type';
+import { ENUM_USER_ROLE } from '../../../../global/enums/users';
+import { paginationHelper } from '../../../../helper/paginationHelper';
+import ApiError from '../../../errors/ApiError';
+import { IGenericResponse } from '../../../interface/common';
+import { IPaginationOption } from '../../../interface/pagination';
 
-import { LookupAnyRoleDetailsReusable } from '../../../helper/lookUpResuable';
+import {
+  ILookupCollection,
+  LookupAnyRoleDetailsReusable,
+  LookupReusable,
+} from '../../../../helper/lookUpResuable';
 
-import { findAllSocketsIdsFromUserId } from '../../redis/service.redis';
-import { IUserRef } from '../allUser/typesAndConst';
-import { I_USER_ROLE, IUser } from '../allUser/user/user.interface';
-import { User } from '../allUser/user/user.model';
-import { RequestToRefUserObject } from '../allUser/user/user.utils';
+import { produceUpdateFriendShipListSortKafka } from '../../../kafka/producer.kafka';
+import { ENUM_REDIS_KEY } from '../../../redis/consent.redis';
+import { redisClient } from '../../../redis/redis';
+import { findAllSocketsIdsFromUserId } from '../../../redis/service.redis';
+import { redisSetter } from '../../../redis/utls.redis';
+
+import { IUserRef, IUserRefAndDetails } from '../../allUser/typesAndConst';
+import { IUser } from '../../allUser/user/user.interface';
+import { User } from '../../allUser/user/user.model';
+import {
+  RequestToRefUserObject,
+  validateUserInDbOrRedis,
+} from '../../allUser/user/user.utils';
+
 import { friendshipSearchableFields } from './friendship.constants';
 import { IFriendShip, IFriendShipFilters } from './friendship.interface';
 import { FriendShip } from './friendship.models';
@@ -51,7 +64,7 @@ const createFriendShip = async (
     IFriendShip | null,
   ];
 
-  if (!resolved[0] || resolved[0]?.isDelete) {
+  if (!resolved[0] || resolved[0]?.isDelete === true) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Receiver not found');
   }
   if (resolved[1]) {
@@ -60,16 +73,209 @@ const createFriendShip = async (
 
   data.receiver = {
     userId: resolved[0]?._id,
-    role: resolved[0]?.role as I_USER_ROLE,
+    role: resolved[0]?.role as any,
     //@ts-ignore
     roleBaseUserId: resolved[0]?.roleInfo?._id,
   };
-  // console.log(data, 'data');
+
   const res = await FriendShip.create(data);
 
   return res;
 };
 
+const checkUserIdToExistFriendShipFromDb = async (
+  userId: string,
+  requestUser: IUserRef,
+  req: Request,
+): Promise<IFriendShip | null> => {
+  const user = req?.user as IUserRefAndDetails;
+
+  //
+  const whenMySender =
+    ENUM_REDIS_KEY.RIS_senderId_receiverId + `:${requestUser.userId}:${userId}`;
+  const whenMyReceiver =
+    ENUM_REDIS_KEY.RIS_senderId_receiverId + `:${userId}:${requestUser.userId}`;
+  //
+  const [getReceiver, findRedisStringData, userAllSocketIds] =
+    await Promise.all([
+      validateUserInDbOrRedis([userId]),
+      redisClient.mget([whenMySender, whenMyReceiver]),
+      findAllSocketsIdsFromUserId(userId as string),
+    ]);
+  //
+
+  const convertRedisStringDataObject: IFriendShip[] = [];
+  for (const stringFriendShipString of findRedisStringData) {
+    //loop
+    //[string,null]
+    if (stringFriendShipString && typeof stringFriendShipString === 'string') {
+      const stringFriendShipObjectDate: any = JSON.parse(
+        stringFriendShipString,
+      );
+      //-- I only check if the user ID of the user I want to be friends with is online.
+      if (stringFriendShipObjectDate.sender.userId === userId) {
+        stringFriendShipObjectDate.sender = {
+          ...stringFriendShipObjectDate.sender,
+          details: {
+            ...stringFriendShipObjectDate.sender.details,
+            isOnline: userAllSocketIds?.length ? true : false,
+          },
+        };
+      } else {
+        stringFriendShipObjectDate.receiver = {
+          ...stringFriendShipObjectDate.receiver,
+          details: {
+            ...stringFriendShipObjectDate.receiver.details,
+            isOnline: userAllSocketIds?.length ? true : false,
+          },
+        };
+      }
+      convertRedisStringDataObject.push(stringFriendShipObjectDate);
+    }
+  }
+
+  if (convertRedisStringDataObject.length) {
+    return convertRedisStringDataObject[0]; //? when find in redis then return
+  }
+
+  //----------------------end---------------------
+
+  const pipeline: PipelineStage[] = [
+    {
+      $match: {
+        $or: [
+          {
+            'sender.userId': new Types.ObjectId(userId as string),
+            'receiver.userId': new Types.ObjectId(
+              requestUser?.userId as string,
+            ),
+          },
+          {
+            'sender.userId': new Types.ObjectId(requestUser?.userId as string),
+            'receiver.userId': new Types.ObjectId(userId as string),
+          },
+        ],
+      },
+    },
+  ];
+
+  LookupAnyRoleDetailsReusable(pipeline, {
+    collections: [
+      {
+        roleMatchFiledName: 'sender.role',
+        idFiledName: 'sender.roleBaseUserId', //$sender.roleBaseUserId
+        pipeLineMatchField: '_id', //$_id
+        outPutFieldName: 'details',
+        margeInField: 'sender',
+
+        project: { name: 1, country: 1, profileImage: 1, email: 1 },
+      },
+      {
+        roleMatchFiledName: 'receiver.role',
+        idFiledName: 'receiver.roleBaseUserId', //$receiver.roleBaseUserId
+        pipeLineMatchField: '_id', //$_id
+        outPutFieldName: 'details',
+        margeInField: 'receiver',
+
+        project: { name: 1, country: 1, profileImage: 1, email: 1 },
+      },
+    ],
+  });
+
+  const findDataArray = await FriendShip.aggregate(pipeline);
+  const findData = findDataArray[0];
+
+  if (findData) {
+    await redisSetter<IFriendShip>([
+      { key: whenMySender, value: findData, ttl: 24 * 60 },
+      { key: whenMyReceiver, value: findData, ttl: 24 * 60 },
+    ]);
+  } else {
+    if (req.query?.createFriendShip == 'yes') {
+      //if when checking and not found friendship then auto matic create user
+      const receiverInfo = (await User.isUserFindMethod(
+        { id: userId },
+        { populate: true },
+      )) as IUser & { roleInfo: any };
+
+      const createfriendShip = await FriendShip.create({
+        receiver: {
+          userId: receiverInfo._id,
+          roleBaseUserId: receiverInfo.roleInfo._id,
+          role: receiverInfo.role,
+        },
+        sender: {
+          userId: user?.userId,
+          roleBaseUserId: user?.roleBaseUserId,
+          role: user?.role,
+        },
+      });
+      const convertData = createfriendShip.toObject();
+      //@ts-ignore
+      convertData.newAccount = true;
+      return convertData;
+    } else {
+      return null;
+    }
+  }
+  //------ check online office------
+  const promises2: any[] = [];
+  promises2.push(findAllSocketsIdsFromUserId(userId as string));
+  // promises2.push(
+  //   findAllSocketsIdsFromUserId(findData.receiver.userId as string),
+  // );
+  const resolved2 = await Promise.all(promises2);
+
+  if (findData.sender.userId === userId) {
+    findData.sender = {
+      ...findData.sender,
+      //@ts-ignore
+      isOnline: resolved2[0].length ? true : false,
+    };
+  } else {
+    findData.receiver = {
+      ...findData.receiver,
+      //@ts-ignore
+      isOnline: resolved2[0].length ? true : false,
+    };
+  }
+  //--------------end------------
+
+  return findData;
+};
+const getSingleFriendShipFromDB = async (
+  id: string,
+  req?: Request,
+): Promise<IFriendShip | null> => {
+  const friendShip = await FriendShip.isFriendShipExistMethod(id, {
+    populate: true,
+  });
+  if (!friendShip) {
+    return null;
+  }
+  //------ check online office------
+  const promises = [];
+  promises.push(
+    findAllSocketsIdsFromUserId(friendShip.sender.userId as string),
+  );
+  promises.push(
+    findAllSocketsIdsFromUserId(friendShip.receiver.userId as string),
+  );
+  const resolved = await Promise.all(promises);
+
+  friendShip.sender = {
+    ...friendShip.sender,
+    //@ts-ignore
+    isOnline: resolved[0].length ? true : false,
+  };
+  friendShip.receiver = {
+    ...friendShip.receiver,
+    //@ts-ignore
+    isOnline: resolved[1].length ? true : false,
+  };
+  //-------------------------------
+  return friendShip;
+};
 const getAllFriendShipsFromDB = async (
   filters: IFriendShipFilters,
   paginationOptions: IPaginationOption,
@@ -77,10 +283,8 @@ const getAllFriendShipsFromDB = async (
 ): Promise<IGenericResponse<IFriendShip[] | null>> => {
   const { searchTerm, needProperty, ...filtersData } = filters;
   filtersData.isDelete = filtersData.isDelete
-    ? filtersData.isDelete == 'true'
-      ? true
-      : false
-    : false;
+    ? filtersData.isDelete
+    : ENUM_YN.NO;
 
   const andConditions = [];
   if (searchTerm) {
@@ -100,14 +304,10 @@ const getAllFriendShipsFromDB = async (
         //@ts-ignore
         ([field, value]: [keyof typeof filtersData, string]) => {
           let modifyFiled;
-          /* 
-        if (field === 'userRoleBaseId' || field === 'referRoleBaseId') {
-          modifyFiled = { [field]: new Types.ObjectId(value) };
-        } else {
-          modifyFiled = { [field]: value };
-        } 
-        */
-          if (field === 'senderUserId') {
+
+          if (field === 'gigId' || field === 'orderId') {
+            modifyFiled = { [field]: new Types.ObjectId(value) };
+          } else if (field === 'senderUserId') {
             modifyFiled = {
               ['sender.userId']: new Types.ObjectId(value),
             };
@@ -127,11 +327,7 @@ const getAllFriendShipsFromDB = async (
             modifyFiled = {
               ['block.isBlock']: value,
             };
-          } else if (field === 'requestAccept') {
-            modifyFiled = {
-              [field]: filtersData.requestAccept == 'true' ? true : false,
-            };
-          } else if (field === 'myData' && value === ENUM_YN.YES) {
+          } else if (field === 'myData' && value === 'yes') {
             modifyFiled = {
               $or: [
                 {
@@ -166,18 +362,11 @@ const getAllFriendShipsFromDB = async (
   const whereConditions =
     andConditions.length > 0 ? { $and: andConditions } : {};
   //!------------check -access validation ------------------
-  const check = (await FriendShip.aggregate([
-    {
-      $match: whereConditions,
-    },
-    {
-      $limit: 1,
-    },
-  ])) as IFriendShip[];
-  if (check.length) {
+  const check = (await FriendShip.findOne(whereConditions)) as IFriendShip;
+  if (check) {
     if (
-      check[0].receiver.userId.toString() !== req?.user?.userId &&
-      check[0].sender.userId.toString() !== req?.user?.userId &&
+      check.receiver.userId.toString() !== req?.user?.userId &&
+      check.sender.userId.toString() !== req?.user?.userId &&
       req?.user?.role !== ENUM_USER_ROLE.admin &&
       req?.user?.role !== ENUM_USER_ROLE.superAdmin
     ) {
@@ -203,8 +392,9 @@ const getAllFriendShipsFromDB = async (
         roleMatchFiledName: 'sender.role',
         idFiledName: 'sender.roleBaseUserId', //$sender.roleBaseUserId
         pipeLineMatchField: '_id', //$_id
-        outPutFieldName: 'senderDetails',
-        //project: { name: 1, country: 1, profileImage: 1, email: 1 },
+        outPutFieldName: 'details',
+        margeInField: 'sender',
+        project: { name: 1, profileImage: 1, email: 1 },
       });
     }
     if (needProperty?.toLowerCase()?.includes('receiverinfo')) {
@@ -212,15 +402,89 @@ const getAllFriendShipsFromDB = async (
         roleMatchFiledName: 'receiver.role',
         idFiledName: 'receiver.roleBaseUserId', //$receiver.roleBaseUserId
         pipeLineMatchField: '_id', //$_id
-        outPutFieldName: 'receiverDetails',
-        //project: { name: 1, country: 1, profileImage: 1, email: 1 },
+        outPutFieldName: 'details',
+        margeInField: 'receiver',
+        project: { name: 1, profileImage: 1, email: 1 },
       });
     }
     LookupAnyRoleDetailsReusable(pipeline, {
       collections: collections,
     });
+    //!when user multiple data then must be sort 2 time because when use LookupAnyRoleDetailsReusable then data is unsort . so use sortCondition is atlast 2 times
+    //single data in not use
+    pipeline.push({ $sort: sortConditions });
+  }
+  //
+  const collections: ILookupCollection<any>[] = [];
+
+  if (needProperty && needProperty.includes('lastMessage')) {
+    const lastMessagePipeline: PipelineStage[] = [
+      {
+        $lookup: {
+          from: 'chatmessages',
+          let: { id: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$friendShipId', '$$id'] },
+                    {
+                      $eq: [
+                        '$sender.userId',
+                        new Types.ObjectId(req?.user?.userId),
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              $sort: { createdAt: -1 },
+            },
+            {
+              $limit: 1,
+            },
+            {
+              $project: {
+                _id: 1,
+                message: 1,
+                createdAt: 1,
+                createTime: 1,
+                files: {
+                  $cond: {
+                    if: { $eq: [{ $type: '$files' }, 'array'] }, // Check if `files` exists and is an array
+                    then: { $size: '$files' }, // If it exists, get the array size
+                    else: 0, // If it doesn't exist, set to 0
+                  },
+                },
+              },
+            },
+          ],
+          as: 'lastMessageDetails',
+        },
+      },
+      {
+        $addFields: {
+          lastMessageDetails: {
+            $cond: {
+              if: { $eq: [{ $size: '$lastMessageDetails' }, 0] },
+              then: {},
+              else: { $arrayElemAt: ['$lastMessageDetails', 0] },
+            },
+          },
+        },
+      },
+    ];
+
+    pipeline.push(...lastMessagePipeline);
   }
 
+  // Use the collections in LookupReusable
+  LookupReusable<any, any>(pipeline, {
+    collections: collections,
+    // spliceStart:4
+  });
   const resultArray = [
     FriendShip.aggregate(pipeline),
     FriendShip.countDocuments(whereConditions),
@@ -247,6 +511,18 @@ const getAllFriendShipsFromDB = async (
   const total = pipeLineResult[0]?.countDocuments[0]?.totalData || 0; // Extract total count
   const result = pipeLineResult[0]?.data || []; // Extract data 
   */
+  if (Array.isArray(result[0])) {
+    result[0].forEach((group: IFriendShip) => {
+      if (
+        req?.user?.role !== ENUM_USER_ROLE.admin &&
+        req?.user?.role !== ENUM_USER_ROLE.superAdmin &&
+        group.receiver.userId.toString() !== req?.user?.userId &&
+        group.sender.userId.toString() !== req?.user?.userId
+      ) {
+        throw new ApiError(httpStatus.FORBIDDEN, 'forbidden access data');
+      }
+    });
+  }
   return {
     meta: {
       page,
@@ -326,7 +602,7 @@ const updateFriendShipBlockFromDb = async (
 
   const { block, ...FriendShipData } = data;
   const updatedFriendShipData: Partial<IFriendShip> = { ...FriendShipData };
-  if (!block?.isBlock) {
+  if (block?.isBlock === ENUM_YN.NO) {
     if (
       isExist?.block?.blocker?.userId?.toString() !== req?.user?.userId &&
       req.user?.role !== ENUM_USER_ROLE.admin &&
@@ -363,32 +639,25 @@ const updateFriendShipBlockFromDb = async (
   }
   return updatedFriendShip;
 };
-
-const getSingleFriendShipFromDB = async (
+const updateFriendShipListSortFromDb = async (
   id: string,
-  req?: Request,
+  data: IFriendShip,
+  req: Request,
 ): Promise<IFriendShip | null> => {
-  const user = await FriendShip.isFriendShipExistMethod(id, {
-    populate: true,
-  });
-  //------ check online office------
-  const promises = [];
-  promises.push(findAllSocketsIdsFromUserId(user.sender.userId as string));
-  promises.push(findAllSocketsIdsFromUserId(user.receiver.userId as string));
-  const resolved = await Promise.all(promises);
+  // const updatedFriendShip = await FriendShip.findOneAndUpdate(
+  //   { _id: id },
+  //   data,
+  //   {
+  //     new: true,
+  //     runValidators: true,
+  //   },
+  // );
+  // return updatedFriendShip;
 
-  user.sender = {
-    ...user.sender,
-    //@ts-ignore
-    isOnline: resolved[0].length ? true : false,
-  };
-  user.receiver = {
-    ...user.receiver,
-    //@ts-ignore
-    isOnline: resolved[1].length ? true : false,
-  };
-  //-------------------------------
-  return user;
+  await produceUpdateFriendShipListSortKafka(
+    JSON.stringify({ id, value: data }),
+  );
+  return null;
 };
 
 const deleteFriendShipFromDB = async (
@@ -400,7 +669,7 @@ const deleteFriendShipFromDB = async (
   //   _id: Schema.Types.ObjectId;
   // };
   const isExist = (await FriendShip.aggregate([
-    { $match: { _id: new Types.ObjectId(id), isDelete: false } },
+    { $match: { _id: new Types.ObjectId(id), isDelete: ENUM_YN.NO } },
   ])) as IFriendShip[];
 
   if (!isExist.length) {
@@ -418,7 +687,7 @@ const deleteFriendShipFromDB = async (
   let data;
 
   if (
-    query.delete == ENUM_YN.YES && // this is permanently delete but store trash collection
+    query.delete == 'yes' && // this is permanently delete but store trash collection
     (req?.user?.role == ENUM_USER_ROLE.admin ||
       req?.user?.role == ENUM_USER_ROLE.superAdmin)
   ) {
@@ -440,4 +709,7 @@ export const FriendShipService = {
   getSingleFriendShipFromDB,
   deleteFriendShipFromDB,
   updateFriendShipBlockFromDb,
+  checkUserIdToExistFriendShipFromDb,
+  //
+  updateFriendShipListSortFromDb,
 };

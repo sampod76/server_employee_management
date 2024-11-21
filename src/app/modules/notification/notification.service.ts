@@ -4,7 +4,7 @@ import { Request } from 'express';
 import httpStatus from 'http-status';
 import { PipelineStage, Types } from 'mongoose';
 
-import { ENUM_YN, I_YN } from '../../../global/enum_constant_type';
+import { I_YN } from '../../../global/enum_constant_type';
 import { ENUM_USER_ROLE } from '../../../global/enums/users';
 import { paginationHelper } from '../../../helper/paginationHelper';
 import ApiError from '../../errors/ApiError';
@@ -20,10 +20,7 @@ const createNotificationToDB = async (
   req?: Request,
   sendNotificationByService?: I_YN,
 ): Promise<INotification | null> => {
-  if (
-    req?.query?.isSendNotification === ENUM_YN.YES ||
-    sendNotificationByService
-  ) {
+  if (req?.query?.isSendNotification === 'yes' || sendNotificationByService) {
     if (data.userIds && data?.userIds?.length > 0) {
       sendNotificationFromDB<INotification>(
         data.userIds.map(userId => {

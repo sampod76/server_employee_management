@@ -20,15 +20,15 @@ const storage: StorageEngine = multer.diskStorage({
     cb: (arg0: null, arg1: string) => any,
   ) => {
     const fileExt = path.extname(file.originalname);
-    const fileName =
-      file.originalname
-        .replace(fileExt, '')
-        .toLowerCase()
-        .split(' ')
-        .join('-') +
-      '-' +
-      Date.now();
-    cb(null, fileName + fileExt);
+    const sanitizedFileName = file.originalname
+      .replace(fileExt, '') // Remove the file extension
+      .toLowerCase() // Convert to lowercase
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except for spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .trim(); // Trim extra spaces for safety
+
+    const fileName = `${sanitizedFileName}-${Date.now()}${fileExt}`;
+    cb(null, fileName);
   },
 });
 
@@ -37,7 +37,6 @@ const fileFilter = (
   file: Express.Multer.File,
   cb: FileFilterCallback,
 ) => {
-  // console.log(req.files)
   const allowedMimeTypes = [
     'image/jpg',
     'image/png',
@@ -77,15 +76,15 @@ const videoStorage: StorageEngine = multer.diskStorage({
     cb: (arg0: null, arg1: string) => any,
   ) => {
     const fileExt = path.extname(file.originalname);
-    const fileName =
-      file.originalname
-        .replace(fileExt, '')
-        .toLowerCase()
-        .split(' ')
-        .join('-') +
-      '-' +
-      Date.now();
-    cb(null, fileName + fileExt);
+    const sanitizedFileName = file.originalname
+      .replace(fileExt, '') // Remove the file extension
+      .toLowerCase() // Convert to lowercase
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except for spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .trim(); // Trim extra spaces for safety
+
+    const fileName = `${sanitizedFileName}-${Date.now()}${fileExt}`;
+    cb(null, fileName);
   },
 });
 
@@ -123,15 +122,15 @@ const pdfStorage: StorageEngine = multer.diskStorage({
     cb: (arg0: null, arg1: string) => any,
   ) => {
     const fileExt = path.extname(file.originalname);
-    const fileName =
-      file.originalname
-        .replace(fileExt, '')
-        .toLowerCase()
-        .split(' ')
-        .join('-') +
-      '-' +
-      Date.now();
-    cb(null, fileName + fileExt);
+    const sanitizedFileName = file.originalname
+      .replace(fileExt, '') // Remove the file extension
+      .toLowerCase() // Convert to lowercase
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except for spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .trim(); // Trim extra spaces for safety
+
+    const fileName = `${sanitizedFileName}-${Date.now()}${fileExt}`;
+    cb(null, fileName);
   },
 });
 
@@ -167,15 +166,15 @@ const audioStorage: StorageEngine = multer.diskStorage({
     cb: (arg0: null, arg1: string) => any,
   ) => {
     const fileExt = path.extname(file.originalname);
-    const fileName =
-      file.originalname
-        .replace(fileExt, '')
-        .toLowerCase()
-        .split(' ')
-        .join('-') +
-      '-' +
-      Date.now();
-    cb(null, fileName + fileExt);
+    const sanitizedFileName = file.originalname
+      .replace(fileExt, '') // Remove the file extension
+      .toLowerCase() // Convert to lowercase
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except for spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .trim(); // Trim extra spaces for safety
+
+    const fileName = `${sanitizedFileName}-${Date.now()}${fileExt}`;
+    cb(null, fileName);
   },
 });
 
@@ -233,15 +232,15 @@ const fileStorage: StorageEngine = multer.diskStorage({
     cb: (error: Error | null, filename: string) => void,
   ) => {
     const fileExt = path.extname(file.originalname);
-    const fileName =
-      file.originalname
-        .replace(fileExt, '')
-        .toLowerCase()
-        .split(' ')
-        .join('-') +
-      '-' +
-      Date.now();
-    cb(null, fileName + fileExt);
+    const sanitizedFileName = file.originalname
+      .replace(fileExt, '') // Remove the file extension
+      .toLowerCase() // Convert to lowercase
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except for spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .trim(); // Trim extra spaces for safety
+
+    const fileName = `${sanitizedFileName}-${Date.now()}${fileExt}`;
+    cb(null, fileName);
   },
 });
 

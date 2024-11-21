@@ -3,11 +3,12 @@ import { model, PipelineStage, Schema, Types } from 'mongoose';
 import {
   ENUM_STATUS,
   ENUM_YN,
+  I_YN,
   STATUS_ARRAY,
   YN_ARRAY,
-} from '../../../global/enum_constant_type';
-import { mongooseFileSchema } from '../../../global/schema/global.schema';
-import { mongooseIUserRef } from '../allUser/typesAndConst';
+} from '../../../../global/enum_constant_type';
+import { mongooseFileSchema } from '../../../../global/schema/global.schema';
+import { mongooseIUserRef } from '../../allUser/typesAndConst';
 import { ChatMessageModel, IChatMessage } from './messages.interface';
 
 const ChatMessageSchema = new Schema<IChatMessage, ChatMessageModel>(
@@ -19,20 +20,27 @@ const ChatMessageSchema = new Schema<IChatMessage, ChatMessageModel>(
       type: Schema.Types.ObjectId,
       ref: 'FriendShip',
     },
+    uuid: {
+      type: String,
+    },
     files: [mongooseFileSchema],
     isSeen: {
-      type: String,
-      enum: YN_ARRAY,
-      default: ENUM_YN.NO,
+      type: Boolean,
+      default: false,
     },
     status: {
       type: String,
       enum: STATUS_ARRAY,
       default: ENUM_STATUS.ACTIVE,
     },
+    createTime: {
+      type: Date,
+      default: Date.now(),
+    },
     isDelete: {
       type: Boolean,
       default: false,
+      index: true,
     },
     //--- for --TrashCategory---
   },
@@ -43,7 +51,7 @@ const ChatMessageSchema = new Schema<IChatMessage, ChatMessageModel>(
 ChatMessageSchema.statics.isChatMessageExistMethod = async function (
   id: string,
   option?: {
-    isDelete?: boolean;
+    isDelete?: I_YN;
     populate?: boolean;
   },
 ): Promise<IChatMessage | null> {
@@ -53,7 +61,7 @@ ChatMessageSchema.statics.isChatMessageExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option?.isDelete || false,
+          isDelete: option?.isDelete || ENUM_YN.NO,
         },
       },
     ]);
@@ -63,7 +71,7 @@ ChatMessageSchema.statics.isChatMessageExistMethod = async function (
       {
         $match: {
           _id: new Types.ObjectId(id),
-          isDelete: option.isDelete || false,
+          isDelete: option.isDelete || ENUM_YN.NO,
         },
       },
     ];

@@ -1,9 +1,9 @@
 import express from 'express';
 
-import authMiddleware from '../../middlewares/authMiddleware';
+import authMiddleware from '../../../middlewares/authMiddleware';
 
-import { ENUM_USER_ROLE } from '../../../global/enums/users';
-import validateRequestZod from '../../middlewares/validateRequestZod';
+import { ENUM_USER_ROLE } from '../../../../global/enums/users';
+import validateRequestZod from '../../../middlewares/validateRequestZod';
 import { FriendShipsController } from './friendship.controller';
 import { friendshipValidation } from './friendship.validation';
 const router = express.Router();
@@ -31,6 +31,29 @@ router
     FriendShipsController.createFriendShip,
   );
 
+router.route('/check-userid-to-exist-friendship/:id').get(
+  authMiddleware(
+    ENUM_USER_ROLE.admin,
+    ENUM_USER_ROLE.superAdmin,
+    ENUM_USER_ROLE.hrAdmin,
+    ENUM_USER_ROLE.employee,
+  ),
+
+  FriendShipsController.checkUserIdToExistFriendShip,
+);
+
+router
+  .route('/list-sort/:id')
+  .patch(
+    authMiddleware(
+      ENUM_USER_ROLE.admin,
+      ENUM_USER_ROLE.superAdmin,
+      ENUM_USER_ROLE.hrAdmin,
+      ENUM_USER_ROLE.employee,
+    ),
+    validateRequestZod(friendshipValidation.friendshipListSortDataZodSchema),
+    FriendShipsController.updateFriendShipListSort,
+  );
 router
   .route('/block/:id')
   .patch(
@@ -46,15 +69,7 @@ router
 
 router
   .route('/:id')
-  .get(
-    authMiddleware(
-      ENUM_USER_ROLE.admin,
-      ENUM_USER_ROLE.superAdmin,
-      ENUM_USER_ROLE.hrAdmin,
-      ENUM_USER_ROLE.employee,
-    ),
-    FriendShipsController.getFriendShipById,
-  )
+  .get(FriendShipsController.getFriendShipById)
   .patch(
     authMiddleware(
       ENUM_USER_ROLE.admin,

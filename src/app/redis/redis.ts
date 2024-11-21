@@ -1,35 +1,61 @@
 import { ConnectionOptions } from 'bullmq';
 import Redis from 'ioredis';
 import config from '../../config';
-import { logger } from '../share/logger';
+
 export const redisConnectionString: ConnectionOptions = {
-  host: config.redis.host || 'localhost', // Provide a default value if undefined
-  port: Number(config.redis.port) || 6379, // Ensure port is a number and provide a default value
+  host: config.redis.host, // Provide a default value if undefined
+  port: Number(config.redis.port), // Ensure port is a number and provide a default value
   //   username: config.redis.userName,
   //   password: config.redis.password,
 };
-
-/**
- * Description: This function does something important.
- *
- * @param {type} ReusingRedisClient  - //? For normal Redis operations (GET, SET, etc.), it's fine to reuse a single Redis client across services or modules.
- * @param {type} NotReusing_Pub_Sub - //!Use separate clients for Pub/Sub: Always use dedicated Redis clients for publishing and subscribing. It's common to have one client for pubRedis (publishing) and another for subRedis (subscribing), ensuring that you don't run into connection blocking issues.
- *
- * @returns {type} Description of the return value.
- */
-
 export const redisClient = new Redis(config.redis.url as string);
 export const pubRedis = new Redis(config.redis.url as string);
 export const subRedis = new Redis(config.redis.url as string);
-
-// let initialRedisClient: Redis;
-// export const redisClient = () => {
-//   if (initialRedisClient) {
-//     return initialRedisClient;
-//   } else {
-//     initialRedisClient = new Redis(config.redis.url as string);
-//     initialRedisClient.on('error', err => logger.error(err));
-//     // initialRedisClient.connect();
-//     return initialRedisClient;
-//   }
+// export const redisConnectionString: ConnectionOptions = {
+//   host: 'localhost',
+//   port: 6379,
 // };
+
+/* 
+
+export const redisClient = new Redis({
+  host: config.redis.host as string,
+  port: Number(config.redis.port),
+});
+
+export const pubRedis = new Redis({
+  host: config.redis.host as string, //127.0.0.1
+  port: Number(config.redis.port), //6379
+});
+
+export const subRedis = new Redis({
+  host: config.redis.host as string,
+  port: Number(config.redis.port),
+});
+
+*/
+
+//
+//
+//
+/* 
+import { createClient } from 'redis';
+import { RedisClientType } from '@redis/client';
+
+export let redisClient: RedisClientType;
+
+export const redisSubClientConnect = async () => {
+  const redisSub = createClient();
+  redisSub.on('error', err => console.log('redisSubClientConnect Error', err));
+  await redisSub.connect();
+  return redisSub;
+};
+
+export const client = async () => {
+  redisClient = createClient();
+  redisClient.on('error', err => console.log('Redis Client Error', err));
+  await redisClient.connect();
+  return redisClient;
+};
+
+*/

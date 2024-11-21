@@ -10,7 +10,6 @@ const rateLimiter = new RateLimiterRedis({
   keyPrefix: 'middleware',
   points: 100, // Allow 100 requests
   duration: 60, // per 60 seconds (1 minute) single ip
-  blockDuration: 5 * 60, // 5 minute
 });
 
 export const rateLimiterRedisMiddleware = (

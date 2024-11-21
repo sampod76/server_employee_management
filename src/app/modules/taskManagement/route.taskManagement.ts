@@ -2,13 +2,13 @@ import express from 'express';
 
 import authMiddleware from '../../middlewares/authMiddleware';
 
+import { z } from 'zod';
 import { ENUM_USER_ROLE } from '../../../global/enums/users';
 import { uploadImage } from '../../middlewares/uploader.multer';
 import parseBodyData from '../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../middlewares/validateRequestZod';
 import { TaskManagementController } from './controller.taskManagement';
 import { TaskManagementValidation } from './validation.taskManagement';
-import { z } from 'zod';
 const router = express.Router();
 
 router

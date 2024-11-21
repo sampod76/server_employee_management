@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
 
-import { PAGINATION_FIELDS } from '../../../global/constant/pagination';
-import catchAsync from '../../share/catchAsync';
-import pick from '../../share/pick';
-import sendResponse from '../../share/sendResponse';
-import { IUserRef, IUserRefAndDetails } from '../allUser/typesAndConst';
-import { RequestToRefUserObject } from '../allUser/user/user.utils';
+import { PAGINATION_FIELDS } from '../../../../global/constant/pagination';
+import catchAsync from '../../../share/catchAsync';
+import pick from '../../../share/pick';
+import sendResponse from '../../../share/sendResponse';
+import { IUserRef } from '../../allUser/typesAndConst';
+import { RequestToRefUserObject } from '../../allUser/user/user.utils';
 import {
   IServiceNotification,
   sendNotificationFromDB,
-} from '../notification/notification.utls';
+} from '../../notification/notification.utls';
 import { friendshipFilterableFields } from './friendship.constants';
 import { IFriendShip } from './friendship.interface';
 import { FriendShipService } from './friendship.service';
@@ -17,7 +17,7 @@ import { FriendShipService } from './friendship.service';
 const createFriendShip = catchAsync(async (req: Request, res: Response) => {
   req.body = {
     ...req.body,
-    sender: RequestToRefUserObject(req.user as IUserRefAndDetails),
+    sender: RequestToRefUserObject(req.user as IUserRef),
   };
   const result = await FriendShipService.createFriendShip(
     req.body,
@@ -43,6 +43,21 @@ const createFriendShip = catchAsync(async (req: Request, res: Response) => {
   sendNotificationFromDB<IFriendShip>(data);
   //-----------end-------------------
 });
+const checkUserIdToExistFriendShip = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await FriendShipService.checkUserIdToExistFriendShipFromDb(
+      req.params?.id,
+      req?.user as IUserRef,
+      req,
+    );
+    sendResponse<IFriendShip>(req, res, {
+      statusCode: 200,
+      success: true,
+      message: 'FriendShip get successfully',
+      data: result,
+    });
+  },
+);
 
 //get all FriendShips
 const getAllFriendShips = catchAsync(async (req: Request, res: Response) => {
@@ -113,6 +128,24 @@ const updateFriendShipBlock = catchAsync(
     });
   },
 );
+const updateFriendShipListSort = catchAsync(
+  async (req: Request, res: Response) => {
+    // await RequestToFileDecodeAddBodyHandle(req);
+
+    const result = await FriendShipService.updateFriendShipListSortFromDb(
+      req.params.id,
+      req.body,
+      req,
+    );
+
+    sendResponse(req, res, {
+      statusCode: 200,
+      success: true,
+      message: 'FriendShip updated successfully',
+      data: result,
+    });
+  },
+);
 
 //delete FriendShip
 const deleteFriendShip = catchAsync(async (req: Request, res: Response) => {
@@ -138,4 +171,7 @@ export const FriendShipsController = {
   updateFriendShip,
   deleteFriendShip,
   updateFriendShipBlock,
+  //
+  checkUserIdToExistFriendShip,
+  updateFriendShipListSort,
 };

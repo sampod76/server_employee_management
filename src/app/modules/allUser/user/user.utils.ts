@@ -5,6 +5,7 @@ import { ENUM_STATUS } from '../../../../global/enum_constant_type';
 import ApiError from '../../../errors/ApiError';
 import { ENUM_REDIS_KEY } from '../../../redis/consent.redis';
 import { redisClient } from '../../../redis/redis';
+import { IRedisSetter, redisSetter } from '../../../redis/utls.redis';
 import { IUserRef } from '../typesAndConst';
 import { IUser } from './user.interface';
 import { User } from './user.model';
@@ -27,11 +28,9 @@ export const generateUserId = async () => {
   return incrementedId;
 };
 //*********Redis ** functionality************ */
-export const findUserInRedisByUserId = async (
-  userId: string | Types.ObjectId,
-) => {
+export const findUserInRedisByUserId = async (id: string | Types.ObjectId) => {
   const getUser = await redisClient.get(
-    ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + userId.toString(),
+    ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + id.toString(),
   );
   if (getUser) {
     return JSON.parse(getUser) as IUser;
@@ -39,22 +38,18 @@ export const findUserInRedisByUserId = async (
     return null;
   }
 };
-export const setUserInRedisByUserId = async (
-  userId: string,
-  userDate: IUser,
-) => {
+export const setUserInRedisByUserId = async (id: string, data: IUser) => {
   const getUser = await redisClient.set(
-    ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + userId.toString(),
-    JSON.stringify(userDate),
+    ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + id.toString(),
+    JSON.stringify(data),
     'EX',
-    24 * 60, // 1 day to second
+    24 * 60 * 60, // 1 day to second
   );
   return getUser;
 };
 //********Redis **functionality end */
 
-export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
-  // console.log('🚀 ~ validateUserInDatabase ~ users:', users);
+export const validateUserInDbOrRedis = async (users: string[] | IUserRef[]) => {
   let findUserData: IUser[];
   if (typeof users[0] === 'string' || users[0] instanceof Types.ObjectId) {
     // Handle the case when `users` is an array of strings (user IDs)
@@ -62,9 +57,9 @@ export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
       users.map(
         user => ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + user.toString(),
       ),
-    ); // output [null] // when any key not found then send null
+    ); //? output [null] // when any key not found then send null
     const findRedis = findInRedisUsers.filter(user => Boolean(user));
-    // console.log('🚀 ~ validateUserInDatabase ~ findRedis:', findRedis);
+    //! not found in redis -- get database
     if (!findRedis.length) {
       findUserData = await User.find({
         _id: {
@@ -73,10 +68,10 @@ export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
           ),
         },
       });
-      // console.log('🚀 ~ validateUserInDatabase ~ findUserData:', findUserData);
+
       if (findUserData.length) {
-        // Prepare the key value pairs for mset
-        const redisData: string[] = findUserData.reduce(
+        /* // Prepare the key value pairs for mset
+        const redisUsersData: string[] = findUserData.reduce(
           (acc: string[], user) => {
             acc.push(
               ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + user._id.toString(),
@@ -86,10 +81,36 @@ export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
           },
           [],
         );
-        // await redisClient.mset('key1','value1','key2','value2','key3','value3');
-        await redisClient.mset(...redisData);
+        await redisClient.mset('key1','value1','key2','value2','key3','value3');
+        await redisClient.mset(...redisUsersData);
+
+        */
+        /* //----second condition---
+        for (const user of findUserData) {
+          await redisClient.set(
+            user._id,
+            JSON.stringify(user),
+            'EX',
+            24 * 60 * 60,
+          ); // 1 day to second
+        } 
+          */
+        if (findUserData?.length) {
+          const setter = findUserData?.map(data => {
+            // some time data is [null] then validate
+            return {
+              key: data?._id,
+              value: data,
+              ttl: 24 * 60 * 60, // 1 day to second
+            };
+          }) as unknown as IRedisSetter<IUser>;
+
+          await redisSetter<IUser>(setter);
+        }
       }
-    } else {
+    }
+    //! found in redis in data
+    else {
       findUserData = findRedis.map(user => {
         if (user) {
           return JSON.parse(user);
@@ -112,6 +133,7 @@ export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
       ),
     ); //
     const findRedis = findInRedisUsers.filter(user => Boolean(user));
+    //! not found in redis -- get database
     if (!findRedis.length) {
       // Handle the case when `users` is an array of IUserRef
       findUserData = await User.find({
@@ -124,8 +146,9 @@ export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
         },
       });
       if (findUserData.length) {
-        // Prepare the key-value pairs for mset
-        const redisData: string[] = findUserData.reduce(
+        //? get database to data then set redis
+        /* // Prepare the key value pairs for mset
+        const redisUsersData: string[] = findUserData.reduce(
           (acc: string[], user) => {
             acc.push(
               ENUM_REDIS_KEY.REDIS_IN_SAVE_ALL_USERS + user._id.toString(),
@@ -135,10 +158,36 @@ export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
           },
           [],
         );
-        // await redisClient.mset('key1','value1','key2','value2','key3','value3');
-        await redisClient.mset(...redisData);
+        await redisClient.mset('key1','value1','key2','value2','key3','value3');
+        await redisClient.mset(...redisUsersData);
+
+        */
+        /*
+         for (const user of findUserData) {
+          await redisClient.set(
+            user._id,
+            JSON.stringify(user),
+            'EX',
+            24 * 60 * 60,
+          ); // 1 day to second
+        } 
+          */
+        if (findUserData?.length) {
+          const setter = findUserData?.map(data => {
+            // some time data is [null] then validate
+            return {
+              key: data?._id,
+              value: data,
+              ttl: 24 * 60 * 60, // 1 day to second
+            };
+          }) as unknown as IRedisSetter<IUser>;
+
+          await redisSetter<IUser>(setter);
+        }
       }
-    } else {
+    }
+    //! found in redis
+    else {
       findUserData = findRedis.map(user => {
         if (user) {
           return JSON.parse(user);
@@ -158,7 +207,7 @@ export const validateUserInDatabase = async (users: string[] | IUserRef[]) => {
 
 const validateUsers = (users: IUser[]) => {
   users.forEach(item => {
-    if (item && item.isDelete) {
+    if (item && item.isDelete === true) {
       throw new ApiError(httpStatus.NOT_FOUND, `${item.role} User is deleted`);
     } else if (item && item.status === ENUM_STATUS.INACTIVE) {
       throw new ApiError(
@@ -168,6 +217,9 @@ const validateUsers = (users: IUser[]) => {
     } else if (item && item.status === ENUM_STATUS.BLOCK) {
       throw new ApiError(httpStatus.NOT_FOUND, `${item.role} User is blocked`);
     }
+    // else if (item && item.verify !== ENUM_VERIFY.ACCEPT) {
+    //   throw new ApiError(httpStatus.FORBIDDEN, `User is ${item.verify} state`);
+    // }
   });
 };
 

@@ -7,7 +7,6 @@ import { IPaginationOption } from '../../interface/pagination';
 
 import { Request } from 'express';
 import httpStatus from 'http-status';
-import { ENUM_YN } from '../../../global/enum_constant_type';
 import ApiError from '../../errors/ApiError';
 import { CATEGORY_SEARCHABLE_FIELDS } from './consent.category';
 import { ICategory, ICategoryFilters } from './interface.category';
@@ -164,7 +163,7 @@ const deleteCategoryByIdFromDb = async (
   }
 
   let result;
-  if (query.delete == ENUM_YN.YES) {
+  if (query.delete == 'yes') {
     result = await Category.findByIdAndDelete(id);
     if (!result) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Failed to delete');

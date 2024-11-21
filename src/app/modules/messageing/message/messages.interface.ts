@@ -1,6 +1,6 @@
 import { Document, Model, Types } from 'mongoose';
 import { z } from 'zod';
-import { I_STATUS, I_YN } from '../../../global/enum_constant_type';
+import { I_STATUS, I_YN } from '../../../../global/enum_constant_type';
 
 import { messageZodData } from './messages.validation';
 
@@ -12,10 +12,14 @@ export type IChatMessageFilters = {
   friendShipId?: string;
   findMyChats?: I_YN;
   //
+  gigId?: string;
+  orderId?: string;
+  uuid?: string;
+  //
   searchTerm?: string;
-
+  delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: boolean | string;
+  isDelete?: I_YN;
   isSeen?: I_YN;
 };
 
@@ -28,7 +32,7 @@ export type ChatMessageModel = {
   isChatMessageExistMethod(
     id: string,
     option: {
-      isDelete?: boolean;
+      isDelete?: I_YN;
       populate?: boolean;
     },
   ): Promise<IChatMessage>;

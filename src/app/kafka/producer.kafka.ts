@@ -22,11 +22,54 @@ export const createProducer = async () => {
 
 export const produceMessageByKafka = async (message: string) => {
   const producer = await createProducer();
-  console.log('🚀 ~ eachMessage: ~ data:', message);
+  // console.log('🚀 ~ eachMessage: ~ data:', message);
   await producer.send({
     topic: ENUM_KAFKA_TOPIC.MESSAGE,
     messages: [
       { key: 'message:' + uuidv4(), value: message, partition: 0 },
+      //   { key: 'message:' + uuidv4(), value: 'Hello, Kafka!', partition: 0 },
+    ],
+  });
+};
+export const produceGroupMessageByKafka = async (message: string) => {
+  const producer = await createProducer();
+  console.log('🚀 ~ eachMessage: ~ data:', message);
+  await producer.send({
+    topic: ENUM_KAFKA_TOPIC.groupMessage,
+    messages: [
+      { key: 'message:' + uuidv4(), value: message, partition: 0 },
+      //   { key: 'message:' + uuidv4(), value: 'Hello, Kafka!', partition: 0 },
+    ],
+  });
+};
+export const produceUpdateFriendShipListSortKafka = async (message: string) => {
+  const producer = await createProducer();
+  // console.log('🚀 ~ eachMessage: ~ data:', message);
+  await producer.send({
+    topic: ENUM_KAFKA_TOPIC.friendShipUpdateSortList,
+    messages: [
+      {
+        key: 'friendShipUpdateSortList:' + uuidv4(),
+        value: message,
+        partition: 0,
+      },
+      //   { key: 'message:' + uuidv4(), value: 'Hello, Kafka!', partition: 0 },
+    ],
+  });
+};
+export const produceUpdateGroupMemberListSortKafka = async (
+  message: string,
+) => {
+  const producer = await createProducer();
+  // console.log('🚀 ~ eachMessage: ~ data:', message);
+  await producer.send({
+    topic: ENUM_KAFKA_TOPIC.friendShipUpdateSortList,
+    messages: [
+      {
+        key: 'friendShipUpdateSortList:' + uuidv4(),
+        value: message,
+        partition: 0,
+      },
       //   { key: 'message:' + uuidv4(), value: 'Hello, Kafka!', partition: 0 },
     ],
   });
