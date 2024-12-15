@@ -13,15 +13,15 @@ import { adminRoutes } from '../modules/allUser/admin/admin.route';
 
 import { AdminSettingRoute } from '../modules/adminSetting/route.adminSetting';
 
-import { FriendShipsRoute } from '../modules/friendship/friendship.route';
-
 import { EmployeeUserRoutes } from '../modules/allUser/employee/route.employee';
 import { HrAdminRoutes } from '../modules/allUser/hrAdmin/route.hrAdmin';
 import { CheckInOutRoute } from '../modules/checkInOut/route.checkInOut';
-import { ChatMessageRoute } from '../modules/message/messages.route';
+
+import { FriendShipsRoute } from '@app/modules/messageing/friendship/friendship.route';
+import { ChatMessageRoute } from '@app/modules/messageing/message/messages.route';
+import { LeaveManagementRoute } from '../modules/leaveManagment/route.leaveManagement';
 import { ProjectRoute } from '../modules/project/route.project';
 import { TaskManagementRoute } from '../modules/taskManagement/route.taskManagement';
-import { LeaveManagementRoute } from '../modules/leaveManagment/route.leaveManagement';
 
 const router = express.Router();
 

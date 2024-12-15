@@ -6,7 +6,7 @@ import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import parseBodyData from '../../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../../middlewares/validateRequestZod';
 
-import { uploadAwsS3Bucket } from '@app/modules/aws/utls.aws';
+import { uploadImage } from '@app/middlewares/uploader.multer';
 import { GroupssController } from './controller.groups';
 import { GroupsValidation } from './validation.groups';
 const router = express.Router();
@@ -29,7 +29,7 @@ router
       ENUM_USER_ROLE.hrAdmin,
       ENUM_USER_ROLE.employee,
     ),
-    uploadAwsS3Bucket.fields([
+    uploadImage.fields([
       { name: 'profileImage', maxCount: 1 },
       { name: 'coverImage', maxCount: 1 },
     ]),

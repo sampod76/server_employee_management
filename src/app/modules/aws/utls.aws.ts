@@ -10,9 +10,6 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Request } from 'express';
-import multer from 'multer';
-import multerS3 from 'multer-s3';
 import path from 'path';
 import config from '../../../config';
 import ApiError from '../../errors/ApiError';
@@ -131,79 +128,79 @@ const deleteS3MultipleFiles = async (fileKeys: string[]) => {
   }
 };
 
-const uploadAwsS3Bucket = multer({
-  storage: multerS3({
-    s3: s3Client,
-    bucket: config.aws.s3.bucket as string, // Replace with your bucket name
-    metadata: (req: Request, file, cb) => {
-      cb(null, {
-        fieldName: file.fieldname,
-        authorUserId: req?.user?.userId || '',
-        role: req?.user?.role || '',
-      });
-    },
+// const uploadAwsS3Bucket = multer({
+//   storage: multerS3({
+//     s3: s3Client,
+//     bucket: config.aws.s3.bucket as string, // Replace with your bucket name
+//     metadata: (req: Request, file, cb) => {
+//       cb(null, {
+//         fieldName: file.fieldname,
+//         authorUserId: req?.user?.userId || '',
+//         role: req?.user?.role || '',
+//       });
+//     },
 
-    key: (req, file, cb) => {
-      const allowedMimeTypes = [
-        // 'image/jpg',
-        // 'image/png',
-        // 'image/jpeg',
-        // 'image/heic',
-        // 'image/heif',
-        // 'image/gif',
-        // 'image/avif',
-        'application/pdf',
-        'application/x-x509-ca-cert',
-        'application/octet-stream',
-        'application/pkix-cert',
-        'application/pkcs8',
-        'application/msword',
-      ];
+//     key: (req, file, cb) => {
+//       const allowedMimeTypes = [
+//         // 'image/jpg',
+//         // 'image/png',
+//         // 'image/jpeg',
+//         // 'image/heic',
+//         // 'image/heif',
+//         // 'image/gif',
+//         // 'image/avif',
+//         'application/pdf',
+//         'application/x-x509-ca-cert',
+//         'application/octet-stream',
+//         'application/pkix-cert',
+//         'application/pkcs8',
+//         'application/msword',
+//       ];
 
-      if (
-        !allowedMimeTypes.includes(file.mimetype) &&
-        !file.mimetype.includes('image') // allow all image types
-      ) {
-        cb(
-          new Error(
-            'Only ' +
-              allowedMimeTypes.map(type => type.split('/')[1]).join(', ') +
-              'format is allowed!',
-          ),
-        );
-      }
+//       if (
+//         !allowedMimeTypes.includes(file.mimetype) &&
+//         !file.mimetype.includes('image') // allow all image types
+//       ) {
+//         cb(
+//           new Error(
+//             'Only ' +
+//               allowedMimeTypes.map(type => type.split('/')[1]).join(', ') +
+//               'format is allowed!',
+//           ),
+//         );
+//       }
 
-      let filePath = '';
+//       let filePath = '';
 
-      const fileExt = path.extname(file.originalname);
-      const sanitizedFileName = file.originalname
-        .replace(fileExt, '') // Remove the file extension
-        .toLowerCase() // Convert to lowercase
-        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except for spaces and hyphens
-        .replace(/\s+/g, '-') // Replace spaces with hyphens
-        .trim(); // Trim extra spaces for safety
+//       const fileExt = path.extname(file.originalname);
+//       const sanitizedFileName = file.originalname
+//         .replace(fileExt, '') // Remove the file extension
+//         .toLowerCase() // Convert to lowercase
+//         .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except for spaces and hyphens
+//         .replace(/\s+/g, '-') // Replace spaces with hyphens
+//         .trim(); // Trim extra spaces for safety
 
-      const modifyFileName = `${sanitizedFileName}-${Date.now()}${fileExt}`;
+//       const modifyFileName = `${sanitizedFileName}-${Date.now()}${fileExt}`;
 
-      if (file.mimetype.includes('image')) {
-        filePath = `upload/images/${modifyFileName}`;
-      } else if (file.mimetype.includes('audio')) {
-        filePath = `upload/audios/${modifyFileName}`;
-      } else if (file.mimetype.includes('video')) {
-        filePath = `upload/videos/${modifyFileName}`;
-      } else if (file.mimetype.includes('application')) {
-        filePath = `upload/docs/${modifyFileName}`;
-      } else if (file.mimetype.includes('pdf')) {
-        filePath = `upload/pdfs/${modifyFileName}`;
-      } else {
-        filePath = `upload/others/${modifyFileName}`;
-      }
+//       if (file.mimetype.includes('image')) {
+//         filePath = `upload/images/${modifyFileName}`;
+//       } else if (file.mimetype.includes('audio')) {
+//         filePath = `upload/audios/${modifyFileName}`;
+//       } else if (file.mimetype.includes('video')) {
+//         filePath = `upload/videos/${modifyFileName}`;
+//       } else if (file.mimetype.includes('application')) {
+//         filePath = `upload/docs/${modifyFileName}`;
+//       } else if (file.mimetype.includes('pdf')) {
+//         filePath = `upload/pdfs/${modifyFileName}`;
+//       } else {
+//         filePath = `upload/others/${modifyFileName}`;
+//       }
 
-      cb(null, filePath);
-    },
-    // Add the tagging configuration here
-  }),
-});
+//       cb(null, filePath);
+//     },
+//     // Add the tagging configuration here
+//   }),
+// });
 
 export {
   deleteS3MultipleFiles,
@@ -212,5 +209,4 @@ export {
   putSingleImageObjectCommandToUrl,
   //
   s3Client,
-  uploadAwsS3Bucket,
 };
