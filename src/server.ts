@@ -11,6 +11,7 @@ import { RedisRunFunction } from './app/redis/service.redis';
 import { errorLogger, logger } from './app/share/logger';
 import config from './config/index';
 import socketConnection from './sockit';
+import { kafkaInit } from '@app/kafka/kafka';
 mongoose.set('strictQuery', false);
 process.on('uncaughtException', error => {
   config.env === 'production'
@@ -105,7 +106,7 @@ async function connection() {
     //!-------- socket connection---------
     await socketConnection(io);
     //!-----kafka--init----
-    // await kafkaInit();
+    await kafkaInit();
     //!-------- backup-------
     // RunBackup();
   } catch (error) {

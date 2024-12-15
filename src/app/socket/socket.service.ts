@@ -1,4 +1,4 @@
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { ENUM_SOCKET_STATUS } from '../../global/enum_constant_type';
 import { IUserRef } from '../modules/allUser/typesAndConst';
 import { User } from '../modules/allUser/user/user.model';
@@ -42,7 +42,6 @@ export const yourAreOnlineOffline = async (
         socketStatus: ENUM_SOCKET_STATUS.ONLINE,
       };
     } else {
-      // console.log(data.data, 'offline');
       setData = {
         'lastActive.createdAt': new Date(),
         socketStatus: ENUM_SOCKET_STATUS.OFFLINE,
@@ -55,5 +54,21 @@ export const yourAreOnlineOffline = async (
     });
   } catch (error) {
     errorLogger.error(error);
+  }
+};
+
+export const socketErrorHandler = ({
+  socket,
+  callback,
+  errorMessage,
+}: {
+  socket: Socket;
+  callback?: any;
+  errorMessage: any;
+}) => {
+  if (callback && typeof callback === 'function') {
+    return callback(errorMessage);
+  } else {
+    return socket.emit('error', errorMessage);
   }
 };

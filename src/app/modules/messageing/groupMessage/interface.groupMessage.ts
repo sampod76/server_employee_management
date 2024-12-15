@@ -17,8 +17,8 @@ export type IGroupMessageFilters = {
   searchTerm?: string;
   delete?: I_YN;
   status?: I_STATUS;
-  isDelete?: boolean;
-  isSeen?: I_YN;
+  isDelete?: boolean | string;
+  isSeen?: boolean | string;
 };
 
 export type IGroupMessage = z.infer<typeof groupMessageZodData> & {
