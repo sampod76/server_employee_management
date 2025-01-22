@@ -3,6 +3,8 @@
 
 EmpManage: A Comprehensive Employee Management System
 
+## Live project
+[Live project](https://emspro.netlify.app/)
 
 ## Clone Front-end & backend
 
