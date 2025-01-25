@@ -112,8 +112,9 @@
     "@typescript-eslint/eslint-plugin": "^5.60.0",
     "@typescript-eslint/parser": "^5.60.0",
     "eslint-config-prettier": "^8.8.0",
-    "husky": "^9.1.5",
+    "husky": "^9.1.7",
     "lint-staged": "^13.2.2",
+    "pinst": "^3.0.0",
     "prettier": "3.3.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
