@@ -7,7 +7,7 @@ ZIP_COMMAND="/c/Program Files/7-Zip/7z.exe"
 ENV_FILE=.env
 
 # Output path for the .env.zip file
-ZIP_FILE=evofile.zip
+ZIP_FILE=envfile.zip
 
 # Password for the zip file
 PASSWORD=Sampod112233445566778899????
