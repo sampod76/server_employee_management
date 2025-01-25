@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ChatMessageService } from '@app/modules/messageing/message/messages.service';
 
-import { GroupMessageService } from '@app/modules/messageing/groupMessage/service.groupMessage';
-import { FriendShip } from '@app/modules/messageing/friendship/friendship.models';
 import { ENUM_KAFKA_TOPIC } from './consent.kafka';
 import { kafkaClient } from './kafka';
-import config from '@config/index';
-import { logger } from '@app/share/logger';
+import config from '../../config';
+import { ChatMessageService } from '../modules/messageing/message/messages.service';
+import { GroupMessageService } from '../modules/messageing/groupMessage/service.groupMessage';
+import { FriendShip } from '../modules/messageing/friendship/friendship.models';
+import { logger } from '../share/logger';
 
 export const consumerKafka = async () => {
   const topics = [

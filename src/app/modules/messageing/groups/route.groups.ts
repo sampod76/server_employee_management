@@ -6,9 +6,9 @@ import { ENUM_USER_ROLE } from '../../../../global/enums/users';
 import parseBodyData from '../../../middlewares/utils/parseBodyData';
 import validateRequestZod from '../../../middlewares/validateRequestZod';
 
-import { uploadImage } from '@app/middlewares/uploader.multer';
 import { GroupssController } from './controller.groups';
 import { GroupsValidation } from './validation.groups';
+import { uploadImage } from '../../../middlewares/uploader.multer';
 const router = express.Router();
 
 router
