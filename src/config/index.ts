@@ -8,12 +8,20 @@ export default {
   port: process.env.PORT,
   socketPort: process.env.SOCKET_PORT,
   logo: process.env.LOGO_URL,
+  projectName: process.env.PROJECT_NAME,
   redis: {
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
     userName: process.env.REDIS_USER_NAME,
     password: process.env.REDIS_PASSWORD,
     url: process.env.REDIS_URL,
+    queue: {
+      host: process.env.REDIS_HOST_QUEUE,
+      port: process.env.REDIS_PORT_QUEUE,
+      userName: process.env.REDIS_USER_NAME_QUEUE,
+      password: process.env.REDIS_PASSWORD_QUEUE,
+      url: process.env.REDIS_URL_QUEUE,
+    },
   },
   kafka: {
     url:
@@ -21,6 +29,9 @@ export default {
         ? process.env.KAFKA_URL_LOCAL
         : process.env.KAFKA_URL_PRODUCTION,
     clientId: process.env.KAFKA_CLIENT_ID,
+  },
+  serverMonitor: {
+    lokiServer: process.env.LOKI_SERVER_URL_LOCAL,
   },
 
   fileSize: {
