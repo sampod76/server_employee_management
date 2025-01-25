@@ -7,11 +7,11 @@ import 'colors';
 import { NextFunction } from 'express';
 import http, { Server } from 'http';
 import { Server as SocketServer } from 'socket.io';
+import { kafkaInit } from './app/kafka/kafka';
 import { RedisRunFunction } from './app/redis/service.redis';
 import { errorLogger, logger } from './app/share/logger';
 import config from './config/index';
 import socketConnection from './sockit';
-import { kafkaInit } from './app/kafka/kafka';
 
 mongoose.set('strictQuery', false);
 process.on('uncaughtException', error => {
@@ -79,7 +79,7 @@ async function connection() {
 
     // ! are you use multiple connections 1. server is run 5000 port -> socket is run 5001 then use
 
-    app.listen(config.port, (): void => {
+    server = app.listen(config.port, (): void => {
       config.env === 'production'
         ? logger.info(
             `Server is listening on port ${config.port}`.blue.underline.bold,
