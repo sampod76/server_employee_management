@@ -1,12 +1,11 @@
 import { ConnectionOptions } from 'bullmq';
 import Redis from 'ioredis';
 import config from '../../config';
-import { logger } from '../share/logger';
 export const redisConnectionString: ConnectionOptions = {
   host: config.redis.host || 'localhost', // Provide a default value if undefined
   port: Number(config.redis.port) || 6379, // Ensure port is a number and provide a default value
-  //   username: config.redis.userName,
-  //   password: config.redis.password,
+    username: config.redis.userName,
+    password: config.redis.password,
 };
 
 /**
